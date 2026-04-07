@@ -174,16 +174,24 @@ export const DEMO_CASES: DemoCase[] = [
   },
 ]
 
-/** Загрузить демо-результат с backend или вернуть null при ошибке */
+/** Загрузить демо-результат с backend. Возвращает данные или выбрасывает Error с описанием причины. */
 export async function loadDemoResult(
   fixtureId: string,
   apiUrl: string,
-): Promise<AnalyzeResponse | null> {
+): Promise<AnalyzeResponse> {
+  const url = `${apiUrl}/api/v1/demo/cases/${fixtureId}`
+  let res: Response
   try {
-    const res = await fetch(`${apiUrl}/api/v1/demo/cases/${fixtureId}`)
-    if (!res.ok) return null
-    return res.json()
-  } catch {
-    return null
+    res = await fetch(url, { signal: AbortSignal.timeout(15_000) })
+  } catch (e) {
+    const isLocalhost = apiUrl.includes('localhost')
+    if (isLocalhost) {
+      throw new Error(`Backend недоступен (${apiUrl}). Проверьте, что сервер запущен локально.`)
+    }
+    throw new Error(`Нет соединения с сервером (${apiUrl}). Проверьте интернет.`)
   }
+  if (!res.ok) {
+    throw new Error(`Сервер вернул ошибку ${res.status} для ${url}`)
+  }
+  return res.json()
 }

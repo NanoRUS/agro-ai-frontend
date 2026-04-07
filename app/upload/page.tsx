@@ -2,8 +2,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { DEMO_CASES, loadDemoResult } from '@/lib/demo-fixtures'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+import { API_URL } from '@/lib/api'
 
 const CROPS = [
   { id: 'tomato', label: 'Томат', emoji: '🍅' },
@@ -59,14 +58,13 @@ export default function UploadPage() {
 
   async function handleDemoCase(fixtureId: string) {
     setDemoLoading(fixtureId)
+    setError('')
     try {
       const result = await loadDemoResult(fixtureId, API_URL)
-      if (result) {
-        sessionStorage.setItem('agro_result', JSON.stringify(result))
-        router.push('/results')
-      } else {
-        setError('Не удалось загрузить демо. Убедитесь, что backend запущен.')
-      }
+      sessionStorage.setItem('agro_result', JSON.stringify(result))
+      router.push('/results')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Не удалось загрузить демо.')
     } finally {
       setDemoLoading(null)
     }
