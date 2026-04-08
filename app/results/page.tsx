@@ -5,7 +5,7 @@ import {
   ArrowLeft, ChevronRight, ShieldCheck, Microscope,
   Droplets, Scissors, Search, FlaskConical, ClipboardList,
   Zap, RefreshCw, Video, FileText, LayoutList, Star,
-  AlertTriangle, Info, CheckCircle2,
+  AlertTriangle, Info, CheckCircle2, UserCheck,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { AnalyzeResponse, IssueResult, VideoTone } from '@/lib/api'
@@ -554,20 +554,17 @@ function ResultsContent() {
                     </p>
                   </div>
 
-                  {/* Avatar */}
+                  {/* Avatar — expert icon */}
                   <div className="flex-shrink-0" style={{ position: 'relative' }}>
                     <div
-                      className="w-[60px] h-[60px] rounded-full overflow-hidden"
+                      className="w-[60px] h-[60px] rounded-full flex items-center justify-center"
                       style={{
+                        background: 'linear-gradient(145deg, #1b5e38, #0d3320)',
                         border: '2.5px solid rgba(74,222,128,0.40)',
                         boxShadow: '0 0 0 4px rgba(74,222,128,0.08)',
                       }}
                     >
-                      <img
-                        src="/avatar-agronomist.jpg"
-                        alt="Agronomist"
-                        className="w-full h-full object-cover"
-                      />
+                      <UserCheck size={26} strokeWidth={1.5} color="#4ade80" />
                     </div>
                     {/* Online dot */}
                     <div

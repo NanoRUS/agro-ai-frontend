@@ -389,8 +389,8 @@ export default function UploadPage() {
           </p>
         </div>
 
-        {/* Horizontal scroll */}
-        <div className="flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar">
+        {/* 3-column grid */}
+        <div className="grid grid-cols-3 gap-2.5 px-4">
           {DEMO_CASES.map((c) => {
             const imgSrc = DEMO_IMAGES[c.id] ?? `/crops/${c.crop}.jpg`
             const label = stripEmoji(c.label)
@@ -401,39 +401,36 @@ export default function UploadPage() {
                 key={c.id}
                 onClick={() => handleDemoCase(c.id)}
                 disabled={demoLoading !== null}
-                className="flex-shrink-0 w-36 text-left transition-all duration-200
+                className="w-full text-left transition-all duration-200
                            active:scale-[0.96] disabled:opacity-60"
                 style={{ outline: 'none' }}
               >
-                {/* Card image area */}
+                {/* Square photo card */}
                 <div
-                  className="w-36 h-36 rounded-[20px] relative overflow-hidden mb-2.5"
-                  style={{ boxShadow: '0 2px 14px rgba(0,0,0,0.18)' }}
+                  className="w-full aspect-square rounded-[16px] relative overflow-hidden mb-1.5"
+                  style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.14)' }}
                 >
-                  {/* Real photo */}
                   <img
                     src={imgSrc}
                     alt={label}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
-
-                  {/* Bottom scrim for readability */}
+                  {/* Bottom scrim */}
                   <div
                     className="absolute inset-0"
                     style={{
-                      background: 'linear-gradient(to bottom, rgba(0,0,0,0.0) 40%, rgba(0,0,0,0.55) 100%)',
+                      background: 'linear-gradient(to bottom, rgba(0,0,0,0.0) 45%, rgba(0,0,0,0.52) 100%)',
                     }}
                   />
-
                   {/* Run / loading indicator */}
                   {isLoading ? (
                     <div
-                      className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full
+                      className="absolute bottom-2 right-2 w-5 h-5 rounded-full
                                  border-2 border-emerald-400 border-t-transparent animate-spin"
                     />
                   ) : (
                     <div
-                      className="absolute bottom-2.5 right-2.5 w-7 h-7 rounded-full
+                      className="absolute bottom-2 right-2 w-6 h-6 rounded-full
                                  flex items-center justify-center"
                       style={{
                         background: 'rgba(255,255,255,0.22)',
@@ -442,20 +439,17 @@ export default function UploadPage() {
                         border: '1px solid rgba(255,255,255,0.30)',
                       }}
                     >
-                      <ArrowRight size={13} strokeWidth={2.5} className="text-white" />
+                      <ArrowRight size={11} strokeWidth={2.5} className="text-white" />
                     </div>
                   )}
                 </div>
 
                 {/* Label */}
                 <p
-                  className="line-clamp-2 leading-tight px-0.5"
-                  style={{ fontSize: 12, fontWeight: 600, color: '#1f2937', letterSpacing: '-0.01em' }}
+                  className="line-clamp-2 leading-tight"
+                  style={{ fontSize: 11, fontWeight: 600, color: '#1f2937', letterSpacing: '-0.01em' }}
                 >
                   {label}
-                </p>
-                <p style={{ fontSize: 10.5, color: '#9ca3af', marginTop: 2 }}>
-                  {c.description.split('—')[0].trim()}
                 </p>
               </button>
             )
