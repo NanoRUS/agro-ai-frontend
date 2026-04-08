@@ -68,16 +68,16 @@ function categoryLabel(category: string) {
   } as Record<string, string>)[category] ?? 'Plant Disease'
 }
 
-type CatStyle = { gradStart: string; gradEnd: string; label: string }
+type CatStyle = { img: string; label: string }
 function categoryStyle(category: string): CatStyle {
   return ({
-    fungal:    { gradStart: '#5c4033', gradEnd: '#2d1b0e', label: 'Fungal' },
-    bacterial: { gradStart: '#155e4a', gradEnd: '#0a3a2a', label: 'Bacterial' },
-    pest:      { gradStart: '#92400e', gradEnd: '#451a03', label: 'Pest' },
-    nutrient:  { gradStart: '#713f12', gradEnd: '#451a03', label: 'Nutrient' },
-    water:     { gradStart: '#1e3a5f', gradEnd: '#0c1a3a', label: 'Water' },
-    stress:    { gradStart: '#4c1d95', gradEnd: '#2d0a5f', label: 'Stress' },
-  } as Record<string, CatStyle>)[category] ?? { gradStart: '#1a3a2a', gradEnd: '#0a1a10', label: 'Disease' }
+    fungal:    { img: '/categories/fungal.jpg',    label: 'Fungal' },
+    bacterial: { img: '/categories/bacterial.jpg', label: 'Bacterial' },
+    pest:      { img: '/categories/pest.jpg',      label: 'Pest' },
+    nutrient:  { img: '/categories/nutrient.jpg',  label: 'Nutrient' },
+    water:     { img: '/categories/water.jpg',     label: 'Water' },
+    stress:    { img: '/categories/stress.jpg',    label: 'Stress' },
+  } as Record<string, CatStyle>)[category] ?? { img: '/categories/fungal.jpg', label: 'Disease' }
 }
 
 type ActionIconDef = { Icon: LucideIcon; color: string }
@@ -227,21 +227,12 @@ function ResultsContent() {
             className="relative w-full overflow-hidden"
             style={{ borderRadius: 28, height: 272 }}
           >
-            {/* Background: photo or gradient */}
-            {heroImage ? (
-              <img
-                src={heroImage}
-                alt="Plant"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            ) : (
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: `linear-gradient(160deg, ${catSt.gradStart} 0%, ${catSt.gradEnd} 100%)`,
-                }}
-              />
-            )}
+            {/* Background: user's photo, or category photo as fallback */}
+            <img
+              src={heroImage ?? catSt.img}
+              alt="Plant"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
 
             {/* Gradient overlay */}
             <div
@@ -429,25 +420,22 @@ function ResultsContent() {
                     <div
                       className="w-32 h-32 rounded-2xl relative overflow-hidden"
                       style={{
-                        background: `linear-gradient(145deg, ${cs.gradStart}, ${cs.gradEnd})`,
                         boxShadow: isTop
                           ? '0 4px 20px rgba(16,185,129,0.30)'
                           : '0 2px 12px rgba(0,0,0,0.12)',
                       }}
                     >
-                      {/* Inner highlight */}
-                      <div
-                        className="absolute inset-0"
-                        style={{
-                          backgroundImage:
-                            'radial-gradient(circle at 28% 28%, rgba(255,255,255,0.18) 0%, transparent 55%)',
-                        }}
+                      {/* Real category photo */}
+                      <img
+                        src={cs.img}
+                        alt={cs.label}
+                        className="absolute inset-0 w-full h-full object-cover"
                       />
                       {/* Bottom fade for text legibility */}
                       <div
                         className="absolute inset-0"
                         style={{
-                          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 55%, rgba(0,0,0,0.48) 100%)',
+                          background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.0) 40%, rgba(0,0,0,0.58) 100%)',
                         }}
                       />
 
@@ -569,16 +557,17 @@ function ResultsContent() {
                   {/* Avatar */}
                   <div className="flex-shrink-0" style={{ position: 'relative' }}>
                     <div
-                      className="w-[60px] h-[60px] rounded-full flex items-center justify-center"
+                      className="w-[60px] h-[60px] rounded-full overflow-hidden"
                       style={{
-                        background: 'linear-gradient(145deg, #1f5c38, #122b1e)',
-                        border: '2.5px solid rgba(74,222,128,0.35)',
+                        border: '2.5px solid rgba(74,222,128,0.40)',
                         boxShadow: '0 0 0 4px rgba(74,222,128,0.08)',
-                        fontSize: 28,
-                        lineHeight: 1,
                       }}
                     >
-                      👨‍🌾
+                      <img
+                        src="/avatar-agronomist.jpg"
+                        alt="Agronomist"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     {/* Online dot */}
                     <div

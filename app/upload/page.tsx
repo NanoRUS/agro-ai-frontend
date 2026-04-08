@@ -11,24 +11,29 @@ import { API_URL } from '@/lib/api'
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const CROPS = [
-  { id: 'tomato',     label: 'Томат',     emoji: '🍅' },
-  { id: 'cucumber',   label: 'Огурец',    emoji: '🥒' },
-  { id: 'potato',     label: 'Картофель', emoji: '🥔' },
-  { id: 'pepper',     label: 'Перец',     emoji: '🌶️' },
-  { id: 'strawberry', label: 'Клубника',  emoji: '🍓' },
+  { id: 'tomato',     label: 'Томат',     img: '/crops/tomato.jpg' },
+  { id: 'cucumber',   label: 'Огурец',    img: '/crops/cucumber.jpg' },
+  { id: 'potato',     label: 'Картофель', img: '/crops/potato.jpg' },
+  { id: 'pepper',     label: 'Перец',     img: '/crops/pepper.jpg' },
+  { id: 'strawberry', label: 'Клубника',  img: '/crops/strawberry.jpg' },
 ]
 
-const CROP_GRADIENTS: Record<string, { from: string; to: string }> = {
-  tomato:     { from: '#7c2020', to: '#3d0f0f' },
-  cucumber:   { from: '#1e5c2a', to: '#0d2e15' },
-  potato:     { from: '#5c4a1e', to: '#2d240f' },
-  pepper:     { from: '#7c3d1e', to: '#3d1e0f' },
-  strawberry: { from: '#7c1f3a', to: '#3d0f1d' },
+// Demo card image per fixture id — real plant/disease photos
+const DEMO_IMAGES: Record<string, string> = {
+  tomato_phytophthora_rain:        '/demos/tomato-blight.jpg',
+  tomato_overwatering:             '/demos/tomato-overwatering.jpg',
+  tomato_blossom_end_rot:          '/demos/tomato-blossom-rot.jpg',
+  tomato_aphids:                   '/demos/tomato-aphids.jpg',
+  cucumber_powdery_mildew:         '/demos/cucumber-mildew.jpg',
+  cucumber_spider_mites_heat:      '/demos/cucumber-mites.jpg',
+  potato_phytophthora_critical:    '/demos/potato-blight.jpg',
+  pepper_blossom_end_rot_fruiting: '/demos/pepper-rot.jpg',
+  strawberry_root_rot:             '/demos/strawberry-root.jpg',
 }
 
-function splitLabel(label: string) {
-  const i = label.indexOf(' ')
-  return { icon: label.slice(0, i), text: label.slice(i + 1) }
+function stripEmoji(label: string) {
+  // Remove leading emoji + space from demo labels like "🍅 Фитофтора…"
+  return label.replace(/^\p{Emoji_Presentation}\s*/u, '')
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -103,34 +108,22 @@ export default function UploadPage() {
           className="relative w-full overflow-hidden"
           style={{ borderRadius: 28, height: 268 }}
         >
-          {/* Rich background — plant-themed multi-layer gradient */}
+          {/* Real photo background */}
+          <img
+            src="/crops/tomato.jpg"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: 'center 40%' }}
+          />
+
+          {/* Gradient overlay — keeps text readable + brand color */}
           <div
             className="absolute inset-0"
             style={{
               background: [
-                'radial-gradient(ellipse at 72% 22%, rgba(134,239,172,0.14) 0%, transparent 52%)',
-                'radial-gradient(ellipse at 18% 78%, rgba(74,222,128,0.10) 0%, transparent 45%)',
-                'linear-gradient(155deg, #1a4d2b 0%, #0f3018 48%, #071810 100%)',
+                'linear-gradient(to bottom, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.0) 30%, rgba(0,0,0,0.68) 100%)',
+                'linear-gradient(155deg, rgba(15,48,24,0.72) 0%, rgba(7,24,16,0.42) 55%, transparent 100%)',
               ].join(', '),
-            }}
-          />
-
-          {/* Decorative plant elements */}
-          <div className="absolute top-[-10px] right-[-8px] select-none pointer-events-none"
-               style={{ fontSize: 110, opacity: 0.13, transform: 'rotate(18deg)' }}>
-            🌿
-          </div>
-          <div className="absolute bottom-[30px] right-[20px] select-none pointer-events-none"
-               style={{ fontSize: 72, opacity: 0.18, transform: 'rotate(-8deg)' }}>
-            🍅
-          </div>
-
-          {/* Bottom text gradient */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                'linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.0) 38%, rgba(0,0,0,0.60) 100%)',
             }}
           />
 
@@ -335,7 +328,7 @@ export default function UploadPage() {
               <button
                 key={c.id}
                 onClick={() => { setCrop(c.id); setError('') }}
-                className="flex flex-col items-center py-3 rounded-[16px]
+                className="flex flex-col items-center pt-2.5 pb-2 rounded-[16px]
                            transition-all duration-200 active:scale-[0.94]"
                 style={{
                   background: sel ? '#f0fdf4' : 'white',
@@ -345,7 +338,20 @@ export default function UploadPage() {
                     : '0 1px 4px rgba(0,0,0,0.06)',
                 }}
               >
-                <span className="leading-none mb-1.5" style={{ fontSize: 22 }}>{c.emoji}</span>
+                {/* Real crop photo */}
+                <div
+                  className="w-10 h-10 mb-1.5 overflow-hidden"
+                  style={{
+                    borderRadius: 10,
+                    border: sel ? '2px solid rgba(34,197,94,0.35)' : '1.5px solid rgba(0,0,0,0.08)',
+                  }}
+                >
+                  <img
+                    src={c.img}
+                    alt={c.label}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
                 <span style={{
                   fontSize: 10.5,
                   fontWeight: sel ? 700 : 500,
@@ -386,8 +392,8 @@ export default function UploadPage() {
         {/* Horizontal scroll */}
         <div className="flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar">
           {DEMO_CASES.map((c) => {
-            const { icon, text } = splitLabel(c.label)
-            const grad = CROP_GRADIENTS[c.crop] ?? { from: '#1a3a2a', to: '#0a1a10' }
+            const imgSrc = DEMO_IMAGES[c.id] ?? `/crops/${c.crop}.jpg`
+            const label = stripEmoji(c.label)
             const isLoading = demoLoading === c.id
 
             return (
@@ -401,32 +407,23 @@ export default function UploadPage() {
               >
                 {/* Card image area */}
                 <div
-                  className="w-36 h-36 rounded-[20px] relative overflow-hidden mb-2.5 flex items-center justify-center"
-                  style={{
-                    background: `linear-gradient(145deg, ${grad.from}, ${grad.to})`,
-                    boxShadow: '0 2px 14px rgba(0,0,0,0.15)',
-                  }}
+                  className="w-36 h-36 rounded-[20px] relative overflow-hidden mb-2.5"
+                  style={{ boxShadow: '0 2px 14px rgba(0,0,0,0.18)' }}
                 >
-                  {/* Highlight */}
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      backgroundImage:
-                        'radial-gradient(circle at 28% 28%, rgba(255,255,255,0.15) 0%, transparent 55%)',
-                    }}
-                  />
-                  {/* Bottom fade */}
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background: 'linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.50) 100%)',
-                    }}
+                  {/* Real photo */}
+                  <img
+                    src={imgSrc}
+                    alt={label}
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
 
-                  {/* Emoji */}
-                  <span className="relative select-none" style={{ fontSize: 44, opacity: 0.85 }}>
-                    {icon}
-                  </span>
+                  {/* Bottom scrim for readability */}
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: 'linear-gradient(to bottom, rgba(0,0,0,0.0) 40%, rgba(0,0,0,0.55) 100%)',
+                    }}
+                  />
 
                   {/* Run / loading indicator */}
                   {isLoading ? (
@@ -438,7 +435,12 @@ export default function UploadPage() {
                     <div
                       className="absolute bottom-2.5 right-2.5 w-7 h-7 rounded-full
                                  flex items-center justify-center"
-                      style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)' }}
+                      style={{
+                        background: 'rgba(255,255,255,0.22)',
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
+                        border: '1px solid rgba(255,255,255,0.30)',
+                      }}
                     >
                       <ArrowRight size={13} strokeWidth={2.5} className="text-white" />
                     </div>
@@ -450,7 +452,7 @@ export default function UploadPage() {
                   className="line-clamp-2 leading-tight px-0.5"
                   style={{ fontSize: 12, fontWeight: 600, color: '#1f2937', letterSpacing: '-0.01em' }}
                 >
-                  {text}
+                  {label}
                 </p>
                 <p style={{ fontSize: 10.5, color: '#9ca3af', marginTop: 2 }}>
                   {c.description.split('—')[0].trim()}
