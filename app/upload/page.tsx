@@ -51,11 +51,18 @@ export default function UploadPage() {
   const [demoLoading, setDemoLoading] = useState<string | null>(null)
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files || []).slice(0, 5)
-    if (!files.length) return
-    setImages(files)
-    setPreviews(files.map((f) => URL.createObjectURL(f)))
+    const incoming = Array.from(e.target.files || [])
+    if (!incoming.length) return
+    // Append to existing, cap at 5
+    setImages((prev) => {
+      const combined = [...prev, ...incoming].slice(0, 5)
+      const added = combined.slice(prev.length)
+      setPreviews((p) => [...p, ...added.map((f) => URL.createObjectURL(f))])
+      return combined
+    })
     setError('')
+    // Reset input so the same camera can be triggered again
+    e.target.value = ''
   }
 
   function removeImage(idx: number) {
