@@ -2,11 +2,13 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Camera, ImagePlus, X, ChevronRight, Leaf,
-  Zap, ChevronDown, ChevronUp, Sparkles,
+  ShieldCheck, Star, Scan, Camera, ImagePlus,
+  X, ChevronRight, Zap, ArrowRight,
 } from 'lucide-react'
 import { DEMO_CASES, loadDemoResult } from '@/lib/demo-fixtures'
 import { API_URL } from '@/lib/api'
+
+// ── Data ──────────────────────────────────────────────────────────────────────
 
 const CROPS = [
   { id: 'tomato',     label: 'Томат',     emoji: '🍅' },
@@ -16,24 +18,35 @@ const CROPS = [
   { id: 'strawberry', label: 'Клубника',  emoji: '🍓' },
 ]
 
-// Demo case label: "🍅 Фитофтора..." → split emoji vs text
-function splitDemoLabel(label: string) {
-  const spaceIdx = label.indexOf(' ')
-  return { icon: label.slice(0, spaceIdx), text: label.slice(spaceIdx + 1) }
+const CROP_GRADIENTS: Record<string, { from: string; to: string }> = {
+  tomato:     { from: '#7c2020', to: '#3d0f0f' },
+  cucumber:   { from: '#1e5c2a', to: '#0d2e15' },
+  potato:     { from: '#5c4a1e', to: '#2d240f' },
+  pepper:     { from: '#7c3d1e', to: '#3d1e0f' },
+  strawberry: { from: '#7c1f3a', to: '#3d0f1d' },
 }
 
+function splitLabel(label: string) {
+  const i = label.indexOf(' ')
+  return { icon: label.slice(0, i), text: label.slice(i + 1) }
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function UploadPage() {
-  const router = useRouter()
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [images, setImages]     = useState<File[]>([])
-  const [previews, setPreviews] = useState<string[]>([])
-  const [crop, setCrop]         = useState('')
-  const [error, setError]       = useState('')
-  const [showDemo, setShowDemo] = useState(false)
+  const router     = useRouter()
+  const inputRef   = useRef<HTMLInputElement>(null)
+  const cameraRef  = useRef<HTMLInputElement>(null)
+
+  const [images,      setImages]      = useState<File[]>([])
+  const [previews,    setPreviews]    = useState<string[]>([])
+  const [crop,        setCrop]        = useState('')
+  const [error,       setError]       = useState('')
   const [demoLoading, setDemoLoading] = useState<string | null>(null)
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || []).slice(0, 5)
+    if (!files.length) return
     setImages(files)
     setPreviews(files.map((f) => URL.createObjectURL(f)))
     setError('')
@@ -45,10 +58,12 @@ export default function UploadPage() {
   }
 
   function handleNext() {
-    if (!crop) return setError('Выберите культуру')
-    if (images.length === 0) return setError('Загрузите хотя бы одно фото')
+    if (!crop)            return setError('Выберите культуру')
+    if (!images.length)   return setError('Загрузите хотя бы одно фото')
+
     sessionStorage.setItem('agro_crop', crop)
     sessionStorage.setItem('agro_image_count', String(images.length))
+
     const readers = images.map(
       (f) => new Promise<string>((res) => {
         const r = new FileReader()
@@ -80,351 +95,499 @@ export default function UploadPage() {
   const canProceed = !!crop && images.length > 0
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5]">
+    <div className="min-h-screen bg-[#f0f2f5] pb-28">
 
-      {/* ══ HERO ═════════════════════════════════════════════════════════ */}
-      <div
-        className="px-5 pt-12 pb-8"
-        style={{ background: 'linear-gradient(165deg, #ecfdf5 0%, #f4f9f4 35%, #f0f2f5 100%)' }}
-      >
-        {/* Logo mark */}
-        <div className="flex justify-center mb-5">
+      {/* ══ 1. HERO CARD ════════════════════════════════════════════════ */}
+      <div className="px-4 pt-5">
+        <div
+          className="relative w-full overflow-hidden"
+          style={{ borderRadius: 28, height: 268 }}
+        >
+          {/* Rich background — plant-themed multi-layer gradient */}
           <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center"
+            className="absolute inset-0"
             style={{
-              background: 'linear-gradient(145deg, #22c55e, #15803d)',
-              boxShadow: '0 6px 20px rgba(22,163,74,0.30)',
+              background: [
+                'radial-gradient(ellipse at 72% 22%, rgba(134,239,172,0.14) 0%, transparent 52%)',
+                'radial-gradient(ellipse at 18% 78%, rgba(74,222,128,0.10) 0%, transparent 45%)',
+                'linear-gradient(155deg, #1a4d2b 0%, #0f3018 48%, #071810 100%)',
+              ].join(', '),
             }}
-          >
-            <Leaf size={26} strokeWidth={1.75} className="text-white" />
+          />
+
+          {/* Decorative plant elements */}
+          <div className="absolute top-[-10px] right-[-8px] select-none pointer-events-none"
+               style={{ fontSize: 110, opacity: 0.13, transform: 'rotate(18deg)' }}>
+            🌿
           </div>
-        </div>
+          <div className="absolute bottom-[30px] right-[20px] select-none pointer-events-none"
+               style={{ fontSize: 72, opacity: 0.18, transform: 'rotate(-8deg)' }}>
+            🍅
+          </div>
 
-        {/* Title */}
-        <h1
-          className="text-center font-black text-gray-900"
-          style={{ fontSize: 30, letterSpacing: '-0.04em', lineHeight: 1.05 }}
-        >
-          AI-Агроном
-        </h1>
-        <p
-          className="text-center mt-2"
-          style={{ fontSize: 14.5, color: '#6b7280', letterSpacing: '-0.01em' }}
-        >
-          Диагноз по фото за 60 секунд
-        </p>
+          {/* Bottom text gradient */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.0) 38%, rgba(0,0,0,0.60) 100%)',
+            }}
+          />
 
-        {/* Trust badges */}
-        <div className="flex items-center justify-center gap-2 mt-4">
-          {[
-            { icon: <Sparkles size={10} strokeWidth={2} />, label: 'AI Vision' },
-            { icon: <Zap size={10} strokeWidth={2} />,      label: '5 культур' },
-          ].map(({ icon, label }, i) => (
+          {/* ─ Badges — top row ─ */}
+          <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
+            {/* Accuracy badge */}
             <div
-              key={i}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full"
+              className="flex items-center gap-1.5 px-3 py-[7px] rounded-full"
               style={{
-                background: 'rgba(22,163,74,0.09)',
-                border: '1px solid rgba(22,163,74,0.18)',
+                background: 'rgba(255,255,255,0.90)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.55)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
               }}
             >
-              <span className="text-emerald-600">{icon}</span>
-              <span style={{ fontSize: 10.5, fontWeight: 600, color: '#15803d', letterSpacing: '0.02em' }}>
-                {label}
+              <ShieldCheck size={11} strokeWidth={2.5} className="text-emerald-600" />
+              <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.07em', color: '#111827' }}>
+                98% ACCURACY
               </span>
             </div>
-          ))}
+
+            {/* Expert badge */}
+            <div
+              className="flex items-center gap-1.5 px-3 py-[7px] rounded-full"
+              style={{
+                background: 'rgba(74,222,128,0.18)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid rgba(74,222,128,0.35)',
+              }}
+            >
+              <Star size={10} strokeWidth={0} className="fill-emerald-400 text-emerald-400" />
+              <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.07em', color: '#4ade80' }}>
+                EXPERT VERIFIED
+              </span>
+            </div>
+          </div>
+
+          {/* ─ Title + subtitle — bottom ─ */}
+          <div className="absolute bottom-5 left-5 right-5">
+            <h1
+              className="text-white"
+              style={{
+                fontSize: 26, fontWeight: 900,
+                letterSpacing: '-0.04em', lineHeight: 1.05,
+                textShadow: '0 2px 12px rgba(0,0,0,0.40)',
+              }}
+            >
+              Diagnose your plant{'\n'}in seconds
+            </h1>
+            <p
+              className="mt-1.5"
+              style={{
+                fontSize: 13, color: 'rgba(255,255,255,0.65)',
+                letterSpacing: '-0.01em', lineHeight: 1.45,
+              }}
+            >
+              AI-powered · 5 crops · Results in under 60s
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* ══ BODY ═════════════════════════════════════════════════════════ */}
-      <div className="px-4 pb-10 space-y-6 mt-2">
-
-        {/* ── CROP SELECTION ── */}
-        <section>
-          <p
-            className="font-semibold tracking-[0.16em] text-gray-400/80 uppercase mb-3"
-            style={{ fontSize: 10 }}
-          >
-            Культура
-          </p>
-          <div className="grid grid-cols-5 gap-2">
-            {CROPS.map((c) => {
-              const selected = crop === c.id
-              return (
-                <button
-                  key={c.id}
-                  onClick={() => { setCrop(c.id); setError('') }}
-                  className="flex flex-col items-center py-3 rounded-[16px]
-                             transition-all duration-200 active:scale-[0.95]"
-                  style={{
-                    background: selected ? '#f0fdf4' : 'white',
-                    border: `2px solid ${selected ? '#22c55e' : 'rgba(0,0,0,0.07)'}`,
-                    boxShadow: selected
-                      ? '0 0 0 3px rgba(34,197,94,0.12), 0 2px 8px rgba(0,0,0,0.06)'
-                      : '0 1px 4px rgba(0,0,0,0.06)',
-                  }}
-                >
-                  <span className="text-[22px] leading-none mb-1.5">{c.emoji}</span>
-                  <span
-                    style={{
-                      fontSize: 10.5,
-                      fontWeight: selected ? 700 : 500,
-                      color: selected ? '#15803d' : '#6b7280',
-                      letterSpacing: '-0.01em',
-                    }}
-                  >
-                    {c.label}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        </section>
-
-        {/* ── UPLOAD ZONE ── */}
-        <section>
-          <p
-            className="font-semibold tracking-[0.16em] text-gray-400/80 uppercase mb-3"
-            style={{ fontSize: 10 }}
-          >
-            Фото растения · до 5 штук
-          </p>
-
+      {/* ══ 2. UPLOAD CARD ══════════════════════════════════════════════ */}
+      <div className="px-4 mt-4">
+        <div
+          className="rounded-[20px] overflow-hidden"
+          style={{
+            background: 'white',
+            boxShadow: '0 1px 8px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.05)',
+            border: '1px solid rgba(0,0,0,0.05)',
+          }}
+        >
           {previews.length === 0 ? (
             /* ─ Empty state ─ */
-            <button
-              onClick={() => inputRef.current?.click()}
-              className="w-full rounded-[22px] flex flex-col items-center justify-center gap-3
-                         transition-all duration-200 active:scale-[0.99]"
-              style={{
-                height: 200,
-                background: 'white',
-                border: '2px dashed rgba(22,163,74,0.30)',
-                boxShadow: '0 2px 16px rgba(0,0,0,0.05)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(22,163,74,0.55)'
-                e.currentTarget.style.background = '#f0fdf4'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(22,163,74,0.30)'
-                e.currentTarget.style.background = 'white'
-              }}
-            >
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                style={{ background: 'rgba(22,163,74,0.08)', border: '1.5px solid rgba(22,163,74,0.18)' }}
-              >
-                <ImagePlus size={24} strokeWidth={1.75} className="text-emerald-600" />
-              </div>
-              <div className="text-center">
-                <p style={{ fontSize: 14.5, fontWeight: 600, color: '#1f2937', letterSpacing: '-0.01em' }}>
-                  Добавить фото растения
-                </p>
-                <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 3 }}>
-                  Нажмите или перетащите сюда
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5" style={{ color: '#9ca3af' }}>
-                <Camera size={13} strokeWidth={2} />
-                <span style={{ fontSize: 11.5 }}>Снимайте листья, стебель, плоды</span>
-              </div>
-            </button>
-          ) : (
-            /* ─ With photos ─ */
-            <div className="grid grid-cols-3 gap-2.5">
-              {previews.map((src, i) => (
-                <div key={i} className="relative aspect-square">
-                  <img
-                    src={src}
-                    alt=""
-                    className="w-full h-full object-cover"
-                    style={{ borderRadius: 18 }}
-                  />
-                  <button
-                    onClick={() => removeImage(i)}
-                    className="absolute top-1.5 right-1.5 w-7 h-7 flex items-center justify-center
-                               transition-transform active:scale-90"
-                    style={{
-                      background: 'rgba(0,0,0,0.55)',
-                      backdropFilter: 'blur(8px)',
-                      WebkitBackdropFilter: 'blur(8px)',
-                      borderRadius: '50%',
-                      border: '1px solid rgba(255,255,255,0.20)',
-                    }}
-                  >
-                    <X size={13} strokeWidth={2.5} className="text-white" />
-                  </button>
-                </div>
-              ))}
-              {previews.length < 5 && (
-                <button
-                  onClick={() => inputRef.current?.click()}
-                  className="aspect-square flex flex-col items-center justify-center gap-1
-                             transition-all duration-200 active:scale-[0.97]"
+            <div className="px-5 py-5">
+              {/* Icon + title */}
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0"
                   style={{
-                    borderRadius: 18,
-                    border: '2px dashed rgba(22,163,74,0.30)',
-                    background: 'white',
-                    color: '#9ca3af',
+                    background: 'linear-gradient(145deg, #22c55e, #15803d)',
+                    boxShadow: '0 4px 12px rgba(34,197,94,0.30)',
                   }}
                 >
-                  <ImagePlus size={20} strokeWidth={1.75} className="text-emerald-500/70" />
-                  <span style={{ fontSize: 10.5, fontWeight: 500 }}>Ещё</span>
-                </button>
-              )}
-            </div>
-          )}
-
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={onFileChange}
-          />
-        </section>
-
-        {/* ── ERROR ── */}
-        {error && (
-          <div
-            className="flex items-center gap-2 px-4 py-3 rounded-2xl"
-            style={{ background: '#fef2f2', border: '1px solid rgba(239,68,68,0.20)' }}
-          >
-            <span style={{ fontSize: 13, color: '#dc2626', fontWeight: 500 }}>{error}</span>
-          </div>
-        )}
-
-        {/* ── CTA ── */}
-        <div className="space-y-3 pt-1">
-          <button
-            onClick={handleNext}
-            disabled={!canProceed}
-            className="w-full rounded-[14px] font-black tracking-wide
-                       transition-all duration-150
-                       active:scale-[0.97] active:brightness-95
-                       disabled:cursor-not-allowed"
-            style={{
-              padding: '16px 0',
-              fontSize: 15,
-              letterSpacing: '0.01em',
-              background: canProceed
-                ? 'linear-gradient(145deg, #3ddb6d 0%, #15a248 100%)'
-                : 'linear-gradient(145deg, #bbf7d0 0%, #86efac 100%)',
-              color: canProceed ? '#022c17' : '#4ade80',
-              boxShadow: canProceed
-                ? '0 6px 28px rgba(34,197,94,0.35), 0 1px 4px rgba(0,0,0,0.10)'
-                : 'none',
-              opacity: canProceed ? 1 : 0.7,
-            }}
-          >
-            Далее — вопросы об уходе →
-          </button>
-
-          {/* Demo toggle */}
-          <button
-            onClick={() => setShowDemo(!showDemo)}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl
-                       transition-all duration-200 active:scale-[0.99]"
-            style={{
-              background: 'white',
-              boxShadow: '0 1px 6px rgba(0,0,0,0.06)',
-              border: '1px solid rgba(0,0,0,0.05)',
-            }}
-          >
-            <div className="flex items-center gap-2.5">
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: 'rgba(245,158,11,0.10)' }}
-              >
-                <Zap size={14} strokeWidth={2} className="text-amber-500" />
+                  <Scan size={20} strokeWidth={1.75} className="text-white" />
+                </div>
+                <div>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', letterSpacing: '-0.02em' }}>
+                    Upload plant photos
+                  </p>
+                  <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 1 }}>
+                    Up to 5 photos · leaf, stem, fruit
+                  </p>
+                </div>
               </div>
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
-                Быстрый запуск — демо
-              </span>
-            </div>
-            {showDemo
-              ? <ChevronUp size={16} strokeWidth={2} className="text-gray-400" />
-              : <ChevronDown size={16} strokeWidth={2} className="text-gray-400" />
-            }
-          </button>
-        </div>
 
-        {/* ── DEMO CASES ── */}
-        {showDemo && (
-          <div
-            className="rounded-[20px] overflow-hidden"
-            style={{
-              background: 'white',
-              boxShadow: '0 2px 16px rgba(0,0,0,0.07)',
-              border: '1px solid rgba(0,0,0,0.05)',
-            }}
-          >
-            {/* Header */}
-            <div
-              className="px-4 py-3.5"
-              style={{ borderBottom: '1px solid rgba(0,0,0,0.05)', background: '#fafafa' }}
-            >
-              <p style={{ fontSize: 12, fontWeight: 700, color: '#374151', letterSpacing: '0.01em' }}>
-                Готовые сценарии диагностики
-              </p>
-              <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
-                Нажмите — мгновенный результат без фото
-              </p>
+              {/* Camera / Gallery buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => cameraRef.current?.click()}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[14px]
+                             transition-all duration-150 active:scale-[0.97]"
+                  style={{
+                    background: 'rgba(22,163,74,0.08)',
+                    border: '1.5px solid rgba(22,163,74,0.20)',
+                  }}
+                >
+                  <Camera size={17} strokeWidth={1.75} className="text-emerald-600" />
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: '#15803d' }}>Camera</span>
+                </button>
+                <button
+                  onClick={() => inputRef.current?.click()}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[14px]
+                             transition-all duration-150 active:scale-[0.97]"
+                  style={{
+                    background: 'rgba(0,0,0,0.03)',
+                    border: '1.5px solid rgba(0,0,0,0.08)',
+                  }}
+                >
+                  <ImagePlus size={17} strokeWidth={1.75} className="text-gray-500" />
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: '#4b5563' }}>Gallery</span>
+                </button>
+              </div>
             </div>
-
-            {/* Cases */}
-            <div>
-              {DEMO_CASES.map((c, idx) => {
-                const { icon, text } = splitDemoLabel(c.label)
-                const isLoading = demoLoading === c.id
-                return (
+          ) : (
+            /* ─ Photo grid ─ */
+            <div className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div
+                  className="w-7 h-7 rounded-lg flex items-center justify-center"
+                  style={{ background: 'rgba(22,163,74,0.10)' }}
+                >
+                  <Scan size={14} strokeWidth={2} className="text-emerald-600" />
+                </div>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
+                  {previews.length} photo{previews.length > 1 ? 's' : ''} added
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-2.5">
+                {previews.map((src, i) => (
+                  <div key={i} className="relative aspect-square">
+                    <img
+                      src={src} alt=""
+                      className="w-full h-full object-cover"
+                      style={{ borderRadius: 16 }}
+                    />
+                    <button
+                      onClick={() => removeImage(i)}
+                      className="absolute top-1.5 right-1.5 w-7 h-7 flex items-center justify-center
+                                 transition-transform active:scale-90"
+                      style={{
+                        background: 'rgba(0,0,0,0.55)',
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
+                        borderRadius: '50%',
+                        border: '1px solid rgba(255,255,255,0.20)',
+                      }}
+                    >
+                      <X size={13} strokeWidth={2.5} className="text-white" />
+                    </button>
+                  </div>
+                ))}
+                {previews.length < 5 && (
                   <button
-                    key={c.id}
-                    onClick={() => handleDemoCase(c.id)}
-                    disabled={demoLoading !== null}
-                    className="w-full text-left flex items-center gap-3 px-4 py-3.5
-                               transition-all duration-150 active:bg-gray-50
-                               disabled:opacity-60"
+                    onClick={() => inputRef.current?.click()}
+                    className="aspect-square flex flex-col items-center justify-center gap-1
+                               transition-all duration-150 active:scale-[0.97]"
                     style={{
-                      borderTop: idx > 0 ? '1px solid rgba(0,0,0,0.045)' : 'none',
+                      borderRadius: 16,
+                      border: '2px dashed rgba(22,163,74,0.28)',
+                      background: 'rgba(22,163,74,0.04)',
                     }}
                   >
-                    {/* Emoji in circle */}
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
-                      style={{ background: '#f3f4f6' }}
-                    >
-                      {icon}
-                    </div>
-
-                    {/* Text */}
-                    <div className="flex-1 min-w-0">
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#1f2937', lineHeight: 1.3 }}>
-                        {text}
-                      </p>
-                      <p style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 2 }}>
-                        {c.description}
-                      </p>
-                    </div>
-
-                    {/* Arrow or spinner */}
-                    {isLoading ? (
-                      <div
-                        className="w-4 h-4 rounded-full border-2 border-emerald-500
-                                   border-t-transparent animate-spin flex-shrink-0"
-                      />
-                    ) : (
-                      <ChevronRight size={16} strokeWidth={2} className="text-gray-300 flex-shrink-0" />
-                    )}
+                    <ImagePlus size={18} strokeWidth={1.75} className="text-emerald-500/70" />
+                    <span style={{ fontSize: 10.5, color: '#6b7280', fontWeight: 500 }}>Add</span>
                   </button>
-                )
-              })}
+                )}
+              </div>
             </div>
+          )}
+        </div>
+
+        {/* Hidden inputs */}
+        <input ref={inputRef}  type="file" accept="image/*" multiple className="hidden" onChange={onFileChange} />
+        <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onFileChange} />
+      </div>
+
+      {/* ══ 3. PLANT TYPE ═══════════════════════════════════════════════ */}
+      <section className="px-4 mt-5">
+        <p
+          className="font-semibold tracking-[0.16em] text-gray-400/80 uppercase mb-3"
+          style={{ fontSize: 10 }}
+        >
+          Plant Type
+        </p>
+        <div className="grid grid-cols-5 gap-2">
+          {CROPS.map((c) => {
+            const sel = crop === c.id
+            return (
+              <button
+                key={c.id}
+                onClick={() => { setCrop(c.id); setError('') }}
+                className="flex flex-col items-center py-3 rounded-[16px]
+                           transition-all duration-200 active:scale-[0.94]"
+                style={{
+                  background: sel ? '#f0fdf4' : 'white',
+                  border: `2px solid ${sel ? '#22c55e' : 'rgba(0,0,0,0.07)'}`,
+                  boxShadow: sel
+                    ? '0 0 0 3px rgba(34,197,94,0.12), 0 2px 8px rgba(0,0,0,0.06)'
+                    : '0 1px 4px rgba(0,0,0,0.06)',
+                }}
+              >
+                <span className="leading-none mb-1.5" style={{ fontSize: 22 }}>{c.emoji}</span>
+                <span style={{
+                  fontSize: 10.5,
+                  fontWeight: sel ? 700 : 500,
+                  color: sel ? '#15803d' : '#6b7280',
+                  letterSpacing: '-0.01em',
+                }}>
+                  {c.label}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* ══ 4. DEMO SECTION ═════════════════════════════════════════════ */}
+      <section className="mt-6">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 mb-3">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-6 h-6 rounded-lg flex items-center justify-center"
+              style={{ background: 'rgba(245,158,11,0.12)' }}
+            >
+              <Zap size={12} strokeWidth={2} className="text-amber-500" />
+            </div>
+            <p
+              className="font-semibold tracking-[0.16em] text-gray-400/80 uppercase"
+              style={{ fontSize: 10 }}
+            >
+              See it in action
+            </p>
           </div>
+          <p style={{ fontSize: 11, color: '#9ca3af' }}>
+            Tap to run demo
+          </p>
+        </div>
+
+        {/* Horizontal scroll */}
+        <div className="flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar">
+          {DEMO_CASES.map((c) => {
+            const { icon, text } = splitLabel(c.label)
+            const grad = CROP_GRADIENTS[c.crop] ?? { from: '#1a3a2a', to: '#0a1a10' }
+            const isLoading = demoLoading === c.id
+
+            return (
+              <button
+                key={c.id}
+                onClick={() => handleDemoCase(c.id)}
+                disabled={demoLoading !== null}
+                className="flex-shrink-0 w-36 text-left transition-all duration-200
+                           active:scale-[0.96] disabled:opacity-60"
+                style={{ outline: 'none' }}
+              >
+                {/* Card image area */}
+                <div
+                  className="w-36 h-36 rounded-[20px] relative overflow-hidden mb-2.5 flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(145deg, ${grad.from}, ${grad.to})`,
+                    boxShadow: '0 2px 14px rgba(0,0,0,0.15)',
+                  }}
+                >
+                  {/* Highlight */}
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      backgroundImage:
+                        'radial-gradient(circle at 28% 28%, rgba(255,255,255,0.15) 0%, transparent 55%)',
+                    }}
+                  />
+                  {/* Bottom fade */}
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: 'linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.50) 100%)',
+                    }}
+                  />
+
+                  {/* Emoji */}
+                  <span className="relative select-none" style={{ fontSize: 44, opacity: 0.85 }}>
+                    {icon}
+                  </span>
+
+                  {/* Run / loading indicator */}
+                  {isLoading ? (
+                    <div
+                      className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full
+                                 border-2 border-emerald-400 border-t-transparent animate-spin"
+                    />
+                  ) : (
+                    <div
+                      className="absolute bottom-2.5 right-2.5 w-7 h-7 rounded-full
+                                 flex items-center justify-center"
+                      style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)' }}
+                    >
+                      <ArrowRight size={13} strokeWidth={2.5} className="text-white" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Label */}
+                <p
+                  className="line-clamp-2 leading-tight px-0.5"
+                  style={{ fontSize: 12, fontWeight: 600, color: '#1f2937', letterSpacing: '-0.01em' }}
+                >
+                  {text}
+                </p>
+                <p style={{ fontSize: 10.5, color: '#9ca3af', marginTop: 2 }}>
+                  {c.description.split('—')[0].trim()}
+                </p>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* ── Error ── */}
+      {error && (
+        <div
+          className="mx-4 mt-4 flex items-center gap-2 px-4 py-3 rounded-2xl"
+          style={{ background: '#fef2f2', border: '1px solid rgba(239,68,68,0.20)' }}
+        >
+          <span style={{ fontSize: 13, color: '#dc2626', fontWeight: 500 }}>{error}</span>
+        </div>
+      )}
+
+      {/* ══ 5. CTA ══════════════════════════════════════════════════════ */}
+      <div className="px-4 mt-6">
+        <button
+          onClick={handleNext}
+          disabled={!canProceed}
+          className="w-full rounded-[14px] font-black tracking-wide
+                     transition-all duration-150 active:scale-[0.97] active:brightness-95
+                     disabled:cursor-not-allowed"
+          style={{
+            padding: '16px 0',
+            fontSize: 15,
+            letterSpacing: '0.01em',
+            background: canProceed
+              ? 'linear-gradient(145deg, #3ddb6d 0%, #15a248 100%)'
+              : 'linear-gradient(145deg, #bbf7d0 0%, #86efac 100%)',
+            color: canProceed ? '#022c17' : '#6ee7b7',
+            boxShadow: canProceed
+              ? '0 6px 28px rgba(34,197,94,0.35), 0 1px 4px rgba(0,0,0,0.10)'
+              : 'none',
+            opacity: canProceed ? 1 : 0.75,
+          }}
+        >
+          Start Free Analysis →
+        </button>
+        {canProceed && (
+          <p className="text-center mt-2" style={{ fontSize: 11.5, color: '#9ca3af' }}>
+            Results ready in ~60 seconds
+          </p>
         )}
+      </div>
+
+      {/* ══ 6. BOTTOM NAV ═══════════════════════════════════════════════ */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-20 max-w-md mx-auto"
+        style={{
+          background: 'rgba(255,255,255,0.97)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(0,0,0,0.05)',
+          boxShadow: '0 -1px 0 rgba(0,0,0,0.04), 0 -8px 24px rgba(0,0,0,0.04)',
+        }}
+      >
+        <div className="flex items-end justify-around px-2 pt-2 pb-4">
+
+          {/* Home — active */}
+          <button className="flex flex-col items-center gap-[5px] px-4 relative">
+            <div
+              className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center"
+              style={{ background: '#ecfdf5' }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2.2"
+                   stroke="#16a34a" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
+                <path d="M9 21V12h6v9" />
+              </svg>
+            </div>
+            <span style={{ fontSize: 9.5 }} className="font-bold text-emerald-600">Home</span>
+            <span className="absolute -bottom-0.5 w-[18px] h-[3px] rounded-full bg-emerald-500" />
+          </button>
+
+          {/* Results */}
+          <button
+            onClick={() => {
+              const r = sessionStorage.getItem('agro_result')
+              if (r) router.push('/results')
+            }}
+            className="flex flex-col items-center gap-[5px] px-4"
+            style={{ color: '#9ca3af' }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7"
+                 stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+              <circle cx="17.5" cy="17.5" r="3.5" />
+            </svg>
+            <span style={{ fontSize: 9.5 }} className="font-medium">Results</span>
+          </button>
+
+          {/* Center scan — focal */}
+          <button className="flex flex-col items-center gap-[5px] -mt-6">
+            <div
+              className="w-[52px] h-[52px] rounded-full flex items-center justify-center"
+              style={{
+                background: 'linear-gradient(145deg, #22c55e, #15803d)',
+                boxShadow: '0 4px 24px rgba(22,163,74,0.50)',
+              }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeWidth="2"
+                   stroke="white" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+            </div>
+            <span style={{ fontSize: 9.5, color: '#9ca3af' }} className="font-medium">Scan</span>
+          </button>
+
+          {/* History */}
+          <button className="flex flex-col items-center gap-[5px] px-4" style={{ color: '#9ca3af' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7"
+                 stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <polyline points="12 7 12 12 15 15" />
+            </svg>
+            <span style={{ fontSize: 9.5 }} className="font-medium">History</span>
+          </button>
+
+          {/* Settings */}
+          <button className="flex flex-col items-center gap-[5px] px-4" style={{ color: '#9ca3af' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7"
+                 stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+            </svg>
+            <span style={{ fontSize: 9.5 }} className="font-medium">Settings</span>
+          </button>
+        </div>
       </div>
     </div>
   )
