@@ -105,7 +105,9 @@ export default function UploadPage() {
     }
   }
 
-  const canProceed = !!crop && images.length > 0
+  const hasPhotos  = images.length > 0
+  const hasCrop    = !!crop
+  const canProceed = hasPhotos && hasCrop
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] pb-28">
@@ -476,35 +478,79 @@ export default function UploadPage() {
       )}
 
       {/* ══ 5. CTA ══════════════════════════════════════════════════════ */}
-      <div className="px-4 mt-6">
+      <div className="px-4 mt-5">
+
+        {/* Contextual status hint */}
+        {(hasPhotos || hasCrop) && !canProceed && (
+          <div
+            className="flex items-center gap-2 mb-3 px-3.5 py-2.5 rounded-[12px]"
+            style={{
+              background: 'rgba(245,158,11,0.08)',
+              border: '1px solid rgba(245,158,11,0.20)',
+            }}
+          >
+            <div
+              className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ background: 'rgba(245,158,11,0.18)' }}
+            >
+              <span style={{ fontSize: 9, fontWeight: 900, color: '#d97706' }}>!</span>
+            </div>
+            <p style={{ fontSize: 12.5, color: '#92400e', fontWeight: 500 }}>
+              {!hasPhotos
+                ? 'Загрузите фото растения'
+                : 'Выберите тип растения выше'}
+            </p>
+          </div>
+        )}
+
+        {canProceed && (
+          <p
+            className="text-center mb-2.5 font-semibold"
+            style={{ fontSize: 12.5, color: '#15803d', letterSpacing: '-0.01em' }}
+          >
+            Готово — запустите анализ
+          </p>
+        )}
+
         <button
           onClick={handleNext}
           disabled={!canProceed}
           className="w-full rounded-[14px] font-black tracking-wide
-                     transition-all duration-150 active:scale-[0.97] active:brightness-95
+                     transition-all duration-200 active:scale-[0.97] active:brightness-95
                      disabled:cursor-not-allowed"
           style={{
-            padding: '16px 0',
-            fontSize: 15,
+            padding: '17px 0',
+            fontSize: 15.5,
             letterSpacing: '0.01em',
             background: canProceed
               ? 'linear-gradient(145deg, #3ddb6d 0%, #15a248 100%)'
-              : 'linear-gradient(145deg, #bbf7d0 0%, #86efac 100%)',
-            color: canProceed ? '#022c17' : '#6ee7b7',
+              : 'linear-gradient(145deg, #d1fae5 0%, #a7f3d0 100%)',
+            color: canProceed ? '#022c17' : '#9ca3af',
             boxShadow: canProceed
-              ? '0 6px 28px rgba(34,197,94,0.35), 0 1px 4px rgba(0,0,0,0.10)'
+              ? '0 8px 32px rgba(34,197,94,0.45), 0 2px 8px rgba(0,0,0,0.12)'
               : 'none',
-            opacity: canProceed ? 1 : 0.75,
+            opacity: canProceed ? 1 : 0.6,
+            // Pulse glow animation when ready
+            animation: canProceed ? 'ctaGlow 2.2s ease-in-out infinite' : 'none',
           }}
         >
-          Начать диагностику →
+          {canProceed ? 'Начать диагностику →' : 'Начать диагностику'}
         </button>
-        {canProceed && (
-          <p className="text-center mt-2" style={{ fontSize: 11.5, color: '#9ca3af' }}>
-            Результат готов примерно через 60 секунд
-          </p>
-        )}
+
+        <p
+          className="text-center mt-2"
+          style={{ fontSize: 11.5, color: '#9ca3af', minHeight: 18 }}
+        >
+          {canProceed ? 'Результат готов примерно через 60 секунд' : ''}
+        </p>
       </div>
+
+      <style>{`
+        @keyframes ctaGlow {
+          0%, 100% { box-shadow: 0 8px 32px rgba(34,197,94,0.45), 0 2px 8px rgba(0,0,0,0.12); }
+          50%       { box-shadow: 0 8px 40px rgba(34,197,94,0.70), 0 2px 12px rgba(0,0,0,0.14); }
+        }
+      `}</style>
 
       {/* ══ 6. BOTTOM NAV ═══════════════════════════════════════════════ */}
       <div
