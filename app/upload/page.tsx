@@ -23,13 +23,14 @@ const DEMO_IMAGES: Record<string, string> = {
   tomato_phytophthora_rain:        '/demos/tomato-blight.jpg',
   tomato_overwatering:             '/demos/tomato-overwatering.jpg',
   tomato_blossom_end_rot:          '/demos/tomato-blossom-rot.jpg',
-  tomato_aphids:                   '/demos/tomato-aphids.jpg',
   cucumber_powdery_mildew:         '/demos/cucumber-mildew.jpg',
-  cucumber_spider_mites_heat:      '/demos/cucumber-mites.jpg',
   potato_phytophthora_critical:    '/demos/potato-blight.jpg',
   pepper_blossom_end_rot_fruiting: '/demos/pepper-rot.jpg',
   strawberry_root_rot:             '/demos/strawberry-root.jpg',
 }
+
+// IDs excluded from demo grid (no quality disease photo available)
+const DEMO_EXCLUDED = new Set(['tomato_aphids', 'cucumber_spider_mites_heat'])
 
 function stripEmoji(label: string) {
   // Remove leading emoji + space from demo labels like "🍅 Фитофтора…"
@@ -142,7 +143,7 @@ export default function UploadPage() {
             >
               <ShieldCheck size={11} strokeWidth={2.5} className="text-emerald-600" />
               <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.07em', color: '#111827' }}>
-                98% ACCURACY
+                98% ТОЧНОСТЬ
               </span>
             </div>
 
@@ -158,7 +159,7 @@ export default function UploadPage() {
             >
               <Star size={10} strokeWidth={0} className="fill-emerald-400 text-emerald-400" />
               <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.07em', color: '#4ade80' }}>
-                EXPERT VERIFIED
+                ЭКСПЕРТНАЯ ПРОВЕРКА
               </span>
             </div>
           </div>
@@ -173,7 +174,7 @@ export default function UploadPage() {
                 textShadow: '0 2px 12px rgba(0,0,0,0.40)',
               }}
             >
-              Diagnose your plant{'\n'}in seconds
+              Определите болезнь{'\n'}растения за секунды
             </h1>
             <p
               className="mt-1.5"
@@ -182,7 +183,7 @@ export default function UploadPage() {
                 letterSpacing: '-0.01em', lineHeight: 1.45,
               }}
             >
-              AI-powered · 5 crops · Results in under 60s
+              На основе ИИ · 5 культур · Результат за 60 сек
             </p>
           </div>
         </div>
@@ -214,10 +215,10 @@ export default function UploadPage() {
                 </div>
                 <div>
                   <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', letterSpacing: '-0.02em' }}>
-                    Upload plant photos
+                    Загрузите фото растения
                   </p>
                   <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 1 }}>
-                    Up to 5 photos · leaf, stem, fruit
+                    До 5 фото · лист, стебель, плод
                   </p>
                 </div>
               </div>
@@ -234,7 +235,7 @@ export default function UploadPage() {
                   }}
                 >
                   <Camera size={17} strokeWidth={1.75} className="text-emerald-600" />
-                  <span style={{ fontSize: 13.5, fontWeight: 600, color: '#15803d' }}>Camera</span>
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: '#15803d' }}>Камера</span>
                 </button>
                 <button
                   onClick={() => inputRef.current?.click()}
@@ -246,7 +247,7 @@ export default function UploadPage() {
                   }}
                 >
                   <ImagePlus size={17} strokeWidth={1.75} className="text-gray-500" />
-                  <span style={{ fontSize: 13.5, fontWeight: 600, color: '#4b5563' }}>Gallery</span>
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: '#4b5563' }}>Галерея</span>
                 </button>
               </div>
             </div>
@@ -261,7 +262,7 @@ export default function UploadPage() {
                   <Scan size={14} strokeWidth={2} className="text-emerald-600" />
                 </div>
                 <p style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
-                  {previews.length} photo{previews.length > 1 ? 's' : ''} added
+                  {previews.length} {previews.length === 1 ? 'фото добавлено' : 'фото добавлено'}
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-2.5">
@@ -300,7 +301,7 @@ export default function UploadPage() {
                     }}
                   >
                     <ImagePlus size={18} strokeWidth={1.75} className="text-emerald-500/70" />
-                    <span style={{ fontSize: 10.5, color: '#6b7280', fontWeight: 500 }}>Add</span>
+                    <span style={{ fontSize: 10.5, color: '#6b7280', fontWeight: 500 }}>Добавить</span>
                   </button>
                 )}
               </div>
@@ -319,7 +320,7 @@ export default function UploadPage() {
           className="font-semibold tracking-[0.16em] text-gray-400/80 uppercase mb-3"
           style={{ fontSize: 10 }}
         >
-          Plant Type
+          Тип растения
         </p>
         <div className="grid grid-cols-5 gap-2">
           {CROPS.map((c) => {
@@ -381,17 +382,17 @@ export default function UploadPage() {
               className="font-semibold tracking-[0.16em] text-gray-400/80 uppercase"
               style={{ fontSize: 10 }}
             >
-              See it in action
+              Примеры диагностики
             </p>
           </div>
           <p style={{ fontSize: 11, color: '#9ca3af' }}>
-            Tap to run demo
+            Нажмите для демо
           </p>
         </div>
 
         {/* 3-column grid */}
         <div className="grid grid-cols-3 gap-2.5 px-4">
-          {DEMO_CASES.map((c) => {
+          {DEMO_CASES.filter((c) => !DEMO_EXCLUDED.has(c.id)).map((c) => {
             const imgSrc = DEMO_IMAGES[c.id] ?? `/crops/${c.crop}.jpg`
             const label = stripEmoji(c.label)
             const isLoading = demoLoading === c.id
@@ -489,11 +490,11 @@ export default function UploadPage() {
             opacity: canProceed ? 1 : 0.75,
           }}
         >
-          Start Free Analysis →
+          Начать диагностику →
         </button>
         {canProceed && (
           <p className="text-center mt-2" style={{ fontSize: 11.5, color: '#9ca3af' }}>
-            Results ready in ~60 seconds
+            Результат готов примерно через 60 секунд
           </p>
         )}
       </div>
@@ -523,7 +524,7 @@ export default function UploadPage() {
                 <path d="M9 21V12h6v9" />
               </svg>
             </div>
-            <span style={{ fontSize: 9.5 }} className="font-bold text-emerald-600">Home</span>
+            <span style={{ fontSize: 9.5 }} className="font-bold text-emerald-600">Главная</span>
             <span className="absolute -bottom-0.5 w-[18px] h-[3px] rounded-full bg-emerald-500" />
           </button>
 
@@ -543,7 +544,7 @@ export default function UploadPage() {
               <rect x="3" y="14" width="7" height="7" rx="1.5" />
               <circle cx="17.5" cy="17.5" r="3.5" />
             </svg>
-            <span style={{ fontSize: 9.5 }} className="font-medium">Results</span>
+            <span style={{ fontSize: 9.5 }} className="font-medium">Результаты</span>
           </button>
 
           {/* Center scan — focal */}
@@ -561,7 +562,7 @@ export default function UploadPage() {
                 <circle cx="12" cy="13" r="4" />
               </svg>
             </div>
-            <span style={{ fontSize: 9.5, color: '#9ca3af' }} className="font-medium">Scan</span>
+            <span style={{ fontSize: 9.5, color: '#9ca3af' }} className="font-medium">Сканер</span>
           </button>
 
           {/* History */}
@@ -571,7 +572,7 @@ export default function UploadPage() {
               <circle cx="12" cy="12" r="9" />
               <polyline points="12 7 12 12 15 15" />
             </svg>
-            <span style={{ fontSize: 9.5 }} className="font-medium">History</span>
+            <span style={{ fontSize: 9.5 }} className="font-medium">История</span>
           </button>
 
           {/* Settings */}
@@ -581,7 +582,7 @@ export default function UploadPage() {
               <circle cx="12" cy="12" r="3" />
               <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
             </svg>
-            <span style={{ fontSize: 9.5 }} className="font-medium">Settings</span>
+            <span style={{ fontSize: 9.5 }} className="font-medium">Настройки</span>
           </button>
         </div>
       </div>

@@ -276,7 +276,7 @@ function ResultsContent() {
             >
               <ShieldCheck size={11} strokeWidth={2.5} className="text-emerald-600" />
               <span style={{ fontSize: 10.5, letterSpacing: '0.08em', fontWeight: 800 }} className="text-gray-900">
-                {pct}% CONFIDENCE
+                {pct}% УВЕРЕННОСТЬ
               </span>
             </div>
 
@@ -320,9 +320,9 @@ function ResultsContent() {
         ) : (
           <div className="px-5 pt-8 text-center">
             <CheckCircle2 size={48} className="mx-auto text-emerald-500 mb-3" />
-            <h1 className="text-xl font-bold text-gray-800 mb-1">Plant Looks Healthy</h1>
+            <h1 className="text-xl font-bold text-gray-800 mb-1">Растение выглядит здоровым</h1>
             <p className="text-sm text-gray-500 leading-relaxed">
-              No clear signs of disease or deficiency detected. Monitor for 2–3 days.
+              Явных признаков болезни или дефицита не обнаружено. Наблюдайте 2–3 дня.
             </p>
           </div>
         )}
@@ -359,7 +359,7 @@ function ResultsContent() {
               className="font-semibold tracking-[0.16em] text-gray-400/80 uppercase mb-4"
               style={{ fontSize: 10 }}
             >
-              Immediate Protocol
+              Что делать сейчас
             </p>
             <div className="space-y-2.5">
               {result.today_actions.slice(0, 6).map((action, i) => {
@@ -407,7 +407,7 @@ function ResultsContent() {
               className="font-semibold tracking-[0.16em] text-gray-400/80 uppercase mb-4 px-5"
               style={{ fontSize: 10 }}
             >
-              Differential Diagnosis
+              Похожие проблемы
             </p>
             <div className="flex gap-3.5 overflow-x-auto px-5 pb-2 no-scrollbar">
               {result.top_issues.map((issue, i) => {
@@ -450,7 +450,7 @@ function ResultsContent() {
                             : { background: 'rgba(0,0,0,0.45)', color: 'rgba(255,255,255,0.9)' }
                         }
                       >
-                        {issuePct}% MATCH
+                        {issuePct}% СОВПАДЕНИЕ
                       </div>
 
                       {/* Top-right category chip */}
@@ -488,9 +488,9 @@ function ResultsContent() {
                     <Video size={20} className="text-emerald-400" />
                   </div>
                   <div>
-                    <p className="font-bold text-sm">Request Created</p>
+                    <p className="font-bold text-sm">Запрос создан</p>
                     <p className="text-emerald-300 text-xs mt-0.5">
-                      Your video consultation will be ready in a few minutes
+                      Ваша видеоконсультация будет готова через несколько минут
                     </p>
                   </div>
                 </div>
@@ -500,7 +500,7 @@ function ResultsContent() {
                     style={{ background: 'rgba(255,255,255,0.08)' }}
                   >
                     <p className="text-[11px] text-emerald-400 font-semibold uppercase tracking-widest mb-1.5">
-                      Script Preview
+                      Предпросмотр сценария
                     </p>
                     <p className="text-xs text-emerald-100 italic leading-relaxed">{scriptPreview}</p>
                   </div>
@@ -525,7 +525,7 @@ function ResultsContent() {
                       className="mb-2"
                       style={{ fontSize: 11, color: 'rgba(167,243,208,0.45)', letterSpacing: '0.01em' }}
                     >
-                      We analyzed your exact case
+                      Анализ выполнен по вашему случаю
                     </p>
                     {/* Expert verified label */}
                     <div
@@ -537,20 +537,20 @@ function ResultsContent() {
                         className="font-bold tracking-[0.18em] text-emerald-400 uppercase"
                         style={{ fontSize: 9.5 }}
                       >
-                        Expert Verified
+                        Проверено экспертом
                       </span>
                     </div>
                     <h3
                       className="text-white font-black leading-[1.15]"
                       style={{ fontSize: 20, letterSpacing: '-0.02em' }}
                     >
-                      Consult a Lead{'\n'}Agronomist
+                      Получить разбор{'\n'}от агронома
                     </h3>
                     <p
                       className="mt-2 leading-snug"
                       style={{ fontSize: 12.5, color: 'rgba(167,243,208,0.55)' }}
                     >
-                      30–60 sec · personalized video analysis
+                      30–60 сек · персональный разбор вашего случая
                     </p>
                   </div>
 
@@ -584,9 +584,9 @@ function ResultsContent() {
                 {/* Bullets */}
                 <div className="px-5 pt-4 pb-5 space-y-4">
                   {[
-                    { Icon: Video,      color: '#4ade80', bg: 'rgba(74,222,128,0.12)',  label: 'Personal video diagnosis for your exact case' },
-                    { Icon: FileText,   color: '#93c5fd', bg: 'rgba(147,197,253,0.12)', label: 'Treatment prescription with exact dosages' },
-                    { Icon: LayoutList, color: '#fcd34d', bg: 'rgba(252,211,77,0.12)',  label: 'Step-by-step care plan for your crop stage' },
+                    { Icon: Video,      color: '#4ade80', bg: 'rgba(74,222,128,0.12)',  label: 'Персональный видеоразбор именно вашей ситуации' },
+                    { Icon: FileText,   color: '#93c5fd', bg: 'rgba(147,197,253,0.12)', label: 'Схема лечения с точными дозировками' },
+                    { Icon: LayoutList, color: '#fcd34d', bg: 'rgba(252,211,77,0.12)',  label: 'Пошаговый план ухода для вашей стадии роста' },
                   ].map(({ Icon, color, bg, label }, i) => (
                     <div key={i} className="flex items-center gap-3.5">
                       <div
@@ -620,14 +620,14 @@ function ResultsContent() {
                       letterSpacing: '0.02em',
                     }}
                   >
-                    Book Consultation →
+                    Получить разбор →
                   </button>
                   {/* Trust line */}
                   <p
                     className="text-center mt-2.5"
                     style={{ fontSize: 11, color: 'rgba(167,243,208,0.40)', letterSpacing: '0.01em' }}
                   >
-                    Most users fix the issue within 2–3 days
+                    Большинство решают проблему за 2–3 дня
                   </p>
                 </div>
               </div>
@@ -647,8 +647,8 @@ function ResultsContent() {
               <RefreshCw size={19} strokeWidth={2} className="text-emerald-600" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-[13.5px] font-bold text-gray-800">Re-scan in 2–3 days</p>
-              <p className="text-[11.5px] text-gray-400 mt-0.5">Track progress and adjust the plan</p>
+              <p className="text-[13.5px] font-bold text-gray-800">Повторная диагностика через 2–3 дня</p>
+              <p className="text-[11.5px] text-gray-400 mt-0.5">Отслеживайте динамику и корректируйте лечение</p>
             </div>
             <ChevronRight size={18} strokeWidth={2} className="text-gray-300 flex-shrink-0" />
           </button>
@@ -687,7 +687,7 @@ function ResultsContent() {
               <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
               <path d="M9 21V12h6v9" />
             </svg>
-            <span style={{ fontSize: 9.5 }} className="font-medium">Home</span>
+            <span style={{ fontSize: 9.5 }} className="font-medium">Главная</span>
           </button>
 
           {/* Results — active */}
@@ -704,7 +704,7 @@ function ResultsContent() {
                 <circle cx="17.5" cy="17.5" r="3.5" />
               </svg>
             </div>
-            <span style={{ fontSize: 9.5 }} className="font-bold text-emerald-600">Results</span>
+            <span style={{ fontSize: 9.5 }} className="font-bold text-emerald-600">Результаты</span>
             <span
               className="absolute -bottom-0.5 w-[18px] h-[3px] rounded-full bg-emerald-500"
             />
@@ -728,7 +728,7 @@ function ResultsContent() {
                 <circle cx="12" cy="13" r="4" />
               </svg>
             </div>
-            <span style={{ fontSize: 9.5, color: '#9ca3af' }} className="font-medium">Scan</span>
+            <span style={{ fontSize: 9.5, color: '#9ca3af' }} className="font-medium">Сканер</span>
           </button>
 
           {/* History */}
@@ -741,7 +741,7 @@ function ResultsContent() {
               <circle cx="12" cy="12" r="9" />
               <polyline points="12 7 12 12 15 15" />
             </svg>
-            <span style={{ fontSize: 9.5 }} className="font-medium">History</span>
+            <span style={{ fontSize: 9.5 }} className="font-medium">История</span>
           </button>
 
           {/* Settings */}
@@ -763,7 +763,7 @@ function ResultsContent() {
                        l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0
                        01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
             </svg>
-            <span style={{ fontSize: 9.5 }} className="font-medium">Settings</span>
+            <span style={{ fontSize: 9.5 }} className="font-medium">Настройки</span>
           </button>
         </div>
       </div>
