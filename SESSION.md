@@ -62,7 +62,7 @@
 
 ## Онбординг реализован (апр 2026)
 
-- Новый файл: `app/onboarding/page.tsx` — выбор типа пользователя (4 карточки)
+- Файл: `app/onboarding/page.tsx` — переписан по Stitch-референсу: 2-col grid, карточки с description, check icon в углу, sticky CTA с helper text
 - Изменён: `app/upload/page.tsx` — `useEffect` guard: если нет `localStorage("userType")` → `router.replace('/onboarding')`
 - Типы: `home` / `dacha` / `garden` / `farm`
 - При выборе и нажатии «Продолжить»: `localStorage.setItem("userType", value)` → `/upload`
