@@ -10,6 +10,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import type { AnalyzeResponse, IssueResult, VideoTone } from '@/lib/api'
 import { generateVideo, API_URL } from '@/lib/api'
+import { buildHistoryEntry, upsertHistoryEntry, setPremiumOrder, getPremiumStatusForAnalysis, type PremiumOrderStatus } from '@/lib/history'
 import PaywallModal from '@/components/paywall/PaywallModal'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -173,18 +174,39 @@ function ResultsContent() {
   const [videoLoading, setVideoLoading] = useState(false)
   const [videoJobId, setVideoJobId] = useState<string | null>(null)
   const [scriptPreview, setScriptPreview] = useState<string | null>(null)
+  // 'pending' = not yet read from localStorage (result still loading — premium block hidden)
+  // null      = loaded, no order exists → show upsell
+  // status    = loaded with explicit status → show status card
+  const [premiumStatus, setPremiumStatus] = useState<PremiumOrderStatus | 'pending' | null>('pending')
 
   const debugMode = searchParams.get('debug') === '1'
   const isDemo = result?.analysis_id?.startsWith('demo_') ?? false
+  const [userType, setUserType] = useState('')
+
+  useEffect(() => {
+    try { setUserType(localStorage.getItem('userType') ?? '') } catch {}
+  }, [])
 
   useEffect(() => {
     const raw = sessionStorage.getItem('agro_result')
     if (!raw) { router.push('/upload'); return }
-    setResult(JSON.parse(raw))
+    const parsed = JSON.parse(raw) as AnalyzeResponse
+    setResult(parsed)
+
+    let heroImg: string | null = null
     try {
       const imgs = JSON.parse(sessionStorage.getItem('agro_images_data') || '[]')
-      if (imgs.length > 0) setHeroImage(imgs[0])
+      if (imgs.length > 0) { heroImg = imgs[0]; setHeroImage(imgs[0]) }
     } catch {}
+
+    // Save to history (skip demo results, non-blocking)
+    if (!parsed.analysis_id?.startsWith('demo_')) {
+      buildHistoryEntry(parsed, heroImg)
+        .then(upsertHistoryEntry)
+        .catch(() => {})
+      // Always read premium order status so UI is deterministic after first render
+      setPremiumStatus(getPremiumStatusForAnalysis(parsed.analysis_id))
+    }
   }, [router])
 
   async function handleVideoConfirm(tone: VideoTone) {
@@ -195,9 +217,54 @@ function ResultsContent() {
       setVideoJobId(res.video_job_id)
       const meta = res.preview_metadata as Record<string, string>
       if (meta.script_preview) setScriptPreview(meta.script_preview)
-      setPaywallOpen(false)
+      // Note: modal closes via its own "Закрыть" button on success step
     } catch {}
     finally { setVideoLoading(false) }
+  }
+
+  async function handleOrderSubmit(contact: string) {
+    if (!result) return
+    const topIssue = result.top_issues[0] ?? null
+    // Mark order as in-progress in local history + local state immediately
+    setPremiumOrder(result.analysis_id, 'video_review_in_progress', contact)
+    setPremiumStatus('video_review_in_progress')
+
+    // Resize photo to ≤1200px JPEG for upload (keeps payload under 500 KB)
+    let photoBase64: string | null = null
+    if (heroImage) {
+      try {
+        photoBase64 = await new Promise<string>((resolve) => {
+          const img = new window.Image()
+          img.onload = () => {
+            const max   = 1200
+            const scale = Math.min(1, max / Math.max(img.width, img.height))
+            const w     = Math.round(img.width  * scale)
+            const h     = Math.round(img.height * scale)
+            const c     = document.createElement('canvas')
+            c.width = w; c.height = h
+            c.getContext('2d')!.drawImage(img, 0, 0, w, h)
+            resolve(c.toDataURL('image/jpeg', 0.82))
+          }
+          img.onerror = () => resolve(heroImage!)
+          img.src = heroImage!
+        })
+      } catch { /* ignore — photo is optional */ }
+    }
+
+    fetch('/api/send-order', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contact,
+        diagnosisName:  topIssue?.title  ?? null,
+        diagnosisScore: topIssue?.score  ?? null,
+        crop:           result.crop.selected,
+        urgencyLevel:   result.urgency.level,
+        urgencyReason:  result.urgency.reason,
+        analysisId:     result.analysis_id,
+        photoBase64,
+      }),
+    }).catch((e) => console.error('[order] send failed:', e))
   }
 
   if (!result) {
@@ -213,6 +280,12 @@ function ResultsContent() {
   const urgency = getUrgency(result.urgency.level)
   const catSt = categoryStyle(topIssue?.category ?? 'fungal')
   const pct = topIssue ? scoreToPercent(topIssue.score) : 0
+
+  const seg: 'farm' | 'home' | 'dacha' | null =
+    userType === 'farm'                               ? 'farm'
+    : userType === 'home'                             ? 'home'
+    : (userType === 'dacha' || userType === 'garden') ? 'dacha'
+    : null
 
   return (
     <>
@@ -320,9 +393,15 @@ function ResultsContent() {
         ) : (
           <div className="px-5 pt-8 text-center">
             <CheckCircle2 size={48} className="mx-auto text-emerald-500 mb-3" />
-            <h1 className="text-xl font-bold text-gray-800 mb-1">Растение выглядит здоровым</h1>
+            <h1 className="text-xl font-bold text-gray-800 mb-1">
+              {seg === 'home' ? 'Ваш цветок выглядит здоровым' : 'Растение выглядит здоровым'}
+            </h1>
             <p className="text-sm text-gray-500 leading-relaxed">
-              Явных признаков болезни или дефицита не обнаружено. Наблюдайте 2–3 дня.
+              {seg === 'home'
+                ? 'Явных проблем не найдено. Продолжайте ухаживать как обычно.'
+                : seg === 'farm'
+                ? 'Патологий не выявлено. Плановый мониторинг посевов.'
+                : 'Явных признаков болезни или дефицита не обнаружено. Наблюдайте 2–3 дня.'}
             </p>
           </div>
         )}
@@ -359,7 +438,10 @@ function ResultsContent() {
               className="font-semibold tracking-[0.16em] text-gray-400/80 uppercase mb-4"
               style={{ fontSize: 10 }}
             >
-              Что делать сейчас
+              {seg === 'farm' ? 'Срочные меры'
+                : seg === 'home' ? 'Как помочь растению'
+                : seg === 'dacha' ? 'Действуйте сейчас — пока не распространилось'
+                : 'Что делать сейчас'}
             </p>
             <div className="space-y-2.5">
               {result.today_actions.slice(0, 6).map((action, i) => {
@@ -475,10 +557,10 @@ function ResultsContent() {
         )}
 
         {/* ══ 6. PREMIUM BLOCK ═════════════════════════════════════════ */}
-        {topIssue && result.upsell.video_available && (
+        {topIssue && result.upsell.video_available && premiumStatus !== 'pending' && (
           <section className="px-5 mt-9">
             {videoJobId ? (
-              /* ── Video job created ── */
+              /* ── Automated video job created ── */
               <div
                 className="rounded-2xl p-5 text-white"
                 style={{ background: 'linear-gradient(135deg, #14532d, #052e16)' }}
@@ -495,10 +577,7 @@ function ResultsContent() {
                   </div>
                 </div>
                 {scriptPreview && (
-                  <div
-                    className="rounded-xl p-3 mt-1"
-                    style={{ background: 'rgba(255,255,255,0.08)' }}
-                  >
+                  <div className="rounded-xl p-3 mt-1" style={{ background: 'rgba(255,255,255,0.08)' }}>
                     <p className="text-[11px] text-emerald-400 font-semibold uppercase tracking-widest mb-1.5">
                       Предпросмотр сценария
                     </p>
@@ -506,8 +585,228 @@ function ResultsContent() {
                   </div>
                 )}
               </div>
+
+            ) : premiumStatus === 'video_review_in_progress' ? (
+              /* ── Order in progress — equal visual weight to upsell, no purchase CTA ── */
+              <div
+                className="rounded-[24px] overflow-hidden"
+                style={{
+                  background: 'linear-gradient(158deg, #0c1628 0%, #0a1220 55%, #070e1a 100%)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(96,165,250,0.10), 0 0 32px rgba(96,165,250,0.06)',
+                  border: '1px solid rgba(96,165,250,0.14)',
+                }}
+              >
+                {/* Header — same layout as upsell top section */}
+                <div className="px-5 pt-6 pb-5 flex items-start justify-between">
+                  <div className="flex-1 min-w-0 pr-4">
+                    <p className="mb-2" style={{ fontSize: 11, color: 'rgba(147,197,253,0.45)', letterSpacing: '0.01em' }}>
+                      Заявка зарегистрирована
+                    </p>
+                    <div
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3"
+                      style={{ background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.25)' }}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse flex-shrink-0" />
+                      <span className="font-bold tracking-[0.18em] text-blue-300 uppercase" style={{ fontSize: 9.5 }}>
+                        Видеоразбор в работе
+                      </span>
+                    </div>
+                    <h3 className="text-white font-black leading-[1.15]" style={{ fontSize: 20, letterSpacing: '-0.02em' }}>
+                      Видеоразбор{'\n'}в работе
+                    </h3>
+                    <p className="mt-2 leading-snug" style={{ fontSize: 12.5, color: 'rgba(147,197,253,0.55)' }}>
+                      Агроном уже получил ваш случай
+                    </p>
+                  </div>
+                  {/* Pulsing avatar — same position as upsell avatar */}
+                  <div className="flex-shrink-0" style={{ position: 'relative' }}>
+                    <div
+                      className="w-[60px] h-[60px] rounded-full flex items-center justify-center"
+                      style={{
+                        background: 'linear-gradient(145deg, #1e3a5f, #0d2040)',
+                        border: '2.5px solid rgba(96,165,250,0.40)',
+                        boxShadow: '0 0 0 4px rgba(96,165,250,0.08)',
+                      }}
+                    >
+                      <UserCheck size={26} strokeWidth={1.5} color="#93c5fd" />
+                    </div>
+                    <div
+                      className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full animate-pulse"
+                      style={{ background: '#60a5fa', border: '2px solid #0a1220', boxShadow: '0 0 6px rgba(96,165,250,0.7)' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ height: 1, background: 'rgba(255,255,255,0.055)', margin: '0 20px' }} />
+
+                {/* What agronomist is doing — mirrors upsell bullets */}
+                <div className="px-5 pt-4 pb-5 space-y-4">
+                  {[
+                    { Icon: Microscope,   color: '#93c5fd', bg: 'rgba(147,197,253,0.12)', label: 'Проверяет диагноз и сравнивает с вашими фото' },
+                    { Icon: FlaskConical, color: '#c4b5fd', bg: 'rgba(196,181,253,0.12)', label: 'Подбирает конкретные препараты для вашего случая' },
+                    { Icon: LayoutList,   color: '#6ee7b7', bg: 'rgba(110,231,183,0.12)', label: 'Составляет пошаговый план на ближайшие дни' },
+                  ].map(({ Icon, color, bg, label }, i) => (
+                    <div key={i} className="flex items-center gap-3.5">
+                      <div
+                        className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ background: bg, border: `1px solid ${color}25` }}
+                      >
+                        <Icon size={17} strokeWidth={1.75} color={color} />
+                      </div>
+                      <p className="leading-snug flex-1" style={{ fontSize: 13.5, color: 'rgba(209,230,255,0.70)' }}>
+                        {label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ height: 1, background: 'rgba(255,255,255,0.055)', margin: '0 20px' }} />
+
+                {/* Progress steps */}
+                <div className="px-5 pt-4 pb-5">
+                  <div className="flex items-center">
+                    {[
+                      { label: 'Заявка принята',  done: true  },
+                      { label: 'У агронома',       done: true  },
+                      { label: 'Готово',           done: false },
+                    ].map((step, i) => (
+                      <div key={i} className="flex items-center" style={{ flex: i < 2 ? '1' : 'none' }}>
+                        <div className="flex flex-col items-center gap-1.5">
+                          <div
+                            className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                            style={{
+                              background: step.done ? 'rgba(74,222,128,0.20)' : 'rgba(255,255,255,0.06)',
+                              border: `2px solid ${step.done ? 'rgba(74,222,128,0.50)' : 'rgba(255,255,255,0.12)'}`,
+                            }}
+                          >
+                            {step.done
+                              ? <CheckCircle2 size={12} strokeWidth={2.5} className="text-emerald-400" />
+                              : <span className="w-2 h-2 rounded-full bg-white/15" />
+                            }
+                          </div>
+                          <span style={{
+                            fontSize: 10, whiteSpace: 'nowrap',
+                            color:      step.done ? '#86efac' : 'rgba(255,255,255,0.22)',
+                            fontWeight: step.done ? 600 : 400,
+                          }}>
+                            {step.label}
+                          </span>
+                        </div>
+                        {i < 2 && (
+                          <div className="flex-1 mb-5 mx-2"
+                            style={{ height: 1.5, borderRadius: 2,
+                                     background: step.done ? 'rgba(74,222,128,0.35)' : 'rgba(255,255,255,0.08)' }} />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-4 text-center" style={{ fontSize: 11.5, color: 'rgba(147,197,253,0.45)', letterSpacing: '0.01em' }}>
+                    Обычно готово за 6–12 часов
+                  </p>
+                </div>
+              </div>
+
+            ) : premiumStatus === 'video_review_ready' ? (
+              /* ── Order ready — stronger than upsell, large CTA ── */
+              <div
+                className="rounded-[24px] overflow-hidden"
+                style={{
+                  background: 'linear-gradient(158deg, #052e16 0%, #0b1e12 55%, #071410 100%)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(74,222,128,0.15), 0 0 40px rgba(74,222,128,0.12)',
+                  border: '1px solid rgba(74,222,128,0.22)',
+                }}
+              >
+                {/* Header — same layout as upsell */}
+                <div className="px-5 pt-6 pb-5 flex items-start justify-between">
+                  <div className="flex-1 min-w-0 pr-4">
+                    <p className="mb-2" style={{ fontSize: 11, color: 'rgba(167,243,208,0.45)', letterSpacing: '0.01em' }}>
+                      Ваш разбор готов
+                    </p>
+                    <div
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3"
+                      style={{ background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.35)' }}
+                    >
+                      <CheckCircle2 size={10} strokeWidth={2.5} className="text-emerald-400" />
+                      <span className="font-bold tracking-[0.18em] text-emerald-400 uppercase" style={{ fontSize: 9.5 }}>
+                        Видеоразбор готов
+                      </span>
+                    </div>
+                    <h3 className="text-white font-black leading-[1.15]" style={{ fontSize: 20, letterSpacing: '-0.02em' }}>
+                      Ваш видеоразбор{'\n'}готов
+                    </h3>
+                    <p className="mt-2 leading-snug" style={{ fontSize: 12.5, color: 'rgba(167,243,208,0.55)' }}>
+                      Мы отправили разбор в Telegram
+                    </p>
+                  </div>
+                  {/* Avatar — green check, same position */}
+                  <div className="flex-shrink-0" style={{ position: 'relative' }}>
+                    <div
+                      className="w-[60px] h-[60px] rounded-full flex items-center justify-center"
+                      style={{
+                        background: 'linear-gradient(145deg, #1b5e38, #0d3320)',
+                        border: '2.5px solid rgba(74,222,128,0.55)',
+                        boxShadow: '0 0 0 4px rgba(74,222,128,0.12)',
+                      }}
+                    >
+                      <CheckCircle2 size={26} strokeWidth={1.75} color="#4ade80" />
+                    </div>
+                    <div
+                      className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full"
+                      style={{ background: '#4ade80', border: '2px solid #0b1e12', boxShadow: '0 0 8px rgba(74,222,128,0.8)' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ height: 1, background: 'rgba(255,255,255,0.055)', margin: '0 20px' }} />
+
+                {/* What's in the review */}
+                <div className="px-5 pt-4 pb-5 space-y-4">
+                  {[
+                    { Icon: Microscope,   color: '#4ade80', bg: 'rgba(74,222,128,0.12)',  label: 'Подтверждение или коррекция диагноза' },
+                    { Icon: FlaskConical, color: '#93c5fd', bg: 'rgba(147,197,253,0.12)', label: 'Конкретные препараты и схема лечения' },
+                    { Icon: LayoutList,   color: '#fcd34d', bg: 'rgba(252,211,77,0.12)',  label: 'Пошаговый план на ближайшие дни' },
+                  ].map(({ Icon, color, bg, label }, i) => (
+                    <div key={i} className="flex items-center gap-3.5">
+                      <div
+                        className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ background: bg, border: `1px solid ${color}25` }}
+                      >
+                        <Icon size={17} strokeWidth={1.75} color={color} />
+                      </div>
+                      <p className="leading-snug flex-1" style={{ fontSize: 13.5, color: 'rgba(209,250,229,0.75)' }}>
+                        {label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA — identical size to upsell */}
+                <div className="px-5 pb-6">
+                  <a
+                    href="https://t.me"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full rounded-[14px] font-black tracking-wide flex items-center
+                               justify-center transition-all duration-150 active:scale-[0.97] active:brightness-95"
+                    style={{
+                      padding: '16px 0', fontSize: 15,
+                      background: 'linear-gradient(145deg, #3ddb6d 0%, #15a248 100%)',
+                      color: '#022c17',
+                      boxShadow: '0 6px 28px rgba(34,197,94,0.50), 0 1px 4px rgba(0,0,0,0.2)',
+                      letterSpacing: '0.02em',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    Проверить Telegram
+                  </a>
+                  <p className="text-center mt-2.5" style={{ fontSize: 11, color: 'rgba(167,243,208,0.40)', letterSpacing: '0.01em' }}>
+                    Разбор уже ждёт вас
+                  </p>
+                </div>
+              </div>
+
             ) : (
-              /* ── Upsell card ── */
+              /* ── Upsell card — only shown when no order exists ── */
               <div
                 className="rounded-[24px] overflow-hidden"
                 style={{
@@ -520,41 +819,30 @@ function ResultsContent() {
                 {/* Top section */}
                 <div className="px-5 pt-6 pb-5 flex items-start justify-between">
                   <div className="flex-1 min-w-0 pr-4">
-                    {/* Microcopy — context setter */}
-                    <p
-                      className="mb-2"
-                      style={{ fontSize: 11, color: 'rgba(167,243,208,0.45)', letterSpacing: '0.01em' }}
-                    >
+                    <p className="mb-2" style={{ fontSize: 11, color: 'rgba(167,243,208,0.45)', letterSpacing: '0.01em' }}>
                       Анализ выполнен по вашему случаю
                     </p>
-                    {/* Expert verified label */}
                     <div
                       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3"
                       style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.25)' }}
                     >
                       <Star size={10} strokeWidth={0} className="fill-emerald-400 text-emerald-400" />
-                      <span
-                        className="font-bold tracking-[0.18em] text-emerald-400 uppercase"
-                        style={{ fontSize: 9.5 }}
-                      >
+                      <span className="font-bold tracking-[0.18em] text-emerald-400 uppercase" style={{ fontSize: 9.5 }}>
                         Проверено экспертом
                       </span>
                     </div>
-                    <h3
-                      className="text-white font-black leading-[1.15]"
-                      style={{ fontSize: 20, letterSpacing: '-0.02em' }}
-                    >
-                      Получить разбор{'\n'}от агронома
+                    <h3 className="text-white font-black leading-[1.15]" style={{ fontSize: 20, letterSpacing: '-0.02em' }}>
+                      {seg === 'farm' ? 'Агрономический\nразбор ситуации'
+                        : seg === 'home' ? 'Совет специалиста\nпо вашему растению'
+                        : 'Получить разбор\nот агронома'}
                     </h3>
-                    <p
-                      className="mt-2 leading-snug"
-                      style={{ fontSize: 12.5, color: 'rgba(167,243,208,0.55)' }}
-                    >
-                      30–60 сек · персональный разбор вашего случая
+                    <p className="mt-2 leading-snug" style={{ fontSize: 12.5, color: 'rgba(167,243,208,0.55)' }}>
+                      {seg === 'farm' ? 'Практические рекомендации для вашей ситуации'
+                        : seg === 'home' ? '30–60 сек · понятный разбор для вашего растения'
+                        : seg === 'dacha' ? 'Что серьёзно, что подождёт — и что делать в первую очередь'
+                        : '30–60 сек · персональный разбор вашего случая'}
                     </p>
                   </div>
-
-                  {/* Avatar — expert icon */}
                   <div className="flex-shrink-0" style={{ position: 'relative' }}>
                     <div
                       className="w-[60px] h-[60px] rounded-full flex items-center justify-center"
@@ -566,22 +854,15 @@ function ResultsContent() {
                     >
                       <UserCheck size={26} strokeWidth={1.5} color="#4ade80" />
                     </div>
-                    {/* Online dot */}
                     <div
                       className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full"
-                      style={{
-                        background: '#4ade80',
-                        border: '2px solid #0b1e12',
-                        boxShadow: '0 0 6px rgba(74,222,128,0.6)',
-                      }}
+                      style={{ background: '#4ade80', border: '2px solid #0b1e12', boxShadow: '0 0 6px rgba(74,222,128,0.6)' }}
                     />
                   </div>
                 </div>
 
-                {/* Divider */}
                 <div style={{ height: 1, background: 'rgba(255,255,255,0.055)', margin: '0 20px' }} />
 
-                {/* Bullets */}
                 <div className="px-5 pt-4 pb-5 space-y-4">
                   {[
                     { Icon: Video,      color: '#4ade80', bg: 'rgba(74,222,128,0.12)',  label: 'Персональный видеоразбор именно вашей ситуации' },
@@ -595,39 +876,35 @@ function ResultsContent() {
                       >
                         <Icon size={17} strokeWidth={1.75} color={color} />
                       </div>
-                      <p
-                        className="leading-snug flex-1"
-                        style={{ fontSize: 13.5, color: 'rgba(209,250,229,0.75)' }}
-                      >
+                      <p className="leading-snug flex-1" style={{ fontSize: 13.5, color: 'rgba(209,250,229,0.75)' }}>
                         {label}
                       </p>
                     </div>
                   ))}
                 </div>
 
-                {/* CTA */}
                 <div className="px-5 pb-6">
                   <button
                     onClick={() => setPaywallOpen(true)}
                     className="w-full rounded-[14px] font-black tracking-wide
                                active:scale-[0.97] active:brightness-95 transition-all duration-150"
                     style={{
-                      padding: '16px 0',
-                      fontSize: 15,
+                      padding: '16px 0', fontSize: 15,
                       background: 'linear-gradient(145deg, #3ddb6d 0%, #15a248 100%)',
                       color: '#022c17',
                       boxShadow: '0 6px 28px rgba(34,197,94,0.45), 0 1px 4px rgba(0,0,0,0.2)',
                       letterSpacing: '0.02em',
                     }}
                   >
-                    Получить разбор →
+                    {seg === 'farm' ? 'Получить агрорекомендацию →'
+                      : seg === 'home' ? 'Получить совет →'
+                      : 'Получить разбор →'}
                   </button>
-                  {/* Trust line */}
-                  <p
-                    className="text-center mt-2.5"
-                    style={{ fontSize: 11, color: 'rgba(167,243,208,0.40)', letterSpacing: '0.01em' }}
-                  >
-                    Большинство решают проблему за 2–3 дня
+                  <p className="text-center mt-2.5" style={{ fontSize: 11, color: 'rgba(167,243,208,0.40)', letterSpacing: '0.01em' }}>
+                    {seg === 'farm' ? 'Раннее вмешательство снижает потери'
+                      : seg === 'home' ? 'Чем раньше начать — тем лучше результат'
+                      : seg === 'dacha' ? 'Промедление даёт болезни время распространиться'
+                      : 'Раннее лечение даёт лучший результат'}
                   </p>
                 </div>
               </div>
@@ -648,7 +925,11 @@ function ResultsContent() {
             </div>
             <div className="flex-1 text-left">
               <p className="text-[13.5px] font-bold text-gray-800">Повторная диагностика через 2–3 дня</p>
-              <p className="text-[11.5px] text-gray-400 mt-0.5">Отслеживайте динамику и корректируйте лечение</p>
+              <p className="text-[11.5px] text-gray-400 mt-0.5">
+                {seg === 'farm' ? 'Контролируйте развитие болезни на поле'
+                  : seg === 'home' ? 'Посмотрите, помогли ли ваши действия'
+                  : 'Отслеживайте динамику и корректируйте лечение'}
+              </p>
             </div>
             <ChevronRight size={18} strokeWidth={2} className="text-gray-300 flex-shrink-0" />
           </button>
@@ -670,11 +951,12 @@ function ResultsContent() {
         style={{
           background: 'rgba(255,255,255,0.97)',
           backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
           borderTop: '1px solid rgba(0,0,0,0.05)',
           boxShadow: '0 -1px 0 rgba(0,0,0,0.04), 0 -8px 24px rgba(0,0,0,0.04)',
         }}
       >
-        <div className="flex items-end justify-around px-2 pt-2 pb-4">
+        <div className="flex items-center justify-around px-6 pt-2 pb-4">
 
           {/* Home */}
           <button
@@ -690,49 +972,24 @@ function ResultsContent() {
             <span style={{ fontSize: 9.5 }} className="font-medium">Главная</span>
           </button>
 
-          {/* Results — active */}
-          <button className="flex flex-col items-center gap-[5px] px-4 relative">
-            <div
-              className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center"
-              style={{ background: '#ecfdf5' }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2.2"
-                   stroke="#16a34a" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="7" height="7" rx="1.5" />
-                <rect x="14" y="3" width="7" height="7" rx="1.5" />
-                <rect x="3" y="14" width="7" height="7" rx="1.5" />
-                <circle cx="17.5" cy="17.5" r="3.5" />
-              </svg>
-            </div>
-            <span style={{ fontSize: 9.5 }} className="font-bold text-emerald-600">Результаты</span>
-            <span
-              className="absolute -bottom-0.5 w-[18px] h-[3px] rounded-full bg-emerald-500"
-            />
-          </button>
-
-          {/* Center scan button — intentional focal point */}
+          {/* Scan — flat */}
           <button
             onClick={() => router.push('/upload')}
-            className="flex flex-col items-center gap-[5px] -mt-6"
+            className="flex flex-col items-center gap-[5px] px-4
+                       transition-all duration-150 active:scale-[0.93]"
+            style={{ color: '#9ca3af' }}
           >
-            <div
-              className="w-[52px] h-[52px] rounded-full flex items-center justify-center"
-              style={{
-                background: 'linear-gradient(145deg, #22c55e, #15803d)',
-                boxShadow: '0 4px 24px rgba(22,163,74,0.50), 0 1px 4px rgba(0,0,0,0.15)',
-              }}
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeWidth="2"
-                   stroke="white" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
-                <circle cx="12" cy="13" r="4" />
-              </svg>
-            </div>
-            <span style={{ fontSize: 9.5, color: '#9ca3af' }} className="font-medium">Сканер</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7"
+                 stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
+            <span style={{ fontSize: 9.5 }} className="font-medium">Сканер</span>
           </button>
 
-          {/* History */}
+          {/* История */}
           <button
+            onClick={() => router.push('/history')}
             className="flex flex-col items-center gap-[5px] px-4"
             style={{ color: '#9ca3af' }}
           >
@@ -744,27 +1001,6 @@ function ResultsContent() {
             <span style={{ fontSize: 9.5 }} className="font-medium">История</span>
           </button>
 
-          {/* Settings */}
-          <button
-            className="flex flex-col items-center gap-[5px] px-4"
-            style={{ color: '#9ca3af' }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7"
-                 stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0
-                       l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2
-                       2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06
-                       a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65
-                       0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65
-                       0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0
-                       009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0
-                       001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83
-                       l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0
-                       01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
-            </svg>
-            <span style={{ fontSize: 9.5 }} className="font-medium">Настройки</span>
-          </button>
         </div>
       </div>
 
@@ -773,8 +1009,11 @@ function ResultsContent() {
         <PaywallModal
           mode="video"
           loading={videoLoading}
-          onClose={() => !videoLoading && setPaywallOpen(false)}
+          onClose={() => setPaywallOpen(false)}
           onVideoConfirm={handleVideoConfirm}
+          onOrderSubmit={handleOrderSubmit}
+          diagnosisName={topIssue?.title}
+          diagnosisScore={topIssue?.score}
         />
       )}
     </>

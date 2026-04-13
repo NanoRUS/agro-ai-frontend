@@ -1,12 +1,13 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ShieldCheck, Star, Scan, Camera, ImagePlus,
-  X, ChevronRight, Zap, ArrowRight,
+  X, Zap, ArrowRight,
 } from 'lucide-react'
 import { DEMO_CASES, loadDemoResult } from '@/lib/demo-fixtures'
 import { API_URL } from '@/lib/api'
+import BottomNav from '@/components/BottomNav'
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,14 @@ export default function UploadPage() {
   const [crop,        setCrop]        = useState('')
   const [error,       setError]       = useState('')
   const [demoLoading, setDemoLoading] = useState<string | null>(null)
+  const [navigating,  setNavigating]  = useState(false)
+
+  // Onboarding guard
+  useEffect(() => {
+    if (!localStorage.getItem('userType')) {
+      router.replace('/onboarding')
+    }
+  }, [])
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const incoming = Array.from(e.target.files || [])
@@ -70,25 +79,46 @@ export default function UploadPage() {
     setPreviews(previews.filter((_, i) => i !== idx))
   }
 
-  function handleNext() {
-    if (!crop)            return setError('Выберите культуру')
-    if (!images.length)   return setError('Загрузите хотя бы одно фото')
+  // Compress image to max 1024px, JPEG 0.80 — keeps size under ~150KB
+  function compressImage(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+      img.onload = () => {
+        URL.revokeObjectURL(url)
+        const MAX = 1024
+        let { width, height } = img
+        if (width > MAX || height > MAX) {
+          if (width > height) { height = Math.round(height * MAX / width); width = MAX }
+          else                { width  = Math.round(width  * MAX / height); height = MAX }
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = width; canvas.height = height
+        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
+        resolve(canvas.toDataURL('image/jpeg', 0.80))
+      }
+      img.onerror = reject
+      img.src = url
+    })
+  }
 
-    sessionStorage.setItem('agro_crop', crop)
-    sessionStorage.setItem('agro_image_count', String(images.length))
+  async function handleNext() {
+    if (!crop)          return setError('Выберите культуру')
+    if (!images.length) return setError('Загрузите хотя бы одно фото')
 
-    const readers = images.map(
-      (f) => new Promise<string>((res) => {
-        const r = new FileReader()
-        r.onload = () => res(r.result as string)
-        r.readAsDataURL(f)
-      }),
-    )
-    Promise.all(readers).then((dataUrls) => {
+    setNavigating(true)
+    setError('')
+    try {
+      const dataUrls = await Promise.all(images.map(compressImage))
+      sessionStorage.setItem('agro_crop', crop)
+      sessionStorage.setItem('agro_image_count', String(images.length))
       sessionStorage.setItem('agro_images_data', JSON.stringify(dataUrls))
       sessionStorage.setItem('agro_images_names', JSON.stringify(images.map((f) => f.name)))
       router.push('/questionnaire')
-    })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Не удалось обработать фото. Попробуйте ещё раз.')
+      setNavigating(false)
+    }
   }
 
   async function handleDemoCase(fixtureId: string) {
@@ -109,8 +139,10 @@ export default function UploadPage() {
   const hasCrop    = !!crop
   const canProceed = hasPhotos && hasCrop
 
+  const cropSectionRef = useRef<HTMLElement>(null)
+
   return (
-    <div className="min-h-screen bg-[#f0f2f5] pb-28">
+    <div className="min-h-screen bg-[#f0f2f5] pb-[148px]">
 
       {/* ══ 1. HERO CARD ════════════════════════════════════════════════ */}
       <div className="px-4 pt-5">
@@ -324,7 +356,7 @@ export default function UploadPage() {
       </div>
 
       {/* ══ 3. PLANT TYPE ═══════════════════════════════════════════════ */}
-      <section className="px-4 mt-5">
+      <section ref={cropSectionRef} className="px-4 mt-5">
         <p
           className="font-semibold tracking-[0.16em] text-gray-400/80 uppercase mb-3"
           style={{ fontSize: 10 }}
@@ -467,7 +499,7 @@ export default function UploadPage() {
         </div>
       </section>
 
-      {/* ── Error ── */}
+      {/* ── Demo loading error ── */}
       {error && (
         <div
           className="mx-4 mt-4 flex items-center gap-2 px-4 py-3 rounded-2xl"
@@ -477,72 +509,78 @@ export default function UploadPage() {
         </div>
       )}
 
-      {/* ══ 5. CTA ══════════════════════════════════════════════════════ */}
-      <div className="px-4 mt-5">
-
-        {/* Contextual status hint */}
-        {(hasPhotos || hasCrop) && !canProceed && (
-          <div
-            className="flex items-center gap-2 mb-3 px-3.5 py-2.5 rounded-[12px]"
-            style={{
-              background: 'rgba(245,158,11,0.08)',
-              border: '1px solid rgba(245,158,11,0.20)',
-            }}
-          >
-            <div
-              className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ background: 'rgba(245,158,11,0.18)' }}
-            >
-              <span style={{ fontSize: 9, fontWeight: 900, color: '#d97706' }}>!</span>
-            </div>
-            <p style={{ fontSize: 12.5, color: '#92400e', fontWeight: 500 }}>
-              {!hasPhotos
-                ? 'Загрузите фото растения'
-                : 'Выберите тип растения выше'}
-            </p>
-          </div>
-        )}
-
-        {canProceed && (
-          <p
-            className="text-center mb-2.5 font-semibold"
-            style={{ fontSize: 12.5, color: '#15803d', letterSpacing: '-0.01em' }}
-          >
-            Готово — запустите анализ
-          </p>
-        )}
-
-        <button
-          onClick={handleNext}
-          disabled={!canProceed}
-          className="w-full rounded-[14px] font-black tracking-wide
-                     transition-all duration-200 active:scale-[0.97] active:brightness-95
-                     disabled:cursor-not-allowed"
+      {/* ══ 5. STICKY CTA — always visible above nav ════════════════════ */}
+      <div
+        className="fixed left-0 right-0 z-10 max-w-md mx-auto"
+        style={{ bottom: 60 }}
+      >
+        <div
+          className="px-4 pt-3 pb-3"
           style={{
-            padding: '17px 0',
-            fontSize: 15.5,
-            letterSpacing: '0.01em',
-            background: canProceed
-              ? 'linear-gradient(145deg, #3ddb6d 0%, #15a248 100%)'
-              : 'linear-gradient(145deg, #d1fae5 0%, #a7f3d0 100%)',
-            color: canProceed ? '#022c17' : '#9ca3af',
-            boxShadow: canProceed
-              ? '0 8px 32px rgba(34,197,94,0.45), 0 2px 8px rgba(0,0,0,0.12)'
-              : 'none',
-            opacity: canProceed ? 1 : 0.6,
-            // Pulse glow animation when ready
-            animation: canProceed ? 'ctaGlow 2.2s ease-in-out infinite' : 'none',
+            background: 'rgba(240,242,245,0.97)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            borderTop: '1px solid rgba(0,0,0,0.06)',
+            boxShadow: '0 -4px 20px rgba(0,0,0,0.05)',
           }}
         >
-          {canProceed ? 'Начать диагностику →' : 'Начать диагностику'}
-        </button>
+          {/* Status hint — shown only when partially ready */}
+          {(hasPhotos || hasCrop) && !canProceed && (
+            <button
+              onClick={() => {
+                if (!hasCrop) cropSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }}
+              className="w-full flex items-center gap-2 mb-2.5 px-3.5 py-2 rounded-[12px] text-left"
+              style={{
+                background: 'rgba(245,158,11,0.08)',
+                border: '1px solid rgba(245,158,11,0.20)',
+              }}
+            >
+              <div
+                className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ background: 'rgba(245,158,11,0.18)' }}
+              >
+                <span style={{ fontSize: 9, fontWeight: 900, color: '#d97706' }}>!</span>
+              </div>
+              <p style={{ fontSize: 12.5, color: '#92400e', fontWeight: 500 }}>
+                {!hasPhotos ? 'Загрузите фото растения' : 'Выберите тип растения ↑'}
+              </p>
+            </button>
+          )}
 
-        <p
-          className="text-center mt-2"
-          style={{ fontSize: 11.5, color: '#9ca3af', minHeight: 18 }}
-        >
-          {canProceed ? 'Результат готов примерно через 60 секунд' : ''}
-        </p>
+          {canProceed && (
+            <p
+              className="text-center mb-2 font-semibold"
+              style={{ fontSize: 12.5, color: '#15803d', letterSpacing: '-0.01em' }}
+            >
+              Готово — запустите анализ
+            </p>
+          )}
+
+          <button
+            onClick={handleNext}
+            disabled={!canProceed}
+            className="w-full rounded-[14px] font-black tracking-wide
+                       transition-all duration-200 active:scale-[0.97] active:brightness-95
+                       disabled:cursor-not-allowed"
+            style={{
+              padding: '15px 0',
+              fontSize: 15.5,
+              letterSpacing: '0.01em',
+              background: canProceed
+                ? 'linear-gradient(145deg, #3ddb6d 0%, #15a248 100%)'
+                : 'linear-gradient(145deg, #d1fae5 0%, #a7f3d0 100%)',
+              color: canProceed ? '#022c17' : '#9ca3af',
+              boxShadow: canProceed
+                ? '0 8px 32px rgba(34,197,94,0.45), 0 2px 8px rgba(0,0,0,0.12)'
+                : 'none',
+              opacity: canProceed ? 1 : 0.6,
+              animation: canProceed ? 'ctaGlow 2.2s ease-in-out infinite' : 'none',
+            }}
+          >
+            {canProceed ? 'Начать диагностику →' : 'Начать диагностику'}
+          </button>
+        </div>
       </div>
 
       <style>{`
@@ -552,93 +590,35 @@ export default function UploadPage() {
         }
       `}</style>
 
-      {/* ══ 6. BOTTOM NAV ═══════════════════════════════════════════════ */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-20 max-w-md mx-auto"
-        style={{
-          background: 'rgba(255,255,255,0.97)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(0,0,0,0.05)',
-          boxShadow: '0 -1px 0 rgba(0,0,0,0.04), 0 -8px 24px rgba(0,0,0,0.04)',
-        }}
-      >
-        <div className="flex items-end justify-around px-2 pt-2 pb-4">
+      {/* ══ 6. BOTTOM NAV ════════════════════════════════════════════════ */}
+      <BottomNav active="home" onScan={() => cameraRef.current?.click()} />
 
-          {/* Home — active */}
-          <button className="flex flex-col items-center gap-[5px] px-4 relative">
+      {/* ══ NAVIGATING OVERLAY ══════════════════════════════════════════ */}
+      {navigating && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{
+            background: 'rgba(240,242,245,0.95)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+          }}
+        >
+          <div className="flex flex-col items-center gap-4">
             <div
-              className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center"
-              style={{ background: '#ecfdf5' }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2.2"
-                   stroke="#16a34a" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
-                <path d="M9 21V12h6v9" />
-              </svg>
-            </div>
-            <span style={{ fontSize: 9.5 }} className="font-bold text-emerald-600">Главная</span>
-            <span className="absolute -bottom-0.5 w-[18px] h-[3px] rounded-full bg-emerald-500" />
-          </button>
-
-          {/* Results */}
-          <button
-            onClick={() => {
-              const r = sessionStorage.getItem('agro_result')
-              if (r) router.push('/results')
-            }}
-            className="flex flex-col items-center gap-[5px] px-4"
-            style={{ color: '#9ca3af' }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7"
-                 stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1.5" />
-              <rect x="14" y="3" width="7" height="7" rx="1.5" />
-              <rect x="3" y="14" width="7" height="7" rx="1.5" />
-              <circle cx="17.5" cy="17.5" r="3.5" />
-            </svg>
-            <span style={{ fontSize: 9.5 }} className="font-medium">Результаты</span>
-          </button>
-
-          {/* Center scan — focal */}
-          <button className="flex flex-col items-center gap-[5px] -mt-6">
-            <div
-              className="w-[52px] h-[52px] rounded-full flex items-center justify-center"
+              className="w-16 h-16 rounded-[20px] flex items-center justify-center"
               style={{
                 background: 'linear-gradient(145deg, #22c55e, #15803d)',
-                boxShadow: '0 4px 24px rgba(22,163,74,0.50)',
+                boxShadow: '0 6px 24px rgba(34,197,94,0.40)',
               }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeWidth="2"
-                   stroke="white" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
-                <circle cx="12" cy="13" r="4" />
-              </svg>
+              <Scan size={28} strokeWidth={1.75} className="text-white animate-pulse" />
             </div>
-            <span style={{ fontSize: 9.5, color: '#9ca3af' }} className="font-medium">Сканер</span>
-          </button>
-
-          {/* History */}
-          <button className="flex flex-col items-center gap-[5px] px-4" style={{ color: '#9ca3af' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7"
-                 stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="9" />
-              <polyline points="12 7 12 12 15 15" />
-            </svg>
-            <span style={{ fontSize: 9.5 }} className="font-medium">История</span>
-          </button>
-
-          {/* Settings */}
-          <button className="flex flex-col items-center gap-[5px] px-4" style={{ color: '#9ca3af' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7"
-                 stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
-            </svg>
-            <span style={{ fontSize: 9.5 }} className="font-medium">Настройки</span>
-          </button>
+            <p style={{ fontSize: 15, fontWeight: 700, color: '#1f2937', letterSpacing: '-0.02em' }}>
+              Подготовка фото...
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
