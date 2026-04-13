@@ -45,64 +45,65 @@ export default function OnboardingPage() {
       style={{ background: '#f0f2f5', fontFamily: 'Inter, sans-serif' }}
     >
       {/* Scrollable content */}
-      <div className="flex-1 px-5 pt-8 pb-40">
+      <div className="flex-1 px-5 pt-10 pb-44">
 
         {/* Header */}
-        <div className="mb-7">
+        <div className="mb-9">
           <h1
-            className="font-black text-gray-900 mb-2"
-            style={{ fontSize: 28, letterSpacing: '-0.03em', lineHeight: 1.15 }}
+            className="font-black text-gray-900 mb-3"
+            style={{ fontSize: 32, letterSpacing: '-0.04em', lineHeight: 1.1 }}
           >
             Кто вы?
           </h1>
           <p
             className="text-gray-500 leading-snug"
-            style={{ fontSize: 14.5 }}
+            style={{ fontSize: 15 }}
           >
             Это поможет дать более точный диагноз и рекомендации
           </p>
         </div>
 
         {/* Cards grid */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {USER_TYPES.map((type) => {
             const active = selected === type.value
             return (
               <button
                 key={type.value}
                 onClick={() => setSelected(type.value)}
-                className="relative flex flex-col items-center text-center rounded-[18px] px-4 pt-6 pb-5 transition-all duration-150 active:scale-[0.97]"
+                className="relative flex flex-col items-center text-center rounded-[20px] px-4 pt-8 pb-7 transition-all duration-150 active:scale-[0.97]"
                 style={{
+                  minHeight: 170,
                   background: active ? '#f0fdf4' : '#ffffff',
                   border: `2px solid ${active ? '#16a34a' : 'rgba(0,0,0,0.07)'}`,
                   boxShadow: active
-                    ? '0 4px 20px rgba(22,163,74,0.15), 0 1px 4px rgba(0,0,0,0.04)'
-                    : '0 2px 12px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04)',
+                    ? '0 8px 28px rgba(22,163,74,0.18), 0 2px 8px rgba(0,0,0,0.06)'
+                    : '0 4px 20px rgba(0,0,0,0.09), 0 1px 6px rgba(0,0,0,0.05)',
                 }}
               >
                 {/* Check icon — top right */}
                 {active && (
                   <span
-                    className="absolute top-3 right-3 w-[22px] h-[22px] rounded-full flex items-center justify-center"
+                    className="absolute top-3.5 right-3.5 w-6 h-6 rounded-full flex items-center justify-center"
                     style={{ background: '#16a34a' }}
                   >
-                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                      <path d="M2 5.5l2.5 2.5L9 3" stroke="#fff" strokeWidth="1.8"
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="#fff" strokeWidth="2"
                             strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </span>
                 )}
 
                 {/* Emoji */}
-                <span style={{ fontSize: 36, lineHeight: 1 }}>{type.emoji}</span>
+                <span style={{ fontSize: 42, lineHeight: 1 }}>{type.emoji}</span>
 
                 {/* Title */}
                 <span
-                  className="mt-3 font-bold leading-tight"
+                  className="mt-4 font-bold leading-tight"
                   style={{
-                    fontSize: 14,
+                    fontSize: 15,
                     color: active ? '#16a34a' : '#111827',
-                    letterSpacing: '-0.01em',
+                    letterSpacing: '-0.02em',
                   }}
                 >
                   {type.label}
@@ -110,11 +111,11 @@ export default function OnboardingPage() {
 
                 {/* Description */}
                 <span
-                  className="mt-1.5 leading-snug"
+                  className="mt-2 leading-snug"
                   style={{
-                    fontSize: 11.5,
+                    fontSize: 12,
                     color: active ? '#16a34a99' : '#6b7280',
-                    lineHeight: 1.4,
+                    lineHeight: 1.45,
                   }}
                 >
                   {type.description}
