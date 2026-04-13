@@ -48,9 +48,9 @@ export default function OnboardingPage() {
       <div className="flex-1 px-5 pt-10 pb-44">
 
         {/* Header */}
-        <div className="mb-9">
+        <div className="mb-8">
           <h1
-            className="font-black text-gray-900 mb-3"
+            className="font-black text-gray-900 mb-2"
             style={{ fontSize: 32, letterSpacing: '-0.04em', lineHeight: 1.1 }}
           >
             Кто вы?
@@ -59,32 +59,68 @@ export default function OnboardingPage() {
             className="text-gray-500 leading-snug"
             style={{ fontSize: 15 }}
           >
-            Это поможет дать более точный диагноз и рекомендации
+            Это поможет дать более точные рекомендации
           </p>
         </div>
 
-        {/* Cards grid */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Vertical list */}
+        <div className="flex flex-col gap-4">
           {USER_TYPES.map((type) => {
             const active = selected === type.value
             return (
               <button
                 key={type.value}
                 onClick={() => setSelected(type.value)}
-                className="relative flex flex-col items-center text-center rounded-[20px] px-4 pt-8 pb-7 transition-all duration-150 active:scale-[0.97]"
+                className="relative w-full flex flex-row items-center gap-4 rounded-[20px] px-5 py-5 text-left transition-all duration-150 active:scale-[0.98]"
                 style={{
-                  minHeight: 170,
+                  minHeight: 90,
                   background: active ? '#f0fdf4' : '#ffffff',
                   border: `2px solid ${active ? '#16a34a' : 'rgba(0,0,0,0.07)'}`,
                   boxShadow: active
-                    ? '0 8px 28px rgba(22,163,74,0.18), 0 2px 8px rgba(0,0,0,0.06)'
-                    : '0 4px 20px rgba(0,0,0,0.09), 0 1px 6px rgba(0,0,0,0.05)',
+                    ? '0 6px 24px rgba(22,163,74,0.16), 0 2px 8px rgba(0,0,0,0.05)'
+                    : '0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
                 }}
               >
+                {/* Icon in rounded square */}
+                <div
+                  className="flex-shrink-0 flex items-center justify-center rounded-[14px]"
+                  style={{
+                    width: 52,
+                    height: 52,
+                    background: active ? 'rgba(22,163,74,0.10)' : '#f3f4f6',
+                    fontSize: 26,
+                  }}
+                >
+                  {type.emoji}
+                </div>
+
+                {/* Text */}
+                <div className="flex-1 min-w-0">
+                  <p
+                    className="font-bold leading-tight"
+                    style={{
+                      fontSize: 16,
+                      color: active ? '#16a34a' : '#111827',
+                      letterSpacing: '-0.02em',
+                    }}
+                  >
+                    {type.label}
+                  </p>
+                  <p
+                    className="mt-1 leading-snug"
+                    style={{
+                      fontSize: 13,
+                      color: active ? '#16a34a99' : '#6b7280',
+                    }}
+                  >
+                    {type.description}
+                  </p>
+                </div>
+
                 {/* Check icon — top right */}
                 {active && (
                   <span
-                    className="absolute top-3.5 right-3.5 w-6 h-6 rounded-full flex items-center justify-center"
+                    className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center"
                     style={{ background: '#16a34a' }}
                   >
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -93,33 +129,6 @@ export default function OnboardingPage() {
                     </svg>
                   </span>
                 )}
-
-                {/* Emoji */}
-                <span style={{ fontSize: 42, lineHeight: 1 }}>{type.emoji}</span>
-
-                {/* Title */}
-                <span
-                  className="mt-4 font-bold leading-tight"
-                  style={{
-                    fontSize: 15,
-                    color: active ? '#16a34a' : '#111827',
-                    letterSpacing: '-0.02em',
-                  }}
-                >
-                  {type.label}
-                </span>
-
-                {/* Description */}
-                <span
-                  className="mt-2 leading-snug"
-                  style={{
-                    fontSize: 12,
-                    color: active ? '#16a34a99' : '#6b7280',
-                    lineHeight: 1.45,
-                  }}
-                >
-                  {type.description}
-                </span>
               </button>
             )
           })}
@@ -157,7 +166,7 @@ export default function OnboardingPage() {
             border: 'none',
           }}
         >
-          Продолжить
+          Продолжить →
         </button>
         <p
           className="text-center mt-2.5"
