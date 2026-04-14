@@ -481,7 +481,7 @@ function ResultsContent() {
             {result.today_actions.length > 0 && (
               <section style={{ padding: '0 20px', marginBottom: 48 }}>
                 {/* Section header */}
-                <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
+                <div className="flex items-center gap-3" style={{ marginBottom: 8 }}>
                   <span style={{
                     fontSize: 11, fontWeight: 700, letterSpacing: '0.10em',
                     textTransform: 'uppercase', color: '#6e7971', whiteSpace: 'nowrap',
@@ -490,15 +490,9 @@ function ResultsContent() {
                   </span>
                   <div style={{ flex: 1, height: 1, background: 'rgba(108,123,115,0.22)' }} />
                 </div>
-                {(result.urgency.level === 'critical' || result.urgency.level === 'high') && (
-                  <p style={{
-                    fontSize: 12, fontWeight: 600,
-                    color: result.urgency.level === 'critical' ? '#ba1a1a' : '#b45309',
-                    marginBottom: 16, marginTop: -4,
-                  }}>
-                    Действуйте сейчас — промедление увеличивает потери
-                  </p>
-                )}
+                <p style={{ fontSize: 13, color: '#5c6560', marginBottom: 16 }}>
+                  Приоритетные шаги для защиты урожая
+                </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {result.today_actions.slice(0, 3).map((action, i) => {
                     const def = ACTION_ICON_DEFS[i] ?? ACTION_ICON_DEFS[0]
@@ -529,7 +523,6 @@ function ResultsContent() {
                         }}>
                           {action}
                         </p>
-                        <ChevronRight size={18} strokeWidth={1.75} style={{ color: 'rgba(108,123,115,0.28)', flexShrink: 0 }} />
                       </div>
                     )
                   })}
@@ -1020,15 +1013,18 @@ function ResultsContent() {
             {planActions.length > 0 && (
               <section style={{ padding: '48px 20px 0' }}>
                 {/* Section header */}
-                <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
+                <div className="flex items-center gap-3" style={{ marginBottom: 8 }}>
                   <span style={{
                     fontSize: 11, fontWeight: 700, letterSpacing: '0.10em',
                     textTransform: 'uppercase', color: '#6e7971', whiteSpace: 'nowrap',
                   }}>
-                    Как помочь растению
+                    Что делать сейчас
                   </span>
                   <div style={{ flex: 1, height: 1, background: 'rgba(108,123,115,0.22)' }} />
                 </div>
+                <p style={{ fontSize: 13, color: '#5c6560', marginBottom: 16 }}>
+                  Следуйте этим шагам, чтобы помочь растению восстановиться
+                </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {planActions.map((action, i) => {
                     const def = ACTION_ICON_DEFS[i] ?? ACTION_ICON_DEFS[0]
@@ -1059,7 +1055,6 @@ function ResultsContent() {
                         }}>
                           {action}
                         </p>
-                        <ChevronRight size={18} strokeWidth={1.75} style={{ color: 'rgba(108,123,115,0.28)', flexShrink: 0 }} />
                       </div>
                     )
                   })}
@@ -1343,17 +1338,18 @@ function ResultsContent() {
         {result.today_actions.length > 0 && (
           <section style={{ padding: '0 20px', marginTop: 36 }}>
             {/* Section header */}
-            <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
+            <div className="flex items-center gap-3" style={{ marginBottom: 8 }}>
               <span style={{
                 fontSize: 11, fontWeight: 700, letterSpacing: '0.10em',
                 textTransform: 'uppercase', color: '#6e7971', whiteSpace: 'nowrap',
               }}>
-                {seg === 'home' ? 'Как помочь растению'
-                  : seg === 'dacha' ? 'Что делать сейчас'
-                  : 'Что делать сейчас'}
+                Что делать сейчас
               </span>
               <div style={{ flex: 1, height: 1, background: 'rgba(108,123,115,0.22)' }} />
             </div>
+            <p style={{ fontSize: 13, color: '#5c6560', marginBottom: 16 }}>
+              Следуйте этим шагам, чтобы помочь растению восстановиться
+            </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {result.today_actions.slice(0, 6).map((action, i) => {
                 const def = ACTION_ICON_DEFS[i] ?? ACTION_ICON_DEFS[0]
@@ -1380,7 +1376,7 @@ function ResultsContent() {
                     <p style={{
                       flex: 1, margin: 0,
                       fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                      fontWeight: 600, fontSize: 14, color: '#012d1d', lineHeight: 1.45,
+                      fontWeight: 700, fontSize: 15, color: '#012d1d', lineHeight: 1.45,
                     }}>
                       {action}
                     </p>
