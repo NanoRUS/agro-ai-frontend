@@ -5,7 +5,7 @@ import {
   ArrowLeft, ChevronRight, ShieldCheck, Microscope,
   Droplets, Scissors, Search, FlaskConical, ClipboardList,
   Zap, RefreshCw, Video, FileText, LayoutList, Star,
-  AlertTriangle, Info, CheckCircle2, UserCheck,
+  AlertTriangle, Info, CheckCircle2, UserCheck, X, MoreVertical,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { AnalyzeResponse, IssueResult, VideoTone } from '@/lib/api'
@@ -182,9 +182,14 @@ function ResultsContent() {
   const debugMode = searchParams.get('debug') === '1'
   const isDemo = result?.analysis_id?.startsWith('demo_') ?? false
   const [userType, setUserType] = useState('')
+  const [farmerField, setFarmerField] = useState<{ name?: string; area?: string } | null>(null)
 
   useEffect(() => {
     try { setUserType(localStorage.getItem('userType') ?? '') } catch {}
+    try {
+      const field = JSON.parse(sessionStorage.getItem('agro_farmer_field') || '{}') as { name?: string; area?: string }
+      if (field.name || field.area) setFarmerField(field)
+    } catch {}
   }, [])
 
   useEffect(() => {
@@ -286,6 +291,557 @@ function ResultsContent() {
     : userType === 'home'                             ? 'home'
     : (userType === 'dacha' || userType === 'garden') ? 'dacha'
     : null
+
+  // ══ FARM LAYOUT — Stitch design ═══════════════════════════════════════════
+  if (seg === 'farm') {
+    const urgencyColorMap: Record<string, string> = {
+      critical: '#ba1a1a', high: '#ba1a1a', medium: '#b45309', low: '#2c694e',
+    }
+    const urgencyRuMap: Record<string, string> = {
+      critical: 'Критически', high: 'Высокая', medium: 'Умеренная', low: 'Наблюдение',
+    }
+    const farmRiskMap: Record<string, string> = {
+      critical: 'до 60%', high: 'до 40%', medium: 'до 20%', low: 'до 5%',
+    }
+    const urgencyColor = urgencyColorMap[result.urgency.level] ?? '#ba1a1a'
+    const urgencyRuLabel = urgencyRuMap[result.urgency.level] ?? 'Высокая'
+    const farmRisk = farmRiskMap[result.urgency.level] ?? 'до 40%'
+
+    return (
+      <>
+        <div style={{ background: '#f8faf8', color: '#191c1b', minHeight: '100vh', paddingBottom: 140 }}>
+
+          {/* ── TopAppBar ── */}
+          <header
+            className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6"
+            style={{ height: 64, background: '#f8faf8', maxWidth: 448, margin: '0 auto' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push('/upload')}
+                className="p-2 rounded-full active:scale-95 transition-colors"
+                style={{ color: '#012d1d' }}
+              >
+                <X size={24} strokeWidth={2} />
+              </button>
+              <h1
+                style={{
+                  fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                  fontWeight: 700, fontSize: 18, color: '#012d1d', letterSpacing: '-0.01em',
+                }}
+              >
+                Диагностика
+              </h1>
+            </div>
+            <button className="p-2 rounded-full" style={{ color: '#012d1d' }}>
+              <MoreVertical size={24} strokeWidth={2} />
+            </button>
+          </header>
+
+          <main style={{ paddingTop: 64, paddingBottom: 32 }}>
+
+            {/* ── Hero section ── */}
+            <section style={{ padding: '32px 24px 48px' }}>
+
+              {/* Hero image — aspect-[4/3], title inside */}
+              <div
+                className="relative w-full overflow-hidden shadow-lg"
+                style={{ borderRadius: '1.5rem', aspectRatio: '4/3', marginBottom: 32 }}
+              >
+                <img
+                  src={heroImage ?? catSt.img}
+                  alt="Plant"
+                  className="w-full h-full object-cover"
+                />
+                <div
+                  className="absolute inset-0"
+                  style={{ background: 'linear-gradient(to top, rgba(1,45,29,0.80) 0%, rgba(0,0,0,0.10) 60%, transparent 100%)' }}
+                />
+                {isDemo && (
+                  <span
+                    className="absolute top-4 right-4 text-[10px] font-bold px-2.5 py-1 rounded-full tracking-widest uppercase"
+                    style={{ background: '#f59e0b', color: '#451a03' }}
+                  >
+                    DEMO
+                  </span>
+                )}
+                <div className="absolute bottom-6 left-6 right-6">
+                  <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
+                    <span
+                      className="inline-flex items-center px-3 py-1 rounded-full font-bold tracking-widest uppercase"
+                      style={{ background: urgencyColor, color: '#ffffff', fontSize: 10 }}
+                    >
+                      {urgencyRuLabel}
+                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.80)', fontSize: 12, fontWeight: 500 }}>
+                      {pct}% уверенности
+                    </span>
+                  </div>
+                  <h2
+                    style={{
+                      fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                      fontWeight: 800, fontSize: 28, color: '#ffffff',
+                      letterSpacing: '-0.03em', lineHeight: 1.15,
+                    }}
+                  >
+                    {topIssue ? topIssue.title : 'Патологий не выявлено'}
+                  </h2>
+                </div>
+              </div>
+
+              {/* Bento metrics grid */}
+              <div className="grid grid-cols-2" style={{ gap: 16 }}>
+
+                {/* Срочность — full width */}
+                <div
+                  className="col-span-2 flex flex-col justify-between"
+                  style={{ padding: 24, borderRadius: '1.5rem', background: '#f2f4f2' }}
+                >
+                  <span
+                    style={{
+                      fontSize: 10, fontWeight: 700, letterSpacing: '0.16em',
+                      textTransform: 'uppercase', color: '#414844', display: 'block', marginBottom: 16,
+                    }}
+                  >
+                    Срочность
+                  </span>
+                  <div className="flex items-center justify-between">
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                        fontWeight: 700, fontSize: 24, color: urgencyColor,
+                      }}
+                    >
+                      {urgencyRuLabel}
+                    </span>
+                    <AlertTriangle size={28} strokeWidth={1.75} style={{ color: urgencyColor }} />
+                  </div>
+                </div>
+
+                {/* Масштаб */}
+                <div
+                  className="flex flex-col justify-between"
+                  style={{ padding: 24, borderRadius: '1.5rem', background: '#f2f4f2' }}
+                >
+                  <span
+                    style={{
+                      fontSize: 10, fontWeight: 700, letterSpacing: '0.16em',
+                      textTransform: 'uppercase', color: '#414844', display: 'block', marginBottom: 16,
+                    }}
+                  >
+                    Масштаб
+                  </span>
+                  <div>
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                        fontWeight: 700, fontSize: 22, color: '#191c1b',
+                      }}
+                    >
+                      {result.crop.selected || 'Локально'}
+                    </p>
+                    {farmerField?.area && (
+                      <p style={{ fontSize: 13, color: '#414844', marginTop: 4 }}>
+                        {farmerField.area} га
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Риск потерь */}
+                <div
+                  className="flex flex-col justify-between"
+                  style={{ padding: 24, borderRadius: '1.5rem', background: '#1b4332' }}
+                >
+                  <span
+                    style={{
+                      fontSize: 10, fontWeight: 700, letterSpacing: '0.16em',
+                      textTransform: 'uppercase', color: 'rgba(134,175,153,0.80)',
+                      display: 'block', marginBottom: 16,
+                    }}
+                  >
+                    Риск потерь
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                      fontWeight: 700, fontSize: 28, color: '#ffffff',
+                    }}
+                  >
+                    {farmRisk}
+                  </span>
+                </div>
+
+              </div>
+            </section>
+
+            {/* ── План действий ── */}
+            {result.today_actions.length > 0 && (
+              <section style={{ padding: '0 24px', marginBottom: 48 }}>
+                <h3
+                  className="flex items-center gap-2"
+                  style={{
+                    fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                    fontWeight: 700, fontSize: 20, color: '#191c1b', marginBottom: 24,
+                  }}
+                >
+                  <ShieldCheck size={20} strokeWidth={1.75} style={{ color: '#2c694e' }} />
+                  План действий
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {result.today_actions.slice(0, 3).map((action, i) => {
+                    const dotIdx = action.indexOf('. ')
+                    const title = (dotIdx > 0 && dotIdx < 55)
+                      ? action.slice(0, dotIdx)
+                      : action.split(' ').slice(0, 4).join(' ')
+                    const desc = (dotIdx > 0 && dotIdx < 55)
+                      ? action.slice(dotIdx + 2)
+                      : action.split(' ').slice(4).join(' ')
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-start"
+                        style={{
+                          gap: 16, padding: 20, borderRadius: '1.5rem',
+                          background: '#ffffff',
+                          boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
+                          border: '1px solid rgba(193,200,194,0.10)',
+                        }}
+                      >
+                        <div
+                          className="flex items-center justify-center flex-shrink-0"
+                          style={{
+                            width: 32, height: 32, borderRadius: '50%',
+                            background: '#aeeecb', color: '#316e52',
+                            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                            fontWeight: 700, fontSize: 14,
+                          }}
+                        >
+                          {i + 1}
+                        </div>
+                        <div>
+                          <h4
+                            style={{
+                              fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                              fontWeight: 700, fontSize: 15, color: '#191c1b', marginBottom: 4,
+                            }}
+                          >
+                            {title}
+                          </h4>
+                          {desc && (
+                            <p style={{ fontSize: 13, color: '#414844', lineHeight: 1.55 }}>
+                              {desc}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* ── Видео / Premium ── */}
+            {topIssue && result.upsell.video_available && premiumStatus !== 'pending' && (
+              <section style={{ padding: '0 24px', marginBottom: 48 }}>
+                {videoJobId ? (
+                  <div className="rounded-2xl p-5 text-white" style={{ background: 'linear-gradient(135deg, #14532d, #052e16)' }}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(74,222,128,0.20)' }}>
+                        <Video size={20} className="text-emerald-400" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm">Запрос создан</p>
+                        <p className="text-xs mt-0.5" style={{ color: '#6ee7b7' }}>
+                          Ваша видеоконсультация будет готова через несколько минут
+                        </p>
+                      </div>
+                    </div>
+                    {scriptPreview && (
+                      <div className="rounded-xl p-3 mt-1" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: '#6ee7b7' }}>
+                          Предпросмотр сценария
+                        </p>
+                        <p className="text-xs italic leading-relaxed" style={{ color: '#d1fae5' }}>{scriptPreview}</p>
+                      </div>
+                    )}
+                  </div>
+
+                ) : premiumStatus === 'video_review_in_progress' ? (
+                  <div
+                    className="rounded-[24px] overflow-hidden"
+                    style={{
+                      background: 'linear-gradient(158deg, #0c1628 0%, #0a1220 55%, #070e1a 100%)',
+                      border: '1px solid rgba(96,165,250,0.14)',
+                    }}
+                  >
+                    <div className="px-5 pt-5 pb-4 flex items-start justify-between">
+                      <div className="flex-1 min-w-0 pr-4">
+                        <div
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3"
+                          style={{ background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.25)' }}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse flex-shrink-0" />
+                          <span className="font-bold tracking-[0.18em] text-blue-300 uppercase" style={{ fontSize: 9.5 }}>
+                            Видеоразбор в работе
+                          </span>
+                        </div>
+                        <h3 className="text-white font-black" style={{ fontSize: 20, letterSpacing: '-0.02em' }}>
+                          Видеоразбор в работе
+                        </h3>
+                        <p className="mt-1" style={{ fontSize: 12.5, color: 'rgba(147,197,253,0.55)' }}>
+                          Агроном уже получил ваш случай
+                        </p>
+                      </div>
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                        <div
+                          className="flex items-center justify-center"
+                          style={{
+                            width: 60, height: 60, borderRadius: '50%',
+                            background: 'linear-gradient(145deg, #1e3a5f, #0d2040)',
+                            border: '2.5px solid rgba(96,165,250,0.40)',
+                          }}
+                        >
+                          <UserCheck size={26} strokeWidth={1.5} color="#93c5fd" />
+                        </div>
+                        <div
+                          className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full animate-pulse"
+                          style={{ background: '#60a5fa', border: '2px solid #0a1220' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                ) : premiumStatus === 'video_review_ready' ? (
+                  <div
+                    className="rounded-[24px] overflow-hidden"
+                    style={{
+                      background: 'linear-gradient(158deg, #052e16 0%, #0b1e12 55%, #071410 100%)',
+                      border: '1px solid rgba(74,222,128,0.22)',
+                    }}
+                  >
+                    <div className="px-5 pt-5 pb-4">
+                      <div
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3"
+                        style={{ background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.35)' }}
+                      >
+                        <CheckCircle2 size={10} strokeWidth={2.5} className="text-emerald-400" />
+                        <span className="font-bold tracking-[0.18em] text-emerald-400 uppercase" style={{ fontSize: 9.5 }}>
+                          Видеоразбор готов
+                        </span>
+                      </div>
+                      <h3 className="text-white font-black" style={{ fontSize: 20, letterSpacing: '-0.02em' }}>
+                        Ваш видеоразбор готов
+                      </h3>
+                      <p className="mt-1" style={{ fontSize: 12.5, color: 'rgba(167,243,208,0.55)' }}>
+                        Мы отправили разбор в Telegram
+                      </p>
+                    </div>
+                    <div className="px-5 pb-5">
+                      <a
+                        href="https://t.me"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full rounded-[14px] font-black tracking-wide flex items-center justify-center transition-all active:scale-[0.97]"
+                        style={{
+                          padding: '16px 0', fontSize: 15,
+                          background: 'linear-gradient(145deg, #3ddb6d 0%, #15a248 100%)',
+                          color: '#022c17', textDecoration: 'none',
+                          boxShadow: '0 6px 28px rgba(34,197,94,0.50)',
+                        }}
+                      >
+                        Проверить Telegram
+                      </a>
+                    </div>
+                  </div>
+
+                ) : (
+                  /* Upsell — Stitch dark card */
+                  <div
+                    className="overflow-hidden"
+                    style={{ borderRadius: '1.5rem', background: '#012d1d' }}
+                  >
+                    {/* Video preview */}
+                    <div className="relative" style={{ aspectRatio: '16/9' }}>
+                      <img
+                        src={catSt.img}
+                        alt="Видео-разбор"
+                        className="w-full h-full object-cover"
+                        style={{ opacity: 0.6 }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <button
+                          onClick={() => setPaywallOpen(true)}
+                          className="flex items-center justify-center active:scale-90 transition-transform"
+                          style={{
+                            width: 64, height: 64, borderRadius: '50%',
+                            background: 'rgba(255,255,255,0.20)',
+                            backdropFilter: 'blur(12px)',
+                            WebkitBackdropFilter: 'blur(12px)',
+                            border: '1px solid rgba(255,255,255,0.30)',
+                          }}
+                        >
+                          <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    {/* Content */}
+                    <div style={{ padding: 32 }}>
+                      <h3
+                        style={{
+                          fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                          fontWeight: 700, fontSize: 22, color: '#ffffff',
+                          marginBottom: 24, letterSpacing: '-0.02em',
+                        }}
+                      >
+                        Персональный видео-разбор
+                      </h3>
+                      <ul style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        {[
+                          { Icon: LayoutList,    label: 'Анализ ситуации' },
+                          { Icon: ClipboardList, label: 'План обработки' },
+                          { Icon: FileText,      label: 'Рекомендации' },
+                        ].map(({ Icon, label }, i) => (
+                          <li
+                            key={i}
+                            className="flex items-center gap-3"
+                            style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.90)' }}
+                          >
+                            <Icon size={20} strokeWidth={1.75} style={{ color: '#ffe088' }} />
+                            {label}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* ── Re-scan ── */}
+            <section style={{ padding: '0 24px', marginTop: 8 }}>
+              <button
+                onClick={() => router.push(`/upload?followup=${result.analysis_id}`)}
+                className="w-full flex items-center gap-4 px-4 py-3.5 transition-colors active:opacity-80"
+                style={{ background: '#ffffff', borderRadius: '1.5rem', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
+              >
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{ width: 44, height: 44, borderRadius: '50%', background: '#f2f4f2' }}
+                >
+                  <RefreshCw size={19} strokeWidth={2} style={{ color: '#2c694e' }} />
+                </div>
+                <div className="flex-1 text-left">
+                  <p style={{ fontSize: 14, fontWeight: 700, color: '#191c1b' }}>
+                    Повторная диагностика через 2–3 дня
+                  </p>
+                  <p style={{ fontSize: 12, color: '#414844', marginTop: 2 }}>
+                    Контролируйте развитие болезни на поле
+                  </p>
+                </div>
+                <ChevronRight size={18} strokeWidth={2} style={{ color: '#c1c8c2' }} />
+              </button>
+            </section>
+
+            {/* Debug */}
+            {debugMode && (
+              <div className="px-6 mt-4">
+                <DebugPanel analysisId={result.analysis_id} />
+              </div>
+            )}
+
+          </main>
+
+          {/* ── Sticky CTA — above bottom nav ── */}
+          <div
+            className="fixed left-0 right-0 z-10"
+            style={{
+              bottom: 60,
+              maxWidth: 448,
+              margin: '0 auto',
+              padding: '16px 24px',
+              background: 'rgba(248,250,248,0.80)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              borderTop: '1px solid rgba(193,200,194,0.10)',
+            }}
+          >
+            <button
+              onClick={() => setPaywallOpen(true)}
+              className="w-full flex items-center justify-center gap-3 transition-all active:scale-95 duration-200"
+              style={{
+                padding: '20px 32px',
+                borderRadius: '1rem',
+                fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                fontWeight: 700, fontSize: 18,
+                border: 'none',
+                background: '#1b4332',
+                color: '#ffffff',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.28)',
+                cursor: 'pointer',
+              }}
+            >
+              <UserCheck size={20} strokeWidth={1.75} />
+              Получить разбор от агронома
+            </button>
+          </div>
+
+          {/* ── Bottom nav ── */}
+          <div
+            className="fixed bottom-0 left-0 right-0 z-20 max-w-md mx-auto"
+            style={{
+              background: 'rgba(255,255,255,0.97)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              borderTop: '1px solid rgba(0,0,0,0.05)',
+              boxShadow: '0 -1px 0 rgba(0,0,0,0.04), 0 -8px 24px rgba(0,0,0,0.04)',
+            }}
+          >
+            <div className="flex items-center justify-around px-6 pt-2 pb-4">
+              <button onClick={() => router.push('/upload')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: '#9ca3af' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
+                  <path d="M9 21V12h6v9" />
+                </svg>
+                <span style={{ fontSize: 9.5 }} className="font-medium">Главная</span>
+              </button>
+              <button onClick={() => router.push('/upload')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: '#9ca3af' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+                <span style={{ fontSize: 9.5 }} className="font-medium">Сканер</span>
+              </button>
+              <button onClick={() => router.push('/history')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: '#9ca3af' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <polyline points="12 7 12 12 15 15" />
+                </svg>
+                <span style={{ fontSize: 9.5 }} className="font-medium">История</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        {/* PaywallModal */}
+        {paywallOpen && (
+          <PaywallModal
+            mode="video"
+            loading={videoLoading}
+            onClose={() => setPaywallOpen(false)}
+            onVideoConfirm={handleVideoConfirm}
+            onOrderSubmit={handleOrderSubmit}
+            diagnosisName={topIssue?.title}
+            diagnosisScore={topIssue?.score}
+          />
+        )}
+      </>
+    )
+  }
+  // ══ END FARM LAYOUT ═══════════════════════════════════════════════════════
 
   return (
     <>
@@ -399,8 +955,6 @@ function ResultsContent() {
             <p className="text-sm text-gray-500 leading-relaxed">
               {seg === 'home'
                 ? 'Явных проблем не найдено. Продолжайте ухаживать как обычно.'
-                : seg === 'farm'
-                ? 'Патологий не выявлено. Плановый мониторинг посевов.'
                 : 'Явных признаков болезни или дефицита не обнаружено. Наблюдайте 2–3 дня.'}
             </p>
           </div>
@@ -438,8 +992,7 @@ function ResultsContent() {
               className="font-semibold tracking-[0.16em] text-gray-400/80 uppercase mb-4"
               style={{ fontSize: 10 }}
             >
-              {seg === 'farm' ? 'Срочные меры'
-                : seg === 'home' ? 'Как помочь растению'
+              {seg === 'home' ? 'Как помочь растению'
                 : seg === 'dacha' ? 'Действуйте сейчас — пока не распространилось'
                 : 'Что делать сейчас'}
             </p>
@@ -832,13 +1385,11 @@ function ResultsContent() {
                       </span>
                     </div>
                     <h3 className="text-white font-black leading-[1.15]" style={{ fontSize: 20, letterSpacing: '-0.02em' }}>
-                      {seg === 'farm' ? 'Агрономический\nразбор ситуации'
-                        : seg === 'home' ? 'Совет специалиста\nпо вашему растению'
+                      {seg === 'home' ? 'Совет специалиста\nпо вашему растению'
                         : 'Получить разбор\nот агронома'}
                     </h3>
                     <p className="mt-2 leading-snug" style={{ fontSize: 12.5, color: 'rgba(167,243,208,0.55)' }}>
-                      {seg === 'farm' ? 'Практические рекомендации для вашей ситуации'
-                        : seg === 'home' ? '30–60 сек · понятный разбор для вашего растения'
+                      {seg === 'home' ? '30–60 сек · понятный разбор для вашего растения'
                         : seg === 'dacha' ? 'Что серьёзно, что подождёт — и что делать в первую очередь'
                         : '30–60 сек · персональный разбор вашего случая'}
                     </p>
@@ -896,13 +1447,11 @@ function ResultsContent() {
                       letterSpacing: '0.02em',
                     }}
                   >
-                    {seg === 'farm' ? 'Получить агрорекомендацию →'
-                      : seg === 'home' ? 'Получить совет →'
+                    {seg === 'home' ? 'Получить совет →'
                       : 'Получить разбор →'}
                   </button>
                   <p className="text-center mt-2.5" style={{ fontSize: 11, color: 'rgba(167,243,208,0.40)', letterSpacing: '0.01em' }}>
-                    {seg === 'farm' ? 'Раннее вмешательство снижает потери'
-                      : seg === 'home' ? 'Чем раньше начать — тем лучше результат'
+                    {seg === 'home' ? 'Чем раньше начать — тем лучше результат'
                       : seg === 'dacha' ? 'Промедление даёт болезни время распространиться'
                       : 'Раннее лечение даёт лучший результат'}
                   </p>
@@ -926,8 +1475,7 @@ function ResultsContent() {
             <div className="flex-1 text-left">
               <p className="text-[13.5px] font-bold text-gray-800">Повторная диагностика через 2–3 дня</p>
               <p className="text-[11.5px] text-gray-400 mt-0.5">
-                {seg === 'farm' ? 'Контролируйте развитие болезни на поле'
-                  : seg === 'home' ? 'Посмотрите, помогли ли ваши действия'
+                {seg === 'home' ? 'Посмотрите, помогли ли ваши действия'
                   : 'Отслеживайте динамику и корректируйте лечение'}
               </p>
             </div>
