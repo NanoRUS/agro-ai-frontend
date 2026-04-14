@@ -1380,7 +1380,6 @@ function ResultsContent() {
                     }}>
                       {action}
                     </p>
-                    <ChevronRight size={18} strokeWidth={1.75} style={{ color: 'rgba(108,123,115,0.28)', flexShrink: 0 }} />
                   </div>
                 )
               })}
