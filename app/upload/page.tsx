@@ -2,12 +2,30 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  ShieldCheck, Star, Scan, Camera, ImagePlus,
-  X, Zap, ArrowRight,
+  X, MoreVertical, Camera, ImagePlus, ArrowRight, Sun, Scan, Leaf,
 } from 'lucide-react'
 import { DEMO_CASES, loadDemoResult } from '@/lib/demo-fixtures'
 import { API_URL } from '@/lib/api'
 import BottomNav from '@/components/BottomNav'
+
+// ── Stitch tokens ──────────────────────────────────────────────────────────────
+const C = {
+  surface:              '#f8faf8',
+  surfaceContainerLow:  '#f2f4f2',
+  surfaceContainerHigh: '#e6e9e7',
+  surfaceContainerHighest: '#e1e3e1',
+  surfaceContainerLowest: '#ffffff',
+  primary:              '#012d1d',
+  primaryContainer:     '#1b4332',
+  onPrimaryContainer:   '#86af99',
+  secondary:            '#2c694e',
+  secondaryContainer:   '#aeeecb',
+  onSecondaryContainer: '#316e52',
+  onSurface:            '#191c1b',
+  onSurfaceVariant:     '#414844',
+  outline:              '#717973',
+  outlineVariant:       '#c1c8c2',
+}
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -19,7 +37,6 @@ const CROPS = [
   { id: 'strawberry', label: 'Клубника',  img: '/crops/strawberry.jpg' },
 ]
 
-// Demo card image per fixture id — real plant/disease photos
 const DEMO_IMAGES: Record<string, string> = {
   tomato_phytophthora_rain:        '/demos/tomato-blight.jpg',
   tomato_overwatering:             '/demos/tomato-overwatering.jpg',
@@ -30,20 +47,18 @@ const DEMO_IMAGES: Record<string, string> = {
   strawberry_root_rot:             '/demos/strawberry-root.jpg',
 }
 
-// IDs excluded from demo grid (no quality disease photo available)
 const DEMO_EXCLUDED = new Set(['tomato_aphids', 'cucumber_spider_mites_heat'])
 
 function stripEmoji(label: string) {
-  // Remove leading emoji + space from demo labels like "🍅 Фитофтора…"
   return label.replace(/^\p{Emoji_Presentation}\s*/u, '')
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function UploadPage() {
-  const router     = useRouter()
-  const inputRef   = useRef<HTMLInputElement>(null)
-  const cameraRef  = useRef<HTMLInputElement>(null)
+  const router    = useRouter()
+  const inputRef  = useRef<HTMLInputElement>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
 
   const [images,      setImages]      = useState<File[]>([])
   const [previews,    setPreviews]    = useState<string[]>([])
@@ -51,18 +66,24 @@ export default function UploadPage() {
   const [error,       setError]       = useState('')
   const [demoLoading, setDemoLoading] = useState<string | null>(null)
   const [navigating,  setNavigating]  = useState(false)
+  const [farmerCtx,   setFarmerCtx]   = useState<{ crop: string; field: string } | null>(null)
 
-  // Onboarding guard
   useEffect(() => {
     if (!localStorage.getItem('userType')) {
       router.replace('/onboarding')
     }
+    try {
+      const crops = JSON.parse(sessionStorage.getItem('agro_farmer_crops') || '[]') as string[]
+      const field = JSON.parse(sessionStorage.getItem('agro_farmer_field') || '{}') as { name?: string }
+      if (crops.length > 0) {
+        setFarmerCtx({ crop: crops[0], field: field.name || '' })
+      }
+    } catch {}
   }, [])
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const incoming = Array.from(e.target.files || [])
     if (!incoming.length) return
-    // Append to existing, cap at 5
     setImages((prev) => {
       const combined = [...prev, ...incoming].slice(0, 5)
       const added = combined.slice(prev.length)
@@ -70,7 +91,6 @@ export default function UploadPage() {
       return combined
     })
     setError('')
-    // Reset input so the same camera can be triggered again
     e.target.value = ''
   }
 
@@ -79,7 +99,6 @@ export default function UploadPage() {
     setPreviews(previews.filter((_, i) => i !== idx))
   }
 
-  // Compress image to max 1024px, JPEG 0.80 — keeps size under ~150KB
   function compressImage(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const img = new Image()
@@ -139,481 +158,623 @@ export default function UploadPage() {
   const hasCrop    = !!crop
   const canProceed = hasPhotos && hasCrop
 
-  const cropSectionRef = useRef<HTMLElement>(null)
-
   return (
-    <div className="min-h-screen bg-[#f0f2f5] pb-[148px]">
+    <div style={{ background: C.surface, color: C.onSurface, minHeight: 'max(884px, 100dvh)' }}>
 
-      {/* ══ 1. HERO CARD ════════════════════════════════════════════════ */}
-      <div className="px-4 pt-5">
-        <div
-          className="relative w-full overflow-hidden"
-          style={{ borderRadius: 28, height: 268 }}
+      {/* ── TopAppBar ── */}
+      <header
+        className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6"
+        style={{ height: 64, background: C.surface, maxWidth: 448, margin: '0 auto' }}
+      >
+        <button
+          onClick={() => router.back()}
+          className="p-2 rounded-full transition-colors active:scale-95"
+          style={{ color: C.primary }}
         >
-          {/* Real photo background */}
-          <img
-            src="/crops/tomato.jpg"
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: 'center 40%' }}
-          />
-
-          {/* Gradient overlay — keeps text readable + brand color */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background: [
-                'linear-gradient(to bottom, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.0) 30%, rgba(0,0,0,0.68) 100%)',
-                'linear-gradient(155deg, rgba(15,48,24,0.72) 0%, rgba(7,24,16,0.42) 55%, transparent 100%)',
-              ].join(', '),
-            }}
-          />
-
-          {/* ─ Badges — top row ─ */}
-          <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-            {/* Accuracy badge */}
-            <div
-              className="flex items-center gap-1.5 px-3 py-[7px] rounded-full"
-              style={{
-                background: 'rgba(255,255,255,0.90)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255,255,255,0.55)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
-              }}
-            >
-              <ShieldCheck size={11} strokeWidth={2.5} className="text-emerald-600" />
-              <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.07em', color: '#111827' }}>
-                98% ТОЧНОСТЬ
-              </span>
-            </div>
-
-            {/* Expert badge */}
-            <div
-              className="flex items-center gap-1.5 px-3 py-[7px] rounded-full"
-              style={{
-                background: 'rgba(74,222,128,0.18)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                border: '1px solid rgba(74,222,128,0.35)',
-              }}
-            >
-              <Star size={10} strokeWidth={0} className="fill-emerald-400 text-emerald-400" />
-              <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.07em', color: '#4ade80' }}>
-                ЭКСПЕРТНАЯ ПРОВЕРКА
-              </span>
-            </div>
-          </div>
-
-          {/* ─ Title + subtitle — bottom ─ */}
-          <div className="absolute bottom-5 left-5 right-5">
-            <h1
-              className="text-white"
-              style={{
-                fontSize: 26, fontWeight: 900,
-                letterSpacing: '-0.04em', lineHeight: 1.05,
-                textShadow: '0 2px 12px rgba(0,0,0,0.40)',
-              }}
-            >
-              Определите болезнь{'\n'}растения за секунды
-            </h1>
-            <p
-              className="mt-1.5"
-              style={{
-                fontSize: 13, color: 'rgba(255,255,255,0.65)',
-                letterSpacing: '-0.01em', lineHeight: 1.45,
-              }}
-            >
-              На основе ИИ · 5 культур · Результат за 60 сек
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* ══ 2. UPLOAD CARD ══════════════════════════════════════════════ */}
-      <div className="px-4 mt-4">
-        <div
-          className="rounded-[20px] overflow-hidden"
+          <X size={24} strokeWidth={2} />
+        </button>
+        <h1
           style={{
-            background: 'white',
-            boxShadow: '0 1px 8px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.05)',
-            border: '1px solid rgba(0,0,0,0.05)',
+            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+            fontWeight: 700,
+            fontSize: 18,
+            color: C.primary,
+            letterSpacing: '-0.01em',
           }}
         >
-          {previews.length === 0 ? (
-            /* ─ Empty state ─ */
-            <div className="px-5 py-5">
-              {/* Icon + title */}
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0"
-                  style={{
-                    background: 'linear-gradient(145deg, #22c55e, #15803d)',
-                    boxShadow: '0 4px 12px rgba(34,197,94,0.30)',
-                  }}
-                >
-                  <Scan size={20} strokeWidth={1.75} className="text-white" />
-                </div>
-                <div>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', letterSpacing: '-0.02em' }}>
-                    Загрузите фото растения
-                  </p>
-                  <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 1 }}>
-                    До 5 фото · лист, стебель, плод
-                  </p>
-                </div>
-              </div>
+          Диагностика
+        </h1>
+        <button className="p-2 rounded-full" style={{ color: C.primary }}>
+          <MoreVertical size={24} strokeWidth={2} />
+        </button>
+      </header>
 
-              {/* Camera / Gallery buttons */}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => cameraRef.current?.click()}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[14px]
-                             transition-all duration-150 active:scale-[0.97]"
-                  style={{
-                    background: 'rgba(22,163,74,0.08)',
-                    border: '1.5px solid rgba(22,163,74,0.20)',
-                  }}
-                >
-                  <Camera size={17} strokeWidth={1.75} className="text-emerald-600" />
-                  <span style={{ fontSize: 13.5, fontWeight: 600, color: '#15803d' }}>Камера</span>
-                </button>
-                <button
-                  onClick={() => inputRef.current?.click()}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[14px]
-                             transition-all duration-150 active:scale-[0.97]"
-                  style={{
-                    background: 'rgba(0,0,0,0.03)',
-                    border: '1.5px solid rgba(0,0,0,0.08)',
-                  }}
-                >
-                  <ImagePlus size={17} strokeWidth={1.75} className="text-gray-500" />
-                  <span style={{ fontSize: 13.5, fontWeight: 600, color: '#4b5563' }}>Галерея</span>
-                </button>
-              </div>
+      {/* ── Main ── */}
+      <main className="px-6" style={{ paddingTop: 96, paddingBottom: 200 }}>
+
+        {/* Context chip — shown for farmers */}
+        {farmerCtx && (
+          <div className="flex justify-center" style={{ marginBottom: 32 }}>
+            <div
+              className="inline-flex items-center gap-2 rounded-full"
+              style={{
+                padding: '8px 16px',
+                background: C.secondaryContainer,
+                color: C.onSecondaryContainer,
+                boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {farmerCtx.crop}{farmerCtx.field ? ` • ${farmerCtx.field}` : ''}
+              </span>
+              <button
+                onClick={() => setFarmerCtx(null)}
+                className="hover:opacity-70 transition-opacity"
+              >
+                <X size={14} strokeWidth={2} />
+              </button>
             </div>
-          ) : (
-            /* ─ Photo grid ─ */
-            <div className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div
-                  className="w-7 h-7 rounded-lg flex items-center justify-center"
-                  style={{ background: 'rgba(22,163,74,0.10)' }}
-                >
-                  <Scan size={14} strokeWidth={2} className="text-emerald-600" />
-                </div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
-                  {previews.length} {previews.length === 1 ? 'фото добавлено' : 'фото добавлено'}
-                </p>
+          </div>
+        )}
+
+        {/* Headline */}
+        <div className="text-center" style={{ marginBottom: 48 }}>
+          <h2
+            style={{
+              fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+              fontWeight: 800,
+              fontSize: 36,
+              letterSpacing: '-0.04em',
+              color: C.primary,
+              lineHeight: 1.1,
+              marginBottom: 16,
+            }}
+          >
+            Загрузите фото растения
+          </h2>
+          <p
+            style={{
+              color: C.onSurfaceVariant,
+              fontSize: 18,
+              lineHeight: 1.5,
+              maxWidth: 360,
+              margin: '0 auto',
+            }}
+          >
+            Используйте четкий снимок пораженного участка для точного анализа ИИ.
+          </p>
+        </div>
+
+        {/* ── Upload zone ── */}
+        {previews.length === 0 ? (
+          <div
+            className="relative group cursor-pointer"
+            onClick={() => inputRef.current?.click()}
+          >
+            {/* Glow wrapper */}
+            <div
+              className="absolute -inset-1 rounded-[3rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"
+              style={{ background: `linear-gradient(135deg, ${C.primary}1a, ${C.secondary}1a)` }}
+            />
+            <div
+              className="relative flex flex-col items-center justify-center"
+              style={{
+                padding: 48,
+                border: `2px dashed ${C.outlineVariant}`,
+                borderRadius: '3rem',
+                background: C.surfaceContainerLowest,
+                minHeight: 340,
+              }}
+            >
+              <div
+                className="flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: '50%',
+                  background: C.surfaceContainerLow,
+                  color: C.primary,
+                  marginBottom: 24,
+                }}
+              >
+                {/* add_a_photo substitute */}
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                  <circle cx="12" cy="13" r="3"/>
+                  <line x1="12" y1="2" x2="12" y2="5"/>
+                  <line x1="10.5" y1="3.5" x2="13.5" y2="3.5"/>
+                </svg>
               </div>
-              <div className="grid grid-cols-3 gap-2.5">
-                {previews.map((src, i) => (
-                  <div key={i} className="relative aspect-square">
-                    <img
-                      src={src} alt=""
-                      className="w-full h-full object-cover"
-                      style={{ borderRadius: 16 }}
-                    />
-                    <button
-                      onClick={() => removeImage(i)}
-                      className="absolute top-1.5 right-1.5 w-7 h-7 flex items-center justify-center
-                                 transition-transform active:scale-90"
-                      style={{
-                        background: 'rgba(0,0,0,0.55)',
-                        backdropFilter: 'blur(8px)',
-                        WebkitBackdropFilter: 'blur(8px)',
-                        borderRadius: '50%',
-                        border: '1px solid rgba(255,255,255,0.20)',
-                      }}
-                    >
-                      <X size={13} strokeWidth={2.5} className="text-white" />
-                    </button>
-                  </div>
-                ))}
-                {previews.length < 5 && (
+              <p
+                style={{
+                  fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                  fontWeight: 700,
+                  fontSize: 20,
+                  color: C.primary,
+                  textAlign: 'center',
+                  marginBottom: 8,
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                Нажмите, чтобы загрузить или сделать фото
+              </p>
+              <p
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                  color: C.onSurfaceVariant,
+                }}
+              >
+                JPG, PNG до 10 МБ
+              </p>
+            </div>
+          </div>
+        ) : (
+          /* ── Photo grid (after upload) ── */
+          <div
+            style={{
+              background: C.surfaceContainerLowest,
+              borderRadius: '3rem',
+              padding: 24,
+              border: `1px solid rgba(193,200,194,0.15)`,
+            }}
+          >
+            <p
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: C.onSurfaceVariant,
+                marginBottom: 16,
+              }}
+            >
+              {previews.length} {previews.length === 1 ? 'фото' : 'фото'} добавлено
+            </p>
+            <div className="grid grid-cols-3" style={{ gap: 10 }}>
+              {previews.map((src, i) => (
+                <div key={i} className="relative aspect-square">
+                  <img
+                    src={src}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    style={{ borderRadius: '1.5rem' }}
+                  />
                   <button
-                    onClick={() => inputRef.current?.click()}
-                    className="aspect-square flex flex-col items-center justify-center gap-1
-                               transition-all duration-150 active:scale-[0.97]"
+                    onClick={() => removeImage(i)}
+                    className="absolute top-2 right-2 flex items-center justify-center transition-transform active:scale-90"
                     style={{
-                      borderRadius: 16,
-                      border: '2px dashed rgba(22,163,74,0.28)',
-                      background: 'rgba(22,163,74,0.04)',
+                      width: 28,
+                      height: 28,
+                      borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.55)',
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      border: '1px solid rgba(255,255,255,0.20)',
                     }}
                   >
-                    <ImagePlus size={18} strokeWidth={1.75} className="text-emerald-500/70" />
-                    <span style={{ fontSize: 10.5, color: '#6b7280', fontWeight: 500 }}>Добавить</span>
+                    <X size={13} strokeWidth={2.5} className="text-white" />
                   </button>
-                )}
-              </div>
+                </div>
+              ))}
+              {previews.length < 5 && (
+                <button
+                  onClick={() => inputRef.current?.click()}
+                  className="aspect-square flex flex-col items-center justify-center gap-1 transition-all active:scale-[0.97]"
+                  style={{
+                    borderRadius: '1.5rem',
+                    border: `2px dashed ${C.outlineVariant}`,
+                    background: C.surfaceContainerLow,
+                  }}
+                >
+                  <ImagePlus size={18} strokeWidth={1.75} style={{ color: C.outline }} />
+                  <span style={{ fontSize: 10, color: C.onSurfaceVariant, fontWeight: 500 }}>Добавить</span>
+                </button>
+              )}
             </div>
-          )}
-        </div>
+            {/* Camera / Gallery buttons */}
+            <div className="flex gap-3" style={{ marginTop: 16 }}>
+              <button
+                onClick={() => cameraRef.current?.click()}
+                className="flex-1 flex items-center justify-center gap-2 transition-all active:scale-[0.97]"
+                style={{
+                  padding: '12px 0',
+                  borderRadius: '2rem',
+                  background: C.surfaceContainerLow,
+                  border: `1px solid rgba(193,200,194,0.20)`,
+                  color: C.secondary,
+                  fontSize: 14,
+                  fontWeight: 600,
+                }}
+              >
+                <Camera size={16} strokeWidth={1.75} />
+                Камера
+              </button>
+              <button
+                onClick={() => inputRef.current?.click()}
+                className="flex-1 flex items-center justify-center gap-2 transition-all active:scale-[0.97]"
+                style={{
+                  padding: '12px 0',
+                  borderRadius: '2rem',
+                  background: C.surfaceContainerLow,
+                  border: `1px solid rgba(193,200,194,0.20)`,
+                  color: C.onSurfaceVariant,
+                  fontSize: 14,
+                  fontWeight: 600,
+                }}
+              >
+                <ImagePlus size={16} strokeWidth={1.75} />
+                Галерея
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Hidden inputs */}
         <input ref={inputRef}  type="file" accept="image/*" multiple className="hidden" onChange={onFileChange} />
         <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onFileChange} />
-      </div>
 
-      {/* ══ 3. PLANT TYPE ═══════════════════════════════════════════════ */}
-      <section ref={cropSectionRef} className="px-4 mt-5">
-        <p
-          className="font-semibold tracking-[0.16em] text-gray-400/80 uppercase mb-3"
-          style={{ fontSize: 10 }}
-        >
-          Тип растения
-        </p>
-        <div className="grid grid-cols-5 gap-2">
-          {CROPS.map((c) => {
-            const sel = crop === c.id
-            return (
-              <button
-                key={c.id}
-                onClick={() => { setCrop(c.id); setError('') }}
-                className="flex flex-col items-center pt-2.5 pb-2 rounded-[16px]
-                           transition-all duration-200 active:scale-[0.94]"
-                style={{
-                  background: sel ? '#f0fdf4' : 'white',
-                  border: `2px solid ${sel ? '#22c55e' : 'rgba(0,0,0,0.07)'}`,
-                  boxShadow: sel
-                    ? '0 0 0 3px rgba(34,197,94,0.12), 0 2px 8px rgba(0,0,0,0.06)'
-                    : '0 1px 4px rgba(0,0,0,0.06)',
-                }}
-              >
-                {/* Real crop photo */}
-                <div
-                  className="w-10 h-10 mb-1.5 overflow-hidden"
-                  style={{
-                    borderRadius: 10,
-                    border: sel ? '2px solid rgba(34,197,94,0.35)' : '1.5px solid rgba(0,0,0,0.08)',
-                  }}
-                >
-                  <img
-                    src={c.img}
-                    alt={c.label}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <span style={{
-                  fontSize: 10.5,
-                  fontWeight: sel ? 700 : 500,
-                  color: sel ? '#15803d' : '#6b7280',
-                  letterSpacing: '-0.01em',
-                }}>
-                  {c.label}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </section>
+        {/* ── Two info cards ── */}
+        <div className="grid grid-cols-1" style={{ gap: 16, marginTop: 24 }}>
 
-      {/* ══ 4. DEMO SECTION ═════════════════════════════════════════════ */}
-      <section className="mt-6">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 mb-3">
-          <div className="flex items-center gap-2">
-            <div
-              className="w-6 h-6 rounded-lg flex items-center justify-center"
-              style={{ background: 'rgba(245,158,11,0.12)' }}
-            >
-              <Zap size={12} strokeWidth={2} className="text-amber-500" />
-            </div>
-            <p
-              className="font-semibold tracking-[0.16em] text-gray-400/80 uppercase"
-              style={{ fontSize: 10 }}
-            >
-              Примеры диагностики
-            </p>
-          </div>
-          <p style={{ fontSize: 11, color: '#9ca3af' }}>
-            Нажмите для демо
-          </p>
-        </div>
-
-        {/* 3-column grid */}
-        <div className="grid grid-cols-3 gap-2.5 px-4">
-          {DEMO_CASES.filter((c) => !DEMO_EXCLUDED.has(c.id)).map((c) => {
-            const imgSrc = DEMO_IMAGES[c.id] ?? `/crops/${c.crop}.jpg`
-            const label = stripEmoji(c.label)
-            const isLoading = demoLoading === c.id
-
-            return (
-              <button
-                key={c.id}
-                onClick={() => handleDemoCase(c.id)}
-                disabled={demoLoading !== null}
-                className="w-full text-left transition-all duration-200
-                           active:scale-[0.96] disabled:opacity-60"
-                style={{ outline: 'none' }}
-              >
-                {/* Square photo card */}
-                <div
-                  className="w-full aspect-square rounded-[16px] relative overflow-hidden mb-1.5"
-                  style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.14)' }}
-                >
-                  <img
-                    src={imgSrc}
-                    alt={label}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  {/* Bottom scrim */}
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background: 'linear-gradient(to bottom, rgba(0,0,0,0.0) 45%, rgba(0,0,0,0.52) 100%)',
-                    }}
-                  />
-                  {/* Run / loading indicator */}
-                  {isLoading ? (
-                    <div
-                      className="absolute bottom-2 right-2 w-5 h-5 rounded-full
-                                 border-2 border-emerald-400 border-t-transparent animate-spin"
-                    />
-                  ) : (
-                    <div
-                      className="absolute bottom-2 right-2 w-6 h-6 rounded-full
-                                 flex items-center justify-center"
-                      style={{
-                        background: 'rgba(255,255,255,0.22)',
-                        backdropFilter: 'blur(8px)',
-                        WebkitBackdropFilter: 'blur(8px)',
-                        border: '1px solid rgba(255,255,255,0.30)',
-                      }}
-                    >
-                      <ArrowRight size={11} strokeWidth={2.5} className="text-white" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Label */}
-                <p
-                  className="line-clamp-2 leading-tight"
-                  style={{ fontSize: 11, fontWeight: 600, color: '#1f2937', letterSpacing: '-0.01em' }}
-                >
-                  {label}
-                </p>
-              </button>
-            )
-          })}
-        </div>
-      </section>
-
-      {/* ── Demo loading error ── */}
-      {error && (
-        <div
-          className="mx-4 mt-4 flex items-center gap-2 px-4 py-3 rounded-2xl"
-          style={{ background: '#fef2f2', border: '1px solid rgba(239,68,68,0.20)' }}
-        >
-          <span style={{ fontSize: 13, color: '#dc2626', fontWeight: 500 }}>{error}</span>
-        </div>
-      )}
-
-      {/* ══ 5. STICKY CTA — always visible above nav ════════════════════ */}
-      <div
-        className="fixed left-0 right-0 z-10 max-w-md mx-auto"
-        style={{ bottom: 60 }}
-      >
-        <div
-          className="px-4 pt-3 pb-3"
-          style={{
-            background: 'rgba(240,242,245,0.97)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            borderTop: '1px solid rgba(0,0,0,0.06)',
-            boxShadow: '0 -4px 20px rgba(0,0,0,0.05)',
-          }}
-        >
-          {/* Status hint — shown only when partially ready */}
-          {(hasPhotos || hasCrop) && !canProceed && (
-            <button
-              onClick={() => {
-                if (!hasCrop) cropSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-              }}
-              className="w-full flex items-center gap-2 mb-2.5 px-3.5 py-2 rounded-[12px] text-left"
-              style={{
-                background: 'rgba(245,158,11,0.08)',
-                border: '1px solid rgba(245,158,11,0.20)',
-              }}
-            >
-              <div
-                className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ background: 'rgba(245,158,11,0.18)' }}
-              >
-                <span style={{ fontSize: 9, fontWeight: 900, color: '#d97706' }}>!</span>
-              </div>
-              <p style={{ fontSize: 12.5, color: '#92400e', fontWeight: 500 }}>
-                {!hasPhotos ? 'Загрузите фото растения' : 'Выберите тип растения ↑'}
-              </p>
-            </button>
-          )}
-
-          {canProceed && (
-            <p
-              className="text-center mb-2 font-semibold"
-              style={{ fontSize: 12.5, color: '#15803d', letterSpacing: '-0.01em' }}
-            >
-              Готово — запустите анализ
-            </p>
-          )}
-
-          <button
-            onClick={handleNext}
-            disabled={!canProceed}
-            className="w-full rounded-[14px] font-black tracking-wide
-                       transition-all duration-200 active:scale-[0.97] active:brightness-95
-                       disabled:cursor-not-allowed"
+          {/* Example photo card */}
+          <div
             style={{
-              padding: '15px 0',
-              fontSize: 15.5,
-              letterSpacing: '0.01em',
-              background: canProceed
-                ? 'linear-gradient(145deg, #3ddb6d 0%, #15a248 100%)'
-                : 'linear-gradient(145deg, #d1fae5 0%, #a7f3d0 100%)',
-              color: canProceed ? '#022c17' : '#9ca3af',
-              boxShadow: canProceed
-                ? '0 8px 32px rgba(34,197,94,0.45), 0 2px 8px rgba(0,0,0,0.12)'
-                : 'none',
-              opacity: canProceed ? 1 : 0.6,
-              animation: canProceed ? 'ctaGlow 2.2s ease-in-out infinite' : 'none',
+              background: C.surfaceContainerLow,
+              borderRadius: '2rem',
+              padding: 24,
+              border: `1px solid rgba(193,200,194,0.10)`,
             }}
           >
-            {canProceed ? 'Начать диагностику →' : 'Начать диагностику'}
-          </button>
+            <p
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: C.onSurfaceVariant,
+                marginBottom: 16,
+              }}
+            >
+              Образец фото
+            </p>
+            <div
+              className="relative overflow-hidden"
+              style={{ borderRadius: '1.5rem', aspectRatio: '1/1' }}
+            >
+              <img
+                src="/categories/fungal.jpg"
+                alt="Пример качественного фото листа"
+                className="w-full h-full object-cover"
+              />
+              <div
+                className="absolute inset-0"
+                style={{ background: 'linear-gradient(to top, rgba(1,45,29,0.40), transparent)' }}
+              />
+              <div
+                className="absolute bottom-4 left-4 flex items-center gap-2"
+                style={{ color: 'white' }}
+              >
+                {/* check_circle filled substitute */}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path fillRule="evenodd" clipRule="evenodd"
+                    d="M8 0a8 8 0 100 16A8 8 0 008 0zm3.47 5.47a.75.75 0 011.06 1.06l-5 5a.75.75 0 01-1.06 0l-2-2a.75.75 0 011.06-1.06L7 9.94l4.47-4.47z" />
+                </svg>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: '0.10em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Хороший пример
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Tips card */}
+          <div
+            style={{
+              background: C.surfaceContainerLow,
+              borderRadius: '2rem',
+              padding: 24,
+              border: `1px solid rgba(193,200,194,0.10)`,
+            }}
+          >
+            <p
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: C.onSurfaceVariant,
+                marginBottom: 20,
+              }}
+            >
+              Рекомендации
+            </p>
+            <ul style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <li className="flex items-start gap-4">
+                <Sun size={22} strokeWidth={1.75} style={{ color: C.secondary, flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  <p style={{ fontWeight: 700, fontSize: 14, color: C.primary, marginBottom: 2 }}>
+                    Хорошее освещение
+                  </p>
+                  <p style={{ fontSize: 13, color: C.onSurfaceVariant }}>
+                    Снимайте при дневном свете, избегая теней.
+                  </p>
+                </div>
+              </li>
+              <li className="flex items-start gap-4">
+                <Scan size={22} strokeWidth={1.75} style={{ color: C.secondary, flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  <p style={{ fontWeight: 700, fontSize: 14, color: C.primary, marginBottom: 2 }}>
+                    Фокус на деталях
+                  </p>
+                  <p style={{ fontSize: 13, color: C.onSurfaceVariant }}>
+                    Держите камеру в 15–20 см от листа.
+                  </p>
+                </div>
+              </li>
+              <li className="flex items-start gap-4">
+                <Leaf size={22} strokeWidth={1.75} style={{ color: C.secondary, flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  <p style={{ fontWeight: 700, fontSize: 14, color: C.primary, marginBottom: 2 }}>
+                    Чистота объекта
+                  </p>
+                  <p style={{ fontSize: 13, color: C.onSurfaceVariant }}>
+                    Убедитесь, что на листе нет пыли или грязи.
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
+
+        {/* ── Crop selection ── */}
+        <section style={{ marginTop: 40 }}>
+          <p
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase',
+              color: C.onSurfaceVariant,
+              marginBottom: 16,
+            }}
+          >
+            Тип растения
+          </p>
+          <div className="flex flex-wrap" style={{ gap: 10 }}>
+            {CROPS.map((c) => {
+              const sel = crop === c.id
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => { setCrop(c.id); setError('') }}
+                  className="flex items-center gap-2 transition-all active:scale-95"
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: 9999,
+                    background: sel ? C.primaryContainer : C.surfaceContainerLowest,
+                    color: sel ? C.onPrimaryContainer : C.primary,
+                    border: sel ? 'none' : `1px solid ${C.outlineVariant}`,
+                    fontWeight: sel ? 700 : 500,
+                    fontSize: 14,
+                    boxShadow: sel ? '0 1px 4px rgba(0,0,0,0.18)' : undefined,
+                  }}
+                >
+                  <div
+                    className="overflow-hidden flex-shrink-0"
+                    style={{ width: 24, height: 24, borderRadius: '50%' }}
+                  >
+                    <img src={c.img} alt={c.label} className="w-full h-full object-cover" />
+                  </div>
+                  {c.label}
+                  {sel && (
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                      <path fillRule="evenodd" clipRule="evenodd"
+                        d="M8 0a8 8 0 100 16A8 8 0 008 0zm3.47 5.47a.75.75 0 011.06 1.06l-5 5a.75.75 0 01-1.06 0l-2-2a.75.75 0 011.06-1.06L7 9.94l4.47-4.47z" />
+                    </svg>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </section>
+
+        {/* ── Demo section ── */}
+        <section style={{ marginTop: 40 }}>
+          <p
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase',
+              color: C.onSurfaceVariant,
+              marginBottom: 16,
+            }}
+          >
+            Примеры диагностики
+          </p>
+          <div className="grid grid-cols-3" style={{ gap: 10 }}>
+            {DEMO_CASES.filter((c) => !DEMO_EXCLUDED.has(c.id)).map((c) => {
+              const imgSrc = DEMO_IMAGES[c.id] ?? `/crops/${c.crop}.jpg`
+              const label = stripEmoji(c.label)
+              const isLoading = demoLoading === c.id
+
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => handleDemoCase(c.id)}
+                  disabled={demoLoading !== null}
+                  className="w-full text-left transition-all active:scale-[0.96] disabled:opacity-60"
+                  style={{ outline: 'none' }}
+                >
+                  <div
+                    className="w-full aspect-square relative overflow-hidden"
+                    style={{
+                      borderRadius: '1.5rem',
+                      marginBottom: 8,
+                      boxShadow: '0 2px 10px rgba(0,0,0,0.10)',
+                    }}
+                  >
+                    <img
+                      src={imgSrc}
+                      alt={label}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <div
+                      className="absolute inset-0"
+                      style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.0) 45%, rgba(0,0,0,0.50) 100%)' }}
+                    />
+                    {isLoading ? (
+                      <div
+                        className="absolute bottom-2 right-2 w-5 h-5 rounded-full border-2 animate-spin"
+                        style={{ borderColor: C.secondaryContainer, borderTopColor: 'transparent' }}
+                      />
+                    ) : (
+                      <div
+                        className="absolute bottom-2 right-2 flex items-center justify-center"
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: '50%',
+                          background: 'rgba(255,255,255,0.22)',
+                          backdropFilter: 'blur(8px)',
+                          WebkitBackdropFilter: 'blur(8px)',
+                          border: '1px solid rgba(255,255,255,0.30)',
+                        }}
+                      >
+                        <ArrowRight size={11} strokeWidth={2.5} className="text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <p
+                    className="line-clamp-2 leading-tight"
+                    style={{ fontSize: 12, fontWeight: 600, color: C.primary, letterSpacing: '-0.01em' }}
+                  >
+                    {label}
+                  </p>
+                </button>
+              )
+            })}
+          </div>
+        </section>
+
+        {/* Error */}
+        {error && (
+          <div
+            className="flex items-center gap-2 px-4 py-3"
+            style={{
+              marginTop: 16,
+              borderRadius: '1rem',
+              background: '#fef2f2',
+              border: '1px solid rgba(239,68,68,0.20)',
+            }}
+          >
+            <span style={{ fontSize: 13, color: '#dc2626', fontWeight: 500 }}>{error}</span>
+          </div>
+        )}
+      </main>
+
+      {/* ── Sticky CTA footer — sits above BottomNav ── */}
+      <div
+        className="fixed left-0 right-0 z-10"
+        style={{
+          bottom: 60,
+          maxWidth: 448,
+          margin: '0 auto',
+          padding: '16px 24px',
+          background: 'rgba(248,250,248,0.80)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderTop: `1px solid rgba(193,200,194,0.10)`,
+        }}
+      >
+        <button
+          onClick={handleNext}
+          disabled={!canProceed}
+          className="w-full flex items-center justify-center gap-3 transition-all active:scale-95 duration-200"
+          style={{
+            height: 64,
+            borderRadius: 9999,
+            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+            fontWeight: 700,
+            fontSize: 18,
+            border: 'none',
+            background: canProceed ? C.primaryContainer : C.surfaceContainerHighest,
+            color: canProceed ? C.onPrimaryContainer : `${C.onSurfaceVariant}66`,
+            boxShadow: canProceed ? '0 8px 24px rgba(0,0,0,0.28)' : 'none',
+            cursor: canProceed ? 'pointer' : 'not-allowed',
+          }}
+        >
+          Продолжить
+          <ArrowRight size={22} strokeWidth={2} />
+        </button>
+        {!canProceed && (
+          <p
+            className="text-center"
+            style={{
+              marginTop: 12,
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: '0.10em',
+              textTransform: 'uppercase',
+              color: `${C.onSurfaceVariant}80`,
+            }}
+          >
+            {!hasPhotos ? 'Загрузите фото для активации' : 'Выберите тип растения'}
+          </p>
+        )}
       </div>
 
-      <style>{`
-        @keyframes ctaGlow {
-          0%, 100% { box-shadow: 0 8px 32px rgba(34,197,94,0.45), 0 2px 8px rgba(0,0,0,0.12); }
-          50%       { box-shadow: 0 8px 40px rgba(34,197,94,0.70), 0 2px 12px rgba(0,0,0,0.14); }
-        }
-      `}</style>
-
-      {/* ══ 6. BOTTOM NAV ════════════════════════════════════════════════ */}
+      {/* ── Bottom nav ── */}
       <BottomNav active="home" onScan={() => cameraRef.current?.click()} />
 
-      {/* ══ NAVIGATING OVERLAY ══════════════════════════════════════════ */}
+      {/* ── Navigating overlay ── */}
       {navigating && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
           style={{
-            background: 'rgba(240,242,245,0.95)',
+            background: 'rgba(248,250,248,0.95)',
             backdropFilter: 'blur(16px)',
             WebkitBackdropFilter: 'blur(16px)',
           }}
         >
           <div className="flex flex-col items-center gap-4">
             <div
-              className="w-16 h-16 rounded-[20px] flex items-center justify-center"
+              className="flex items-center justify-center"
               style={{
-                background: 'linear-gradient(145deg, #22c55e, #15803d)',
-                boxShadow: '0 6px 24px rgba(34,197,94,0.40)',
+                width: 64,
+                height: 64,
+                borderRadius: '1.25rem',
+                background: C.primaryContainer,
+                boxShadow: '0 6px 24px rgba(0,0,0,0.25)',
               }}
             >
-              <Scan size={28} strokeWidth={1.75} className="text-white animate-pulse" />
+              <Scan size={28} strokeWidth={1.75} className="animate-pulse" style={{ color: C.onPrimaryContainer }} />
             </div>
-            <p style={{ fontSize: 15, fontWeight: 700, color: '#1f2937', letterSpacing: '-0.02em' }}>
+            <p
+              style={{
+                fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                fontSize: 16,
+                fontWeight: 700,
+                color: C.primary,
+                letterSpacing: '-0.02em',
+              }}
+            >
               Подготовка фото...
             </p>
           </div>
