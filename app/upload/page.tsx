@@ -72,10 +72,6 @@ export default function UploadPage() {
 
   useEffect(() => {
     const ut = localStorage.getItem('userType')
-    if (!ut) {
-      router.replace('/onboarding')
-      return
-    }
     setUserType(ut)
     try {
       const crops = JSON.parse(sessionStorage.getItem('agro_farmer_crops') || '[]') as string[]
@@ -468,7 +464,10 @@ export default function UploadPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
                 {/* Primary */}
                 <button
-                  onClick={() => cameraRef.current?.click()}
+                  onClick={() => {
+                    if (!localStorage.getItem('userType')) { router.push('/onboarding'); return }
+                    cameraRef.current?.click()
+                  }}
                   className="group w-full flex items-center justify-center gap-3 transition-all active:scale-[0.97] duration-300"
                   style={{
                     padding: '24px 32px',
@@ -488,7 +487,10 @@ export default function UploadPage() {
                 </button>
                 {/* Secondary */}
                 <button
-                  onClick={() => galleryRef.current?.click()}
+                  onClick={() => {
+                    if (!localStorage.getItem('userType')) { router.push('/onboarding'); return }
+                    galleryRef.current?.click()
+                  }}
                   className="w-full flex items-center justify-center gap-3 transition-all active:scale-[0.97] duration-300"
                   style={{
                     padding: '24px 32px',
