@@ -174,6 +174,17 @@
 
 ---
 
+## Physical UI depth — главная (апр 2026)
+
+- **Hero shadow**: `0 24px 64px rgba(1,45,29,0.22), 0 8px 24px rgba(0,0,0,0.12)` — глубокое отделение от фона
+- **Hero overlays**: 2 слоя — линейный градиент + `radial-gradient` вигнет по краям
+- **Hero текст**: `backdrop-blur(2px)` + `textShadow` — читаемость + ощущение глубины
+- **Scanner card**: bg `#ffffff` (был `#f2f4f2`), shadow `0 8px 40px rgba(27,67,50,0.10)`, border `rgba(193,200,194,0.18)` — физическая карточка
+- **Scanner section**: paddingTop `52px` (было 40px) — больше воздуха, scanner = визуальный якорь
+- **Zap + demo header**: добавлен в предыдущем коммите (не закоммичен, откат не нужен)
+
+---
+
 ## Bugfix: hero radius + history 404 (апр 2026)
 
 - **Hero**: `borderRadius: '2rem'` (все углы одинаковые), убран `'0 0 2.5rem 2.5rem'` — крышка исчезла; секция добавила `padding: '... 20px'` — hero как карточка
