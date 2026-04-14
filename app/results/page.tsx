@@ -501,13 +501,6 @@ function ResultsContent() {
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {result.today_actions.slice(0, 3).map((action, i) => {
-                    const dotIdx = action.indexOf('. ')
-                    const title = (dotIdx > 0 && dotIdx < 55)
-                      ? action.slice(0, dotIdx)
-                      : action.split(' ').slice(0, 4).join(' ')
-                    const desc = (dotIdx > 0 && dotIdx < 55)
-                      ? action.slice(dotIdx + 2)
-                      : action.split(' ').slice(4).join(' ')
                     const def = ACTION_ICON_DEFS[i] ?? ACTION_ICON_DEFS[0]
                     const { Icon } = def
                     return (
@@ -529,20 +522,13 @@ function ResultsContent() {
                         >
                           <Icon size={22} strokeWidth={1.75} color="#ffffff" />
                         </div>
-                        <div style={{ flex: 1 }}>
-                          <h4 style={{
-                            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                            fontWeight: 700, fontSize: 15, color: '#012d1d',
-                            marginBottom: desc ? 4 : 0, lineHeight: 1.3,
-                          }}>
-                            {title}
-                          </h4>
-                          {desc && (
-                            <p style={{ fontSize: 13, color: '#5c6560', lineHeight: 1.55, margin: 0 }}>
-                              {desc}
-                            </p>
-                          )}
-                        </div>
+                        <p style={{
+                          flex: 1, margin: 0,
+                          fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                          fontWeight: 600, fontSize: 14, color: '#012d1d', lineHeight: 1.45,
+                        }}>
+                          {action}
+                        </p>
                         <ChevronRight size={18} strokeWidth={1.75} style={{ color: 'rgba(108,123,115,0.28)', flexShrink: 0 }} />
                       </div>
                     )
@@ -1045,13 +1031,6 @@ function ResultsContent() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {planActions.map((action, i) => {
-                    const dotIdx = action.indexOf('. ')
-                    const title = (dotIdx > 0 && dotIdx < 55)
-                      ? action.slice(0, dotIdx)
-                      : action.split(' ').slice(0, 4).join(' ')
-                    const desc = (dotIdx > 0 && dotIdx < 55)
-                      ? action.slice(dotIdx + 2)
-                      : action.split(' ').slice(4).join(' ')
                     const def = ACTION_ICON_DEFS[i] ?? ACTION_ICON_DEFS[0]
                     const { Icon } = def
                     return (
@@ -1073,20 +1052,13 @@ function ResultsContent() {
                         >
                           <Icon size={22} strokeWidth={1.75} color="#ffffff" />
                         </div>
-                        <div style={{ flex: 1 }}>
-                          <h4 style={{
-                            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                            fontWeight: 700, fontSize: 15, color: '#012d1d',
-                            marginBottom: desc ? 4 : 0, lineHeight: 1.3,
-                          }}>
-                            {title}
-                          </h4>
-                          {desc && (
-                            <p style={{ fontSize: 13, color: '#5c6560', lineHeight: 1.55, margin: 0 }}>
-                              {desc}
-                            </p>
-                          )}
-                        </div>
+                        <p style={{
+                          flex: 1, margin: 0,
+                          fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                          fontWeight: 600, fontSize: 14, color: '#012d1d', lineHeight: 1.45,
+                        }}>
+                          {action}
+                        </p>
                         <ChevronRight size={18} strokeWidth={1.75} style={{ color: 'rgba(108,123,115,0.28)', flexShrink: 0 }} />
                       </div>
                     )
@@ -1384,13 +1356,6 @@ function ResultsContent() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {result.today_actions.slice(0, 6).map((action, i) => {
-                const dotIdx = action.indexOf('. ')
-                const title = (dotIdx > 0 && dotIdx < 55)
-                  ? action.slice(0, dotIdx)
-                  : action.split(' ').slice(0, 5).join(' ')
-                const desc = (dotIdx > 0 && dotIdx < 55)
-                  ? action.slice(dotIdx + 2)
-                  : action.split(' ').slice(5).join(' ')
                 const def = ACTION_ICON_DEFS[i] ?? ACTION_ICON_DEFS[0]
                 const { Icon } = def
                 return (
@@ -1412,20 +1377,13 @@ function ResultsContent() {
                     >
                       <Icon size={22} strokeWidth={1.75} color="#ffffff" />
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{
-                        fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                        fontWeight: 700, fontSize: 15, color: '#012d1d',
-                        marginBottom: desc ? 4 : 0, lineHeight: 1.3,
-                      }}>
-                        {title}
-                      </h4>
-                      {desc && (
-                        <p style={{ fontSize: 13, color: '#5c6560', lineHeight: 1.55, margin: 0 }}>
-                          {desc}
-                        </p>
-                      )}
-                    </div>
+                    <p style={{
+                      flex: 1, margin: 0,
+                      fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                      fontWeight: 600, fontSize: 14, color: '#012d1d', lineHeight: 1.45,
+                    }}>
+                      {action}
+                    </p>
                     <ChevronRight size={18} strokeWidth={1.75} style={{ color: 'rgba(108,123,115,0.28)', flexShrink: 0 }} />
                   </div>
                 )
@@ -1433,7 +1391,6 @@ function ResultsContent() {
             </div>
           </section>
         )}
-
         {/* ══ 5. DIFFERENTIAL DIAGNOSIS ════════════════════════════════ */}
         {result.top_issues.length > 1 && (
           <section className="mt-9">
