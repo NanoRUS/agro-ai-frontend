@@ -187,7 +187,7 @@ export default function UploadPage() {
                   aspectRatio: '4/5',
                   borderRadius: '2rem',
                   overflow: 'hidden',
-                  boxShadow: '0 24px 64px rgba(1,45,29,0.22), 0 8px 24px rgba(0,0,0,0.12)',
+                  boxShadow: '0 32px 80px rgba(0,0,0,0.32), 0 8px 24px rgba(0,0,0,0.14)',
                 }}
               >
                 <img
@@ -208,7 +208,7 @@ export default function UploadPage() {
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.28) 100%)',
+                    background: 'radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.50) 100%)',
                   }}
                 />
                 {/* Text area — frosted glass panel */}
@@ -280,7 +280,7 @@ export default function UploadPage() {
                   position: 'relative',
                   marginBottom: 48,
                   cursor: 'pointer',
-                  boxShadow: '0 8px 40px rgba(27,67,50,0.10), 0 2px 8px rgba(0,0,0,0.05)',
+                  boxShadow: '0 16px 56px rgba(27,67,50,0.22), 0 4px 16px rgba(0,0,0,0.10)',
                   display: 'block',
                   outline: 'none',
                 }}
@@ -581,7 +581,7 @@ export default function UploadPage() {
                 <p style={{ fontSize: 11, color: '#9ca3af' }}>Нажмите для демо</p>
               </div>
 
-              <div className="grid grid-cols-3" style={{ gap: 10 }}>
+              <div className="grid grid-cols-3" style={{ gap: 10, alignItems: 'start' }}>
                 {DEMO_CASES.filter((c) => !DEMO_EXCLUDED.has(c.id)).map((c) => {
                   const imgSrc = DEMO_IMAGES[c.id] ?? `/crops/${c.crop}.jpg`
                   const label = stripEmoji(c.label)
@@ -592,11 +592,11 @@ export default function UploadPage() {
                       onClick={() => handleDemoCase(c.id)}
                       disabled={demoLoading !== null}
                       className="w-full text-left transition-all active:scale-[0.96] disabled:opacity-60"
-                      style={{ outline: 'none' }}
+                      style={{ outline: 'none', display: 'flex', flexDirection: 'column' }}
                     >
                       <div
                         className="w-full aspect-square relative overflow-hidden"
-                        style={{ borderRadius: '1rem', marginBottom: 6, boxShadow: '0 2px 10px rgba(0,0,0,0.14)' }}
+                        style={{ borderRadius: '1rem', marginBottom: 6, boxShadow: '0 2px 10px rgba(0,0,0,0.14)', flexShrink: 0 }}
                       >
                         <img src={imgSrc} alt={label} className="absolute inset-0 w-full h-full object-cover" />
                         <div
@@ -624,7 +624,7 @@ export default function UploadPage() {
                       </div>
                       <p
                         className="line-clamp-2 leading-tight"
-                        style={{ fontSize: 11, fontWeight: 600, color: '#1f2937', letterSpacing: '-0.01em' }}
+                        style={{ fontSize: 11, fontWeight: 600, color: '#1f2937', letterSpacing: '-0.01em', minHeight: 32 }}
                       >
                         {label}
                       </p>
