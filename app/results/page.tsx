@@ -476,20 +476,29 @@ function ResultsContent() {
               </div>
             </section>
 
-            {/* ── План действий ── */}
+            {/* ── Немедленный протокол ── */}
             {result.today_actions.length > 0 && (
-              <section style={{ padding: '0 24px', marginBottom: 48 }}>
-                <h3
-                  className="flex items-center gap-2"
-                  style={{
-                    fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                    fontWeight: 700, fontSize: 20, color: '#191c1b', marginBottom: 24,
-                  }}
-                >
-                  <ShieldCheck size={20} strokeWidth={1.75} style={{ color: '#2c694e' }} />
-                  План действий
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <section style={{ padding: '0 20px', marginBottom: 48 }}>
+                {/* Section header */}
+                <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, letterSpacing: '0.10em',
+                    textTransform: 'uppercase', color: '#6e7971', whiteSpace: 'nowrap',
+                  }}>
+                    План действий
+                  </span>
+                  <div style={{ flex: 1, height: 1, background: 'rgba(108,123,115,0.22)' }} />
+                </div>
+                {(result.urgency.level === 'critical' || result.urgency.level === 'high') && (
+                  <p style={{
+                    fontSize: 12, fontWeight: 600,
+                    color: result.urgency.level === 'critical' ? '#ba1a1a' : '#b45309',
+                    marginBottom: 16, marginTop: -4,
+                  }}>
+                    Действуйте сейчас — промедление увеличивает потери
+                  </p>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {result.today_actions.slice(0, 3).map((action, i) => {
                     const dotIdx = action.indexOf('. ')
                     const title = (dotIdx > 0 && dotIdx < 55)
@@ -498,43 +507,42 @@ function ResultsContent() {
                     const desc = (dotIdx > 0 && dotIdx < 55)
                       ? action.slice(dotIdx + 2)
                       : action.split(' ').slice(4).join(' ')
+                    const def = ACTION_ICON_DEFS[i] ?? ACTION_ICON_DEFS[0]
+                    const { Icon } = def
                     return (
                       <div
                         key={i}
-                        className="flex items-start"
+                        className="flex items-center"
                         style={{
-                          gap: 16, padding: 20, borderRadius: '1.5rem',
-                          background: '#ffffff',
-                          boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
-                          border: '1px solid rgba(193,200,194,0.10)',
+                          gap: 20, padding: 20, borderRadius: 12,
+                          background: 'rgba(255,255,255,0.70)',
+                          backdropFilter: 'blur(24px)',
+                          WebkitBackdropFilter: 'blur(24px)',
+                          border: '1px solid rgba(108,123,115,0.10)',
+                          boxShadow: '0px 4px 12px rgba(25,28,27,0.04), 0px 16px 48px rgba(25,28,27,0.08)',
                         }}
                       >
                         <div
                           className="flex items-center justify-center flex-shrink-0"
-                          style={{
-                            width: 32, height: 32, borderRadius: '50%',
-                            background: '#aeeecb', color: '#316e52',
-                            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                            fontWeight: 700, fontSize: 14,
-                          }}
+                          style={{ width: 56, height: 56, borderRadius: '50%', background: '#1b4332' }}
                         >
-                          {i + 1}
+                          <Icon size={22} strokeWidth={1.75} color="#ffffff" />
                         </div>
-                        <div>
-                          <h4
-                            style={{
-                              fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                              fontWeight: 700, fontSize: 15, color: '#191c1b', marginBottom: 4,
-                            }}
-                          >
+                        <div style={{ flex: 1 }}>
+                          <h4 style={{
+                            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                            fontWeight: 700, fontSize: 15, color: '#012d1d',
+                            marginBottom: desc ? 4 : 0, lineHeight: 1.3,
+                          }}>
                             {title}
                           </h4>
                           {desc && (
-                            <p style={{ fontSize: 13, color: '#414844', lineHeight: 1.55 }}>
+                            <p style={{ fontSize: 13, color: '#5c6560', lineHeight: 1.55, margin: 0 }}>
                               {desc}
                             </p>
                           )}
                         </div>
+                        <ChevronRight size={18} strokeWidth={1.75} style={{ color: 'rgba(108,123,115,0.28)', flexShrink: 0 }} />
                       </div>
                     )
                   })}
@@ -1055,24 +1063,20 @@ function ResultsContent() {
               </div>
             </section>
 
-            {/* ── План восстановления ── */}
+            {/* ── Немедленный протокол ── */}
             {planActions.length > 0 && (
-              <section
-                style={{
-                  padding: '48px 24px',
-                  background: 'rgba(242,244,242,0.50)',
-                }}
-              >
-                <h3
-                  style={{
-                    fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                    fontWeight: 800, fontSize: 22, color: '#012d1d',
-                    marginBottom: 32, paddingLeft: 8,
-                  }}
-                >
-                  План восстановления
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <section style={{ padding: '48px 20px 0' }}>
+                {/* Section header */}
+                <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, letterSpacing: '0.10em',
+                    textTransform: 'uppercase', color: '#6e7971', whiteSpace: 'nowrap',
+                  }}>
+                    Как помочь растению
+                  </span>
+                  <div style={{ flex: 1, height: 1, background: 'rgba(108,123,115,0.22)' }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {planActions.map((action, i) => {
                     const dotIdx = action.indexOf('. ')
                     const title = (dotIdx > 0 && dotIdx < 55)
@@ -1081,43 +1085,42 @@ function ResultsContent() {
                     const desc = (dotIdx > 0 && dotIdx < 55)
                       ? action.slice(dotIdx + 2)
                       : action.split(' ').slice(4).join(' ')
-                    const sc = stepColors[i] ?? stepColors[0]
+                    const def = ACTION_ICON_DEFS[i] ?? ACTION_ICON_DEFS[0]
+                    const { Icon } = def
                     return (
                       <div
                         key={i}
-                        className="flex items-center gap-6 transition-shadow hover:shadow-md"
+                        className="flex items-center"
                         style={{
-                          padding: 24, borderRadius: '1.5rem',
-                          background: '#ffffff',
-                          boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                          gap: 20, padding: 20, borderRadius: 12,
+                          background: 'rgba(255,255,255,0.70)',
+                          backdropFilter: 'blur(24px)',
+                          WebkitBackdropFilter: 'blur(24px)',
+                          border: '1px solid rgba(108,123,115,0.10)',
+                          boxShadow: '0px 4px 12px rgba(25,28,27,0.04), 0px 16px 48px rgba(25,28,27,0.08)',
                         }}
                       >
-                        <span
+                        <div
                           className="flex items-center justify-center flex-shrink-0"
-                          style={{
-                            width: 48, height: 48, borderRadius: '50%',
-                            background: sc.bg, color: sc.text,
-                            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                            fontWeight: 900, fontSize: 18,
-                          }}
+                          style={{ width: 56, height: 56, borderRadius: '50%', background: '#1b4332' }}
                         >
-                          {i + 1}
-                        </span>
-                        <div>
-                          <h4
-                            style={{
-                              fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                              fontWeight: 700, fontSize: 15, color: '#012d1d', marginBottom: 4,
-                            }}
-                          >
+                          <Icon size={22} strokeWidth={1.75} color="#ffffff" />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <h4 style={{
+                            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                            fontWeight: 700, fontSize: 15, color: '#012d1d',
+                            marginBottom: desc ? 4 : 0, lineHeight: 1.3,
+                          }}>
                             {title}
                           </h4>
                           {desc && (
-                            <p style={{ fontSize: 13, color: '#414844', lineHeight: 1.5 }}>
+                            <p style={{ fontSize: 13, color: '#5c6560', lineHeight: 1.55, margin: 0 }}>
                               {desc}
                             </p>
                           )}
                         </div>
+                        <ChevronRight size={18} strokeWidth={1.75} style={{ color: 'rgba(108,123,115,0.28)', flexShrink: 0 }} />
                       </div>
                     )
                   })}
@@ -1446,47 +1449,64 @@ function ResultsContent() {
 
         {/* ══ 4. IMMEDIATE PROTOCOL ════════════════════════════════════ */}
         {result.today_actions.length > 0 && (
-          <section className="px-5 mt-9">
-            <p
-              className="font-semibold tracking-[0.16em] text-gray-400/80 uppercase mb-4"
-              style={{ fontSize: 10 }}
-            >
-              {seg === 'home' ? 'Как помочь растению'
-                : seg === 'dacha' ? 'Действуйте сейчас — пока не распространилось'
-                : 'Что делать сейчас'}
-            </p>
-            <div className="space-y-2.5">
+          <section style={{ padding: '0 20px', marginTop: 36 }}>
+            {/* Section header */}
+            <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
+              <span style={{
+                fontSize: 11, fontWeight: 700, letterSpacing: '0.10em',
+                textTransform: 'uppercase', color: '#6e7971', whiteSpace: 'nowrap',
+              }}>
+                {seg === 'home' ? 'Как помочь растению'
+                  : seg === 'dacha' ? 'Что делать сейчас'
+                  : 'Что делать сейчас'}
+              </span>
+              <div style={{ flex: 1, height: 1, background: 'rgba(108,123,115,0.22)' }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {result.today_actions.slice(0, 6).map((action, i) => {
+                const dotIdx = action.indexOf('. ')
+                const title = (dotIdx > 0 && dotIdx < 55)
+                  ? action.slice(0, dotIdx)
+                  : action.split(' ').slice(0, 5).join(' ')
+                const desc = (dotIdx > 0 && dotIdx < 55)
+                  ? action.slice(dotIdx + 2)
+                  : action.split(' ').slice(5).join(' ')
                 const def = ACTION_ICON_DEFS[i] ?? ACTION_ICON_DEFS[0]
                 const { Icon } = def
                 return (
                   <div
                     key={i}
-                    className="bg-white rounded-[18px] flex items-center gap-3.5 px-4 py-4
-                               hover:-translate-y-[2px] active:scale-[0.985] cursor-default
-                               transition-all duration-200 ease-out"
-                    style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.05)' }}
+                    className="flex items-center"
+                    style={{
+                      gap: 20, padding: 20, borderRadius: 12,
+                      background: 'rgba(255,255,255,0.70)',
+                      backdropFilter: 'blur(24px)',
+                      WebkitBackdropFilter: 'blur(24px)',
+                      border: '1px solid rgba(108,123,115,0.10)',
+                      boxShadow: '0px 4px 12px rgba(25,28,27,0.04), 0px 16px 48px rgba(25,28,27,0.08)',
+                    }}
                   >
-                    {/* Icon circle */}
                     <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                      style={{
-                        background: `${def.color}14`,
-                        border: `1px solid ${def.color}35`,
-                      }}
+                      className="flex items-center justify-center flex-shrink-0"
+                      style={{ width: 56, height: 56, borderRadius: '50%', background: '#1b4332' }}
                     >
-                      <Icon size={18} strokeWidth={1.75} color={def.color} />
+                      <Icon size={22} strokeWidth={1.75} color="#ffffff" />
                     </div>
-
-                    {/* Text */}
-                    <p
-                      className="flex-1 font-medium text-gray-800 min-w-0"
-                      style={{ fontSize: 13.5, lineHeight: 1.45 }}
-                    >
-                      {action}
-                    </p>
-
-                    <ChevronRight size={16} strokeWidth={1.75} className="text-gray-300/80 flex-shrink-0 mr-0.5" />
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{
+                        fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                        fontWeight: 700, fontSize: 15, color: '#012d1d',
+                        marginBottom: desc ? 4 : 0, lineHeight: 1.3,
+                      }}>
+                        {title}
+                      </h4>
+                      {desc && (
+                        <p style={{ fontSize: 13, color: '#5c6560', lineHeight: 1.55, margin: 0 }}>
+                          {desc}
+                        </p>
+                      )}
+                    </div>
+                    <ChevronRight size={18} strokeWidth={1.75} style={{ color: 'rgba(108,123,115,0.28)', flexShrink: 0 }} />
                   </div>
                 )
               })}
