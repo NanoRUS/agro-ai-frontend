@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  X, MoreVertical, Camera, ImagePlus, ArrowRight, Sun, Scan, Leaf, Clock, Brain, ShieldCheck,
+  X, Camera, ImagePlus, ArrowRight, Sun, Scan, Leaf, Clock, Brain, ShieldCheck,
 } from 'lucide-react'
 import { DEMO_CASES, loadDemoResult } from '@/lib/demo-fixtures'
 import { API_URL } from '@/lib/api'
@@ -163,36 +163,8 @@ export default function UploadPage() {
   return (
     <div style={{ background: C.surface, color: C.onSurface, minHeight: 'max(884px, 100dvh)' }}>
 
-      {/* ── TopAppBar ── */}
-      <header
-        className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6"
-        style={{ height: 64, background: C.surface, maxWidth: 448, margin: '0 auto' }}
-      >
-        <button
-          onClick={() => router.back()}
-          className="p-2 rounded-full transition-colors active:scale-95"
-          style={{ color: C.primary }}
-        >
-          <X size={24} strokeWidth={2} />
-        </button>
-        <h1
-          style={{
-            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-            fontWeight: 700,
-            fontSize: 18,
-            color: C.primary,
-            letterSpacing: '-0.01em',
-          }}
-        >
-          Диагностика
-        </h1>
-        <button className="p-2 rounded-full" style={{ color: C.primary }}>
-          <MoreVertical size={24} strokeWidth={2} />
-        </button>
-      </header>
-
       {/* ── Main ── */}
-      <main style={{ paddingTop: 64, paddingBottom: 100 }}>
+      <main style={{ paddingTop: 0, paddingBottom: 100 }}>
 
         {/* Hidden inputs — always present */}
         <input ref={inputRef}   type="file" accept="image/*" multiple             className="hidden" onChange={onFileChange} />
@@ -207,15 +179,15 @@ export default function UploadPage() {
           <>
 
             {/* ── Hero Section ── */}
-            <section style={{ padding: '0 24px 64px' }}>
+            <section style={{ padding: 0, marginBottom: 0 }}>
               <div
                 style={{
                   position: 'relative',
                   width: '100%',
                   aspectRatio: '4/5',
-                  borderRadius: '2rem',
+                  borderRadius: '0 0 2.5rem 2.5rem',
                   overflow: 'hidden',
-                  boxShadow: '0 16px 48px rgba(25,28,27,0.08)',
+                  boxShadow: '0 16px 48px rgba(25,28,27,0.14)',
                 }}
               >
                 <img
@@ -227,7 +199,7 @@ export default function UploadPage() {
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'linear-gradient(to top, rgba(1,45,29,0.65) 0%, transparent 55%)',
+                    background: 'linear-gradient(to top, rgba(1,45,29,0.90) 0%, rgba(1,45,29,0.55) 35%, rgba(0,0,0,0.15) 70%, transparent 100%)',
                   }}
                 />
                 <div style={{ position: 'absolute', bottom: 32, left: 32, right: 32, color: 'white' }}>
@@ -267,18 +239,27 @@ export default function UploadPage() {
             </section>
 
             {/* ── Scanner + Benefits Section ── */}
-            <section style={{ padding: '0 24px 64px' }}>
+            <section style={{ padding: '40px 24px 64px' }}>
 
-              {/* Scanner card */}
-              <div
+              {/* Scanner card — tappable action zone */}
+              <button
+                onClick={() => {
+                  if (!localStorage.getItem('userType')) { router.push('/onboarding'); return }
+                  cameraRef.current?.click()
+                }}
+                className="w-full text-left transition-all duration-200 active:scale-[0.98] active:opacity-90"
                 style={{
                   background: C.surfaceContainerLow,
                   padding: 32,
                   borderRadius: '2rem',
-                  border: `1px solid rgba(193,200,194,0.15)`,
+                  border: `1.5px solid rgba(44,105,78,0.22)`,
                   overflow: 'hidden',
                   position: 'relative',
                   marginBottom: 40,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 24px rgba(27,67,50,0.08)',
+                  display: 'block',
+                  outline: 'none',
                 }}
               >
                 <div style={{ position: 'absolute', top: 0, left: 0, padding: 16, opacity: 0.15 }}>
@@ -397,7 +378,29 @@ export default function UploadPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+                {/* Micro-hint */}
+                <div
+                  style={{
+                    marginTop: 20,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                  }}
+                >
+                  <Camera size={14} strokeWidth={2} style={{ color: C.secondary }} />
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: C.secondary,
+                      letterSpacing: '0.01em',
+                    }}
+                  >
+                    Камера откроется сразу
+                  </span>
+                </div>
+              </button>
 
               {/* Benefits list */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -423,7 +426,6 @@ export default function UploadPage() {
                   <div key={title} style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
                     <div
                       style={{
-                        marginTop: 4,
                         width: 48,
                         height: 48,
                         borderRadius: '50%',
@@ -468,7 +470,7 @@ export default function UploadPage() {
                     if (!localStorage.getItem('userType')) { router.push('/onboarding'); return }
                     cameraRef.current?.click()
                   }}
-                  className="group w-full flex items-center justify-center gap-3 transition-all active:scale-[0.97] duration-300"
+                  className="group w-full flex items-center justify-center gap-3 transition-all active:scale-[0.97] hover:scale-[1.01] hover:brightness-110 duration-200"
                   style={{
                     padding: '24px 32px',
                     background: C.primaryContainer,
@@ -479,7 +481,7 @@ export default function UploadPage() {
                     fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
                     fontWeight: 700,
                     fontSize: 20,
-                    boxShadow: '0 8px 24px rgba(27,67,50,0.35)',
+                    boxShadow: '0 16px 48px rgba(27,67,50,0.55), 0 4px 16px rgba(27,67,50,0.25)',
                   }}
                 >
                   <Camera size={24} strokeWidth={1.75} />
@@ -590,7 +592,7 @@ export default function UploadPage() {
                       </div>
                       <p
                         className="line-clamp-2 leading-tight"
-                        style={{ fontSize: 12, fontWeight: 600, color: C.primary, letterSpacing: '-0.01em' }}
+                        style={{ fontSize: 12, fontWeight: 600, color: C.primary, letterSpacing: '-0.01em', minHeight: 32 }}
                       >
                         {label}
                       </p>
