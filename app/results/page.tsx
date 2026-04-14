@@ -6,6 +6,7 @@ import {
   Droplets, Scissors, Search, FlaskConical, ClipboardList,
   Zap, RefreshCw, Video, FileText, LayoutList, Star,
   AlertTriangle, Info, CheckCircle2, UserCheck, X, MoreVertical,
+  Thermometer, Wind, Droplet, MessageCircle, Leaf, Sun,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { AnalyzeResponse, IssueResult, VideoTone } from '@/lib/api'
@@ -842,6 +843,472 @@ function ResultsContent() {
     )
   }
   // ══ END FARM LAYOUT ═══════════════════════════════════════════════════════
+
+  // ══ HOME LAYOUT — Stitch design ═══════════════════════════════════════════
+  if (seg === 'home' && topIssue) {
+    const threatLabel = {
+      critical: 'Высокая угроза', high: 'Средняя угроза',
+      medium: 'Средняя угроза', low: 'Низкая угроза',
+    }[result.urgency.level] ?? 'Средняя угроза'
+
+    // Plan: first 3 actions. Tips: next actions or why-reasons
+    const planActions = result.today_actions.slice(0, 3)
+    const expertTips = result.today_actions.length > 3
+      ? result.today_actions.slice(3, 6)
+      : topIssue.why.slice(0, 3)
+
+    // Step number circle colors: primary-container, secondary-container, tertiary-container
+    const stepColors = [
+      { bg: '#1b4332', text: '#86af99' },
+      { bg: '#aeeecb', text: '#316e52' },
+      { bg: '#cba72f', text: '#4e3d00' },
+    ]
+
+    // Why-reason icons cycling
+    const whyIcons = [Droplet, Wind, Leaf, Thermometer]
+    // Tip icons cycling
+    const tipIcons = [Wind, Droplet, Leaf, Thermometer, Scissors, Sun]
+
+    return (
+      <>
+        <div style={{ background: '#f8faf8', color: '#191c1b', minHeight: '100vh', paddingBottom: 160 }}>
+
+          {/* ── TopAppBar ── */}
+          <nav
+            className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6"
+            style={{ height: 64, background: '#f8faf8', maxWidth: 448, margin: '0 auto' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push('/upload')}
+                className="active:scale-95 duration-200 p-1"
+                style={{ color: '#012d1d' }}
+              >
+                <X size={24} strokeWidth={2} />
+              </button>
+              <h1
+                style={{
+                  fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                  fontWeight: 700, fontSize: 18, color: '#012d1d', letterSpacing: '-0.01em',
+                }}
+              >
+                Диагностика
+              </h1>
+            </div>
+            <button className="p-1 active:scale-95" style={{ color: '#012d1d' }}>
+              <MoreVertical size={24} strokeWidth={2} />
+            </button>
+          </nav>
+
+          <main style={{ paddingTop: 64, paddingBottom: 32 }}>
+
+            {/* ── Hero section ── */}
+            <section style={{ padding: '32px 24px 48px' }}>
+
+              {/* Hero image — aspect-[4/5], glass overlay at bottom */}
+              <div
+                className="relative overflow-hidden"
+                style={{
+                  borderRadius: '1.5rem',
+                  aspectRatio: '4/5',
+                  background: '#f2f4f2',
+                  marginBottom: 32,
+                }}
+              >
+                <img
+                  src={heroImage ?? catSt.img}
+                  alt="Plant diagnosis"
+                  className="w-full h-full object-cover"
+                  style={{ opacity: 0.90 }}
+                />
+                {isDemo && (
+                  <span
+                    className="absolute top-4 right-4 text-[10px] font-bold px-2.5 py-1 rounded-full tracking-widest uppercase"
+                    style={{ background: '#f59e0b', color: '#451a03' }}
+                  >
+                    DEMO
+                  </span>
+                )}
+                {/* Glass panel overlay */}
+                <div
+                  className="absolute left-6 right-6 bottom-6"
+                  style={{
+                    background: 'rgba(255,255,255,0.70)',
+                    backdropFilter: 'blur(24px)',
+                    WebkitBackdropFilter: 'blur(24px)',
+                    borderRadius: '1rem',
+                    border: '1px solid rgba(255,255,255,0.20)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                    padding: 24,
+                  }}
+                >
+                  <div className="flex flex-col gap-1">
+                    <span
+                      style={{
+                        fontSize: 10, fontWeight: 700, letterSpacing: '0.16em',
+                        textTransform: 'uppercase', color: '#2c694e',
+                      }}
+                    >
+                      Анализ завершен
+                    </span>
+                    <h2
+                      style={{
+                        fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                        fontWeight: 800, fontSize: 28, color: '#012d1d',
+                        letterSpacing: '-0.03em', lineHeight: 1.1,
+                      }}
+                    >
+                      {topIssue.title}
+                    </h2>
+                    <div className="flex items-center flex-wrap gap-2" style={{ marginTop: 8 }}>
+                      <span
+                        className="rounded-full font-bold"
+                        style={{
+                          padding: '4px 12px', fontSize: 12,
+                          background: '#aeeecb', color: '#316e52',
+                        }}
+                      >
+                        {pct}% совпадение
+                      </span>
+                      <span
+                        className="rounded-full font-bold"
+                        style={{
+                          padding: '4px 12px', fontSize: 12,
+                          background: 'rgba(203,167,47,0.20)',
+                          color: '#4e3d00',
+                          border: '1px solid rgba(203,167,47,0.30)',
+                        }}
+                      >
+                        {threatLabel}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bento: Что с растением + Почему */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                {/* Что с растением */}
+                <div
+                  style={{
+                    padding: 32, borderRadius: '1.5rem',
+                    background: '#ffffff',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
+                    border: '1px solid rgba(193,200,194,0.10)',
+                  }}
+                >
+                  <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
+                    <Leaf size={22} strokeWidth={1.75} style={{ color: '#2c694e' }} />
+                    <h3
+                      style={{
+                        fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                        fontWeight: 700, fontSize: 18, color: '#012d1d',
+                      }}
+                    >
+                      Что с растением
+                    </h3>
+                  </div>
+                  <p style={{ color: '#414844', lineHeight: 1.65, fontWeight: 500, fontSize: 14 }}>
+                    {result.urgency.reason}
+                  </p>
+                </div>
+
+                {/* Почему это произошло */}
+                {topIssue.why.length > 0 && (
+                  <div
+                    style={{
+                      padding: 32, borderRadius: '1.5rem',
+                      background: '#f2f4f2',
+                    }}
+                  >
+                    <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
+                      <Thermometer size={22} strokeWidth={1.75} style={{ color: '#2c694e' }} />
+                      <h3
+                        style={{
+                          fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                          fontWeight: 700, fontSize: 18, color: '#012d1d',
+                        }}
+                      >
+                        Почему это произошло
+                      </h3>
+                    </div>
+                    <ul style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {topIssue.why.slice(0, 3).map((reason, i) => {
+                        const WIcon = whyIcons[i % whyIcons.length]
+                        return (
+                          <li key={i} className="flex items-start gap-3">
+                            <WIcon
+                              size={16}
+                              strokeWidth={1.75}
+                              style={{ color: '#735c00', flexShrink: 0, marginTop: 2 }}
+                            />
+                            <span style={{ color: '#414844', fontSize: 14, fontWeight: 500, lineHeight: 1.55 }}>
+                              {reason}
+                            </span>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* ── План восстановления ── */}
+            {planActions.length > 0 && (
+              <section
+                style={{
+                  padding: '48px 24px',
+                  background: 'rgba(242,244,242,0.50)',
+                }}
+              >
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                    fontWeight: 800, fontSize: 22, color: '#012d1d',
+                    marginBottom: 32, paddingLeft: 8,
+                  }}
+                >
+                  План восстановления
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {planActions.map((action, i) => {
+                    const dotIdx = action.indexOf('. ')
+                    const title = (dotIdx > 0 && dotIdx < 55)
+                      ? action.slice(0, dotIdx)
+                      : action.split(' ').slice(0, 4).join(' ')
+                    const desc = (dotIdx > 0 && dotIdx < 55)
+                      ? action.slice(dotIdx + 2)
+                      : action.split(' ').slice(4).join(' ')
+                    const sc = stepColors[i] ?? stepColors[0]
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-center gap-6 transition-shadow hover:shadow-md"
+                        style={{
+                          padding: 24, borderRadius: '1.5rem',
+                          background: '#ffffff',
+                          boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                        }}
+                      >
+                        <span
+                          className="flex items-center justify-center flex-shrink-0"
+                          style={{
+                            width: 48, height: 48, borderRadius: '50%',
+                            background: sc.bg, color: sc.text,
+                            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                            fontWeight: 900, fontSize: 18,
+                          }}
+                        >
+                          {i + 1}
+                        </span>
+                        <div>
+                          <h4
+                            style={{
+                              fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                              fontWeight: 700, fontSize: 15, color: '#012d1d', marginBottom: 4,
+                            }}
+                          >
+                            {title}
+                          </h4>
+                          {desc && (
+                            <p style={{ fontSize: 13, color: '#414844', lineHeight: 1.5 }}>
+                              {desc}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* ── Советы эксперта ── */}
+            {expertTips.length > 0 && (
+              <section style={{ padding: '48px 24px' }}>
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                    fontWeight: 800, fontSize: 22, color: '#012d1d',
+                    marginBottom: 32, paddingLeft: 8,
+                  }}
+                >
+                  Советы эксперта
+                </h3>
+                {/* Horizontal scroll */}
+                <div
+                  className="flex overflow-x-auto no-scrollbar pb-4"
+                  style={{ gap: 16, marginLeft: -24, marginRight: -24, paddingLeft: 24, paddingRight: 24 }}
+                >
+                  {expertTips.map((tip, i) => {
+                    const TipIcon = tipIcons[i % tipIcons.length]
+                    return (
+                      <div
+                        key={i}
+                        className="flex-shrink-0 flex flex-col gap-4"
+                        style={{
+                          width: 192, padding: 24,
+                          borderRadius: '1rem',
+                          background: '#e6e9e7',
+                        }}
+                      >
+                        <div
+                          className="flex items-center justify-center"
+                          style={{
+                            width: 40, height: 40, borderRadius: '50%',
+                            background: '#ffffff',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
+                          }}
+                        >
+                          <TipIcon size={18} strokeWidth={1.75} style={{ color: '#2c694e' }} />
+                        </div>
+                        <p
+                          style={{
+                            fontSize: 12, fontWeight: 700,
+                            color: '#012d1d', lineHeight: 1.4,
+                          }}
+                        >
+                          {tip.length > 60 ? tip.slice(0, 57) + '...' : tip}
+                        </p>
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* ── Re-scan ── */}
+            <section style={{ padding: '0 24px', marginTop: 8 }}>
+              <button
+                onClick={() => router.push(`/upload?followup=${result.analysis_id}`)}
+                className="w-full flex items-center gap-4 px-4 py-3.5 transition-colors active:opacity-80"
+                style={{
+                  background: '#ffffff', borderRadius: '1.5rem',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                }}
+              >
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{ width: 44, height: 44, borderRadius: '50%', background: '#f2f4f2' }}
+                >
+                  <RefreshCw size={19} strokeWidth={2} style={{ color: '#2c694e' }} />
+                </div>
+                <div className="flex-1 text-left">
+                  <p style={{ fontSize: 14, fontWeight: 700, color: '#191c1b' }}>
+                    Повторная диагностика через 2–3 дня
+                  </p>
+                  <p style={{ fontSize: 12, color: '#414844', marginTop: 2 }}>
+                    Посмотрите, помогли ли ваши действия
+                  </p>
+                </div>
+                <ChevronRight size={18} strokeWidth={2} style={{ color: '#c1c8c2' }} />
+              </button>
+            </section>
+
+            {debugMode && (
+              <div className="px-6 mt-4">
+                <DebugPanel analysisId={result.analysis_id} />
+              </div>
+            )}
+          </main>
+
+          {/* ── Sticky CTA — above bottom nav ── */}
+          <div
+            className="fixed left-0 right-0 z-10"
+            style={{
+              bottom: 76,
+              maxWidth: 448,
+              margin: '0 auto',
+              padding: '0 24px',
+            }}
+          >
+            <button
+              onClick={() => setPaywallOpen(true)}
+              className="w-full flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-95 duration-200"
+              style={{
+                height: 64,
+                borderRadius: '1rem',
+                fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                fontWeight: 700, fontSize: 18,
+                border: 'none',
+                background: '#1b4332',
+                color: '#86af99',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.28)',
+                cursor: 'pointer',
+              }}
+            >
+              <MessageCircle size={20} strokeWidth={1.75} />
+              Получить советы эксперта
+            </button>
+          </div>
+
+          {/* ── Bottom nav ── */}
+          <div
+            className="fixed bottom-0 left-0 right-0 z-20 max-w-md mx-auto"
+            style={{
+              background: 'rgba(248,250,248,0.80)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              borderTop: '1px solid rgba(193,200,194,0.10)',
+              boxShadow: '0 -4px 12px rgba(25,28,27,0.04)',
+            }}
+          >
+            <div className="flex items-center justify-around px-6 pt-2 pb-4">
+              <button onClick={() => router.push('/upload')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: 'rgba(27,67,50,0.40)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
+                  <path d="M9 21V12h6v9" />
+                </svg>
+                <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Обзор</span>
+              </button>
+              <button onClick={() => router.push('/upload')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: 'rgba(27,67,50,0.40)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+                <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Сканер</span>
+              </button>
+              <div
+                className="flex flex-col items-center gap-[5px] p-3 rounded-full"
+                style={{ background: '#1b4332', color: '#f8faf8', boxShadow: '0 2px 8px rgba(0,0,0,0.20)' }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <polyline points="12 7 12 12 15 15" />
+                </svg>
+                <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>История</span>
+              </div>
+              <button onClick={() => router.push('/upload')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: 'rgba(27,67,50,0.40)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M16 8v-2a4 4 0 00-8 0v2" />
+                  <path d="M3 20c0-4 4-7 9-7s9 3 9 7" />
+                </svg>
+                <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Профиль</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        {/* PaywallModal */}
+        {paywallOpen && (
+          <PaywallModal
+            mode="video"
+            loading={videoLoading}
+            onClose={() => setPaywallOpen(false)}
+            onVideoConfirm={handleVideoConfirm}
+            onOrderSubmit={handleOrderSubmit}
+            diagnosisName={topIssue?.title}
+            diagnosisScore={topIssue?.score}
+          />
+        )}
+      </>
+    )
+  }
+  // ══ END HOME LAYOUT ════════════════════════════════════════════════════════
 
   return (
     <>
