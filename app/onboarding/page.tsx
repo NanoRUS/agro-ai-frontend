@@ -37,7 +37,7 @@ export default function OnboardingPage() {
   function handleContinue() {
     if (!selected) return
     localStorage.setItem('userType', selected)
-    router.push('/upload')
+    router.push(selected === 'farm' ? '/farmer-setup' : '/upload')
   }
 
   return (

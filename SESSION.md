@@ -51,6 +51,14 @@
 
 ## Онбординг реализован (апр 2026)
 
+## Farmer Setup экран (апр 2026)
+
+- Новый файл: `app/farmer-setup/page.tsx` — перенесён из Stitch code.html
+- Маршрут: `/farmer-setup` → сохраняет crops + field в sessionStorage → redirect `/upload`
+- Структура: TopAppBar + progress bar + crops multi-select + field creation card + decorative image + sticky CTA
+
+---
+
 ## Сегментация result screen (апр 2026)
 
 - Изменён: `app/results/page.tsx` — читает `localStorage("userType")`, вычисляет `seg` (`farm|home|dacha|null`)
@@ -62,7 +70,8 @@
 
 ## Онбординг реализован (апр 2026)
 
-- Файл: `app/onboarding/page.tsx` — переписан по Stitch-референсу: 2-col grid, карточки с description, check icon в углу, sticky CTA с helper text
+- Файл: `app/onboarding/page.tsx` — перенесён 1:1 из Stitch code.html: TopAppBar, column cards (flex-col gap-6), decorative image, sticky footer CTA h-64
+- Файл: `app/layout.tsx` — добавлен Manrope (headline font из Stitch), bg-body = #f8faf8
 - Изменён: `app/upload/page.tsx` — `useEffect` guard: если нет `localStorage("userType")` → `router.replace('/onboarding')`
 - Типы: `home` / `dacha` / `garden` / `farm`
 - При выборе и нажатии «Продолжить»: `localStorage.setItem("userType", value)` → `/upload`
