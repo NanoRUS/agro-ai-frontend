@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  X, Camera, ImagePlus, ArrowRight, Sun, Scan, Leaf, Clock, Brain, ShieldCheck,
+  X, Camera, ImagePlus, ArrowRight, Sun, Scan, Leaf, Clock, Brain, ShieldCheck, Zap,
 } from 'lucide-react'
 import { DEMO_CASES, loadDemoResult } from '@/lib/demo-fixtures'
 import { API_URL } from '@/lib/api'
@@ -187,7 +187,7 @@ export default function UploadPage() {
                   aspectRatio: '4/5',
                   borderRadius: '2rem',
                   overflow: 'hidden',
-                  boxShadow: '0 16px 48px rgba(25,28,27,0.14)',
+                  boxShadow: '0 24px 64px rgba(1,45,29,0.22), 0 8px 24px rgba(0,0,0,0.12)',
                 }}
               >
                 <img
@@ -195,26 +195,48 @@ export default function UploadPage() {
                   alt="Больное растение"
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
+                {/* Layer 1: main gradient */}
                 <div
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'linear-gradient(to top, rgba(1,45,29,0.90) 0%, rgba(1,45,29,0.55) 35%, rgba(0,0,0,0.15) 70%, transparent 100%)',
+                    background: 'linear-gradient(to top, rgba(1,45,29,0.95) 0%, rgba(1,45,29,0.60) 38%, rgba(0,0,0,0.05) 70%, transparent 100%)',
                   }}
                 />
-                <div style={{ position: 'absolute', bottom: 32, left: 32, right: 32, color: 'white' }}>
+                {/* Layer 2: radial vignette for edge depth */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.28) 100%)',
+                  }}
+                />
+                {/* Text area — frosted glass panel */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    padding: '48px 28px 28px',
+                    background: 'linear-gradient(to top, rgba(1,45,29,0.72) 0%, transparent 100%)',
+                    backdropFilter: 'blur(2px)',
+                    WebkitBackdropFilter: 'blur(2px)',
+                    color: 'white',
+                  }}
+                >
                   <span
                     style={{
                       display: 'inline-block',
                       padding: '4px 16px',
                       borderRadius: 9999,
-                      background: '#735c00',
+                      background: 'rgba(115,92,0,0.90)',
                       color: 'white',
                       fontSize: 10,
                       fontWeight: 700,
                       letterSpacing: '0.05em',
                       textTransform: 'uppercase',
-                      marginBottom: 16,
+                      marginBottom: 14,
                     }}
                   >
                     Технология AI + Агрономия
@@ -223,15 +245,16 @@ export default function UploadPage() {
                     style={{
                       fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
                       fontWeight: 800,
-                      fontSize: 36,
+                      fontSize: 34,
                       letterSpacing: '-0.04em',
                       lineHeight: 1.05,
-                      marginBottom: 16,
+                      marginBottom: 12,
+                      textShadow: '0 2px 12px rgba(0,0,0,0.30)',
                     }}
                   >
                     Определим болезнь растения по фото
                   </h1>
-                  <p style={{ fontSize: 18, fontWeight: 500, color: 'rgba(255,255,255,0.90)' }}>
+                  <p style={{ fontSize: 17, fontWeight: 500, color: 'rgba(255,255,255,0.88)', textShadow: '0 1px 6px rgba(0,0,0,0.25)' }}>
                     И подскажем, что делать дальше
                   </p>
                 </div>
@@ -239,7 +262,7 @@ export default function UploadPage() {
             </section>
 
             {/* ── Scanner + Benefits Section ── */}
-            <section style={{ padding: '40px 24px 64px' }}>
+            <section style={{ padding: '52px 24px 64px' }}>
 
               {/* Scanner card — tappable action zone */}
               <button
@@ -247,17 +270,17 @@ export default function UploadPage() {
                   if (!localStorage.getItem('userType')) { router.push('/onboarding'); return }
                   cameraRef.current?.click()
                 }}
-                className="w-full text-left transition-all duration-200 active:scale-[0.98] active:opacity-90"
+                className="w-full text-left transition-all duration-200 active:scale-[0.97]"
                 style={{
-                  background: C.surfaceContainerLow,
-                  padding: 32,
-                  borderRadius: '2rem',
-                  border: `1.5px solid rgba(44,105,78,0.22)`,
+                  background: '#ffffff',
+                  padding: '28px 28px 24px',
+                  borderRadius: '1.75rem',
+                  border: `1px solid rgba(193,200,194,0.18)`,
                   overflow: 'hidden',
                   position: 'relative',
-                  marginBottom: 40,
+                  marginBottom: 48,
                   cursor: 'pointer',
-                  boxShadow: '0 4px 24px rgba(27,67,50,0.08)',
+                  boxShadow: '0 8px 40px rgba(27,67,50,0.10), 0 2px 8px rgba(0,0,0,0.05)',
                   display: 'block',
                   outline: 'none',
                 }}
@@ -534,18 +557,30 @@ export default function UploadPage() {
 
             {/* ── Demo section ── */}
             <section style={{ padding: '0 24px 32px' }}>
-              <p
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '0.16em',
-                  textTransform: 'uppercase',
-                  color: C.onSurfaceVariant,
-                  marginBottom: 16,
-                }}
-              >
-                Примеры диагностики
-              </p>
+              {/* Header */}
+              <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="flex items-center justify-center"
+                    style={{ width: 24, height: 24, borderRadius: 8, background: 'rgba(245,158,11,0.12)' }}
+                  >
+                    <Zap size={12} strokeWidth={2} style={{ color: '#f59e0b' }} />
+                  </div>
+                  <p
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: '0.16em',
+                      textTransform: 'uppercase',
+                      color: C.onSurfaceVariant,
+                    }}
+                  >
+                    Примеры диагностики
+                  </p>
+                </div>
+                <p style={{ fontSize: 11, color: '#9ca3af' }}>Нажмите для демо</p>
+              </div>
+
               <div className="grid grid-cols-3" style={{ gap: 10 }}>
                 {DEMO_CASES.filter((c) => !DEMO_EXCLUDED.has(c.id)).map((c) => {
                   const imgSrc = DEMO_IMAGES[c.id] ?? `/crops/${c.crop}.jpg`
@@ -561,25 +596,22 @@ export default function UploadPage() {
                     >
                       <div
                         className="w-full aspect-square relative overflow-hidden"
-                        style={{ borderRadius: '1.5rem', marginBottom: 8, boxShadow: '0 2px 10px rgba(0,0,0,0.10)' }}
+                        style={{ borderRadius: '1rem', marginBottom: 6, boxShadow: '0 2px 10px rgba(0,0,0,0.14)' }}
                       >
                         <img src={imgSrc} alt={label} className="absolute inset-0 w-full h-full object-cover" />
                         <div
                           className="absolute inset-0"
-                          style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.0) 45%, rgba(0,0,0,0.50) 100%)' }}
+                          style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.0) 45%, rgba(0,0,0,0.52) 100%)' }}
                         />
                         {isLoading ? (
                           <div
                             className="absolute bottom-2 right-2 w-5 h-5 rounded-full border-2 animate-spin"
-                            style={{ borderColor: C.secondaryContainer, borderTopColor: 'transparent' }}
+                            style={{ borderColor: '#34d399', borderTopColor: 'transparent' }}
                           />
                         ) : (
                           <div
-                            className="absolute bottom-2 right-2 flex items-center justify-center"
+                            className="absolute bottom-2 right-2 w-6 h-6 rounded-full flex items-center justify-center"
                             style={{
-                              width: 24,
-                              height: 24,
-                              borderRadius: '50%',
                               background: 'rgba(255,255,255,0.22)',
                               backdropFilter: 'blur(8px)',
                               WebkitBackdropFilter: 'blur(8px)',
@@ -592,7 +624,7 @@ export default function UploadPage() {
                       </div>
                       <p
                         className="line-clamp-2 leading-tight"
-                        style={{ fontSize: 12, fontWeight: 600, color: C.primary, letterSpacing: '-0.01em', minHeight: 32 }}
+                        style={{ fontSize: 11, fontWeight: 600, color: '#1f2937', letterSpacing: '-0.01em' }}
                       >
                         {label}
                       </p>
