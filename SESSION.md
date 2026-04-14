@@ -78,6 +78,23 @@
 
 ---
 
+## Главная страница — Stitch landing (апр 2026)
+
+- Изменён: `app/upload/page.tsx` — полная перестройка главного экрана
+- **Пустое состояние (no photos)** = Stitch landing:
+  - Hero: `aspect-[4/5]` с `/categories/fungal.jpg`, gradient overlay, badge "Технология AI + Агрономия", h1, subtitle — из code.html
+  - Scanner card: `/demos/tomato-blight.jpg` grayscale-0.5, scan line, "Обнаружена угроза" glass-pill, accuracy bar 85% / 98.2% — из code.html
+  - Benefits: 3 строки с icon circles (#aeeecb bg) — Clock/Brain/Leaf — текст 1:1 из code.html
+  - CTA primary: `py-24 px-32 bg #1b4332 rounded-2xl shadow-lg`, Camera icon — из code.html
+  - CTA secondary: white bg, border, ImagePlus icon — из code.html
+  - Trust: "Это займет ~10 секунд" + ShieldCheck + "AI + агрономическая модель" — из code.html
+  - Demo section: "Примеры диагностики" (сохранена как discovery)
+- **Состояние с фото** = post-upload flow (farmerCtx + headline + photo grid + crop selection + Continue)
+- Sticky CTA "Продолжить" скрыт в landing state, показывается только при наличии фото
+- Отклонения от code.html: TopAppBar сохранён без изменений ("Диагностика" вместо "BOTANICA"); BottomNav наш (не Stitch)
+
+---
+
 ## Профиль + навигация (апр 2026)
 
 - **BottomNav.tsx** переписан: убран Сканер + `onScan` prop, добавлен Профиль → /profile; `active` теперь `'home' | 'history' | 'profile'`

@@ -1,8 +1,8 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  X, MoreVertical, Camera, ImagePlus, ArrowRight, Sun, Scan, Leaf,
+  X, MoreVertical, Camera, ImagePlus, ArrowRight, Sun, Scan, Leaf, Clock, Brain, ShieldCheck,
 } from 'lucide-react'
 import { DEMO_CASES, loadDemoResult } from '@/lib/demo-fixtures'
 import { API_URL } from '@/lib/api'
@@ -196,10 +196,433 @@ export default function UploadPage() {
       </header>
 
       {/* ── Main ── */}
-      <main className="px-6" style={{ paddingTop: 96, paddingBottom: 200 }}>
+      <main style={{ paddingTop: 64, paddingBottom: 100 }}>
 
-        {/* Context chip — shown for farmers */}
-        {farmerCtx && (
+        {/* Hidden inputs — always present */}
+        <input ref={inputRef}   type="file" accept="image/*" multiple             className="hidden" onChange={onFileChange} />
+        <input ref={galleryRef} type="file" accept="image/*"                       className="hidden" onChange={onFileChange} />
+        <input ref={cameraRef}  type="file" accept="image/*" capture="environment" className="hidden" onChange={onFileChange} />
+
+        {previews.length === 0 ? (
+
+          /* ============================================================
+             STITCH LANDING STATE
+             ============================================================ */
+          <>
+
+            {/* ── Hero Section ── */}
+            <section style={{ padding: '0 24px 64px' }}>
+              <div
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  aspectRatio: '4/5',
+                  borderRadius: '2rem',
+                  overflow: 'hidden',
+                  boxShadow: '0 16px 48px rgba(25,28,27,0.08)',
+                }}
+              >
+                <img
+                  src="/categories/fungal.jpg"
+                  alt="Больное растение"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(to top, rgba(1,45,29,0.65) 0%, transparent 55%)',
+                  }}
+                />
+                <div style={{ position: 'absolute', bottom: 32, left: 32, right: 32, color: 'white' }}>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      padding: '4px 16px',
+                      borderRadius: 9999,
+                      background: '#735c00',
+                      color: 'white',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: '0.05em',
+                      textTransform: 'uppercase',
+                      marginBottom: 16,
+                    }}
+                  >
+                    Технология AI + Агрономия
+                  </span>
+                  <h1
+                    style={{
+                      fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                      fontWeight: 800,
+                      fontSize: 36,
+                      letterSpacing: '-0.04em',
+                      lineHeight: 1.05,
+                      marginBottom: 16,
+                    }}
+                  >
+                    Определим болезнь растения по фото
+                  </h1>
+                  <p style={{ fontSize: 18, fontWeight: 500, color: 'rgba(255,255,255,0.90)' }}>
+                    И подскажем, что делать дальше
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* ── Scanner + Benefits Section ── */}
+            <section style={{ padding: '0 24px 64px' }}>
+
+              {/* Scanner card */}
+              <div
+                style={{
+                  background: C.surfaceContainerLow,
+                  padding: 32,
+                  borderRadius: '2rem',
+                  border: `1px solid rgba(193,200,194,0.15)`,
+                  overflow: 'hidden',
+                  position: 'relative',
+                  marginBottom: 40,
+                }}
+              >
+                <div style={{ position: 'absolute', top: 0, left: 0, padding: 16, opacity: 0.15 }}>
+                  <Scan size={40} style={{ color: C.primary }} />
+                </div>
+                <div
+                  style={{
+                    position: 'relative',
+                    zIndex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 24,
+                  }}
+                >
+                  {/* Diagnostic preview image */}
+                  <div
+                    style={{
+                      width: '100%',
+                      aspectRatio: '1/1',
+                      borderRadius: '1rem',
+                      overflow: 'hidden',
+                      border: `2px solid rgba(1,45,29,0.20)`,
+                      position: 'relative',
+                    }}
+                  >
+                    <img
+                      src="/demos/tomato-blight.jpg"
+                      alt="Diagnostic preview"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'saturate(0.5)' }}
+                    />
+                    {/* Scanner line */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: 0,
+                        width: '100%',
+                        height: 2,
+                        background: C.secondary,
+                        boxShadow: `0 0 15px ${C.secondary}`,
+                        opacity: 0.80,
+                      }}
+                    />
+                    {/* Threat pill */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 16,
+                        right: 16,
+                        background: 'rgba(255,255,255,0.70)',
+                        backdropFilter: 'blur(24px)',
+                        WebkitBackdropFilter: 'blur(24px)',
+                        padding: '4px 12px',
+                        borderRadius: 9999,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          background: '#ba1a1a',
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          color: C.primary,
+                        }}
+                      >
+                        Обнаружена угроза
+                      </span>
+                    </div>
+                  </div>
+                  {/* Accuracy bar */}
+                  <div style={{ width: '100%' }}>
+                    <div
+                      style={{
+                        height: 8,
+                        width: '100%',
+                        background: C.surfaceContainerHighest,
+                        borderRadius: 9999,
+                        overflow: 'hidden',
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div
+                        style={{ height: '100%', width: '85%', background: C.secondary, borderRadius: 9999 }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          color: C.onSurfaceVariant,
+                        }}
+                      >
+                        Точность анализа
+                      </span>
+                      <span
+                        style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: C.secondary }}
+                      >
+                        98.2%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Benefits list */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                {(
+                  [
+                    {
+                      Icon: Clock,
+                      title: 'Точный диагноз за секунды',
+                      desc: 'Наша нейросеть обучена на миллионах снимков различных патологий.',
+                    },
+                    {
+                      Icon: Brain,
+                      title: 'Рекомендации от агронома',
+                      desc: 'Инструкции по лечению составлены экспертами в области консервации растений.',
+                    },
+                    {
+                      Icon: Leaf,
+                      title: 'Подходит для фермеров и садоводов',
+                      desc: 'От домашнего фикуса до гектаров пшеницы — мы поможем каждому.',
+                    },
+                  ] as { Icon: React.ElementType; title: string; desc: string }[]
+                ).map(({ Icon, title, desc }) => (
+                  <div key={title} style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                    <div
+                      style={{
+                        marginTop: 4,
+                        width: 48,
+                        height: 48,
+                        borderRadius: '50%',
+                        background: C.secondaryContainer,
+                        color: C.onSecondaryContainer,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon size={22} strokeWidth={1.75} />
+                    </div>
+                    <div>
+                      <h3
+                        style={{
+                          fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                          fontWeight: 700,
+                          fontSize: 18,
+                          color: C.primary,
+                          marginBottom: 4,
+                          letterSpacing: '-0.02em',
+                        }}
+                      >
+                        {title}
+                      </h3>
+                      <p style={{ fontSize: 15, color: C.onSurfaceVariant, lineHeight: 1.5 }}>
+                        {desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* ── CTA Section ── */}
+            <section style={{ padding: '0 24px 32px', textAlign: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
+                {/* Primary */}
+                <button
+                  onClick={() => cameraRef.current?.click()}
+                  className="group w-full flex items-center justify-center gap-3 transition-all active:scale-[0.97] duration-300"
+                  style={{
+                    padding: '24px 32px',
+                    background: C.primaryContainer,
+                    color: 'white',
+                    borderRadius: '2rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                    fontWeight: 700,
+                    fontSize: 20,
+                    boxShadow: '0 8px 24px rgba(27,67,50,0.35)',
+                  }}
+                >
+                  <Camera size={24} strokeWidth={1.75} />
+                  Сделать фото
+                </button>
+                {/* Secondary */}
+                <button
+                  onClick={() => galleryRef.current?.click()}
+                  className="w-full flex items-center justify-center gap-3 transition-all active:scale-[0.97] duration-300"
+                  style={{
+                    padding: '24px 32px',
+                    background: C.surfaceContainerLowest,
+                    color: C.primary,
+                    borderRadius: '2rem',
+                    border: `1px solid rgba(193,200,194,0.20)`,
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                    fontWeight: 700,
+                    fontSize: 18,
+                  }}
+                >
+                  <ImagePlus size={22} strokeWidth={1.75} />
+                  Выбрать из галереи
+                </button>
+              </div>
+              {/* Trust */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
+                <p style={{ fontSize: 14, fontWeight: 500, color: C.onSurfaceVariant }}>
+                  Это займет ~10 секунд
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, opacity: 0.60 }}>
+                  <ShieldCheck size={16} strokeWidth={1.75} style={{ color: C.primary }} />
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.12em',
+                      color: C.primary,
+                    }}
+                  >
+                    AI + агрономическая модель
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            {/* ── Demo section ── */}
+            <section style={{ padding: '0 24px 32px' }}>
+              <p
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                  color: C.onSurfaceVariant,
+                  marginBottom: 16,
+                }}
+              >
+                Примеры диагностики
+              </p>
+              <div className="grid grid-cols-3" style={{ gap: 10 }}>
+                {DEMO_CASES.filter((c) => !DEMO_EXCLUDED.has(c.id)).map((c) => {
+                  const imgSrc = DEMO_IMAGES[c.id] ?? `/crops/${c.crop}.jpg`
+                  const label = stripEmoji(c.label)
+                  const isLoading = demoLoading === c.id
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => handleDemoCase(c.id)}
+                      disabled={demoLoading !== null}
+                      className="w-full text-left transition-all active:scale-[0.96] disabled:opacity-60"
+                      style={{ outline: 'none' }}
+                    >
+                      <div
+                        className="w-full aspect-square relative overflow-hidden"
+                        style={{ borderRadius: '1.5rem', marginBottom: 8, boxShadow: '0 2px 10px rgba(0,0,0,0.10)' }}
+                      >
+                        <img src={imgSrc} alt={label} className="absolute inset-0 w-full h-full object-cover" />
+                        <div
+                          className="absolute inset-0"
+                          style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.0) 45%, rgba(0,0,0,0.50) 100%)' }}
+                        />
+                        {isLoading ? (
+                          <div
+                            className="absolute bottom-2 right-2 w-5 h-5 rounded-full border-2 animate-spin"
+                            style={{ borderColor: C.secondaryContainer, borderTopColor: 'transparent' }}
+                          />
+                        ) : (
+                          <div
+                            className="absolute bottom-2 right-2 flex items-center justify-center"
+                            style={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: '50%',
+                              background: 'rgba(255,255,255,0.22)',
+                              backdropFilter: 'blur(8px)',
+                              WebkitBackdropFilter: 'blur(8px)',
+                              border: '1px solid rgba(255,255,255,0.30)',
+                            }}
+                          >
+                            <ArrowRight size={11} strokeWidth={2.5} className="text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <p
+                        className="line-clamp-2 leading-tight"
+                        style={{ fontSize: 12, fontWeight: 600, color: C.primary, letterSpacing: '-0.01em' }}
+                      >
+                        {label}
+                      </p>
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
+
+            {error && (
+              <div
+                className="flex items-center gap-2 px-4 py-3 mx-6"
+                style={{
+                  marginBottom: 16,
+                  borderRadius: '1rem',
+                  background: '#fef2f2',
+                  border: '1px solid rgba(239,68,68,0.20)',
+                }}
+              >
+                <span style={{ fontSize: 13, color: '#dc2626', fontWeight: 500 }}>{error}</span>
+              </div>
+            )}
+
+          </>
+
+        ) : (
+
+          /* ============================================================
+             POST-UPLOAD STATE
+             ============================================================ */
+          <div className="px-6" style={{ paddingTop: 32, paddingBottom: 200 }}>
+
+            {/* Context chip — shown for farmers */}
+            {farmerCtx && (
           <div className="flex justify-center" style={{ marginBottom: 32 }}>
             <div
               className="inline-flex items-center gap-2 rounded-full"
@@ -444,10 +867,7 @@ export default function UploadPage() {
           </div>
         )}
 
-        {/* Hidden inputs */}
-        <input ref={inputRef}   type="file" accept="image/*" multiple            className="hidden" onChange={onFileChange} />
-        <input ref={galleryRef} type="file" accept="image/*"                      className="hidden" onChange={onFileChange} />
-        <input ref={cameraRef}  type="file" accept="image/*" capture="environment" className="hidden" onChange={onFileChange} />
+        {/* hidden inputs are hoisted to top of main */}
 
         {/* ── Two info cards ── */}
         <div className="grid grid-cols-1" style={{ gap: 16, marginTop: 24 }}>
@@ -622,85 +1042,6 @@ export default function UploadPage() {
           </section>
         )}
 
-        {/* ── Demo section ── */}
-        <section style={{ marginTop: 40 }}>
-          <p
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: '0.16em',
-              textTransform: 'uppercase',
-              color: C.onSurfaceVariant,
-              marginBottom: 16,
-            }}
-          >
-            Примеры диагностики
-          </p>
-          <div className="grid grid-cols-3" style={{ gap: 10 }}>
-            {DEMO_CASES.filter((c) => !DEMO_EXCLUDED.has(c.id)).map((c) => {
-              const imgSrc = DEMO_IMAGES[c.id] ?? `/crops/${c.crop}.jpg`
-              const label = stripEmoji(c.label)
-              const isLoading = demoLoading === c.id
-
-              return (
-                <button
-                  key={c.id}
-                  onClick={() => handleDemoCase(c.id)}
-                  disabled={demoLoading !== null}
-                  className="w-full text-left transition-all active:scale-[0.96] disabled:opacity-60"
-                  style={{ outline: 'none' }}
-                >
-                  <div
-                    className="w-full aspect-square relative overflow-hidden"
-                    style={{
-                      borderRadius: '1.5rem',
-                      marginBottom: 8,
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.10)',
-                    }}
-                  >
-                    <img
-                      src={imgSrc}
-                      alt={label}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <div
-                      className="absolute inset-0"
-                      style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.0) 45%, rgba(0,0,0,0.50) 100%)' }}
-                    />
-                    {isLoading ? (
-                      <div
-                        className="absolute bottom-2 right-2 w-5 h-5 rounded-full border-2 animate-spin"
-                        style={{ borderColor: C.secondaryContainer, borderTopColor: 'transparent' }}
-                      />
-                    ) : (
-                      <div
-                        className="absolute bottom-2 right-2 flex items-center justify-center"
-                        style={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: '50%',
-                          background: 'rgba(255,255,255,0.22)',
-                          backdropFilter: 'blur(8px)',
-                          WebkitBackdropFilter: 'blur(8px)',
-                          border: '1px solid rgba(255,255,255,0.30)',
-                        }}
-                      >
-                        <ArrowRight size={11} strokeWidth={2.5} className="text-white" />
-                      </div>
-                    )}
-                  </div>
-                  <p
-                    className="line-clamp-2 leading-tight"
-                    style={{ fontSize: 12, fontWeight: 600, color: C.primary, letterSpacing: '-0.01em' }}
-                  >
-                    {label}
-                  </p>
-                </button>
-              )
-            })}
-          </div>
-        </section>
-
         {/* Error */}
         {error && (
           <div
@@ -715,9 +1056,15 @@ export default function UploadPage() {
             <span style={{ fontSize: 13, color: '#dc2626', fontWeight: 500 }}>{error}</span>
           </div>
         )}
+
+          </div>
+
+        )}
+
       </main>
 
-      {/* ── Sticky CTA footer — sits above BottomNav ── */}
+      {/* ── Sticky CTA footer — only when photos added ── */}
+      {previews.length > 0 && (
       <div
         className="fixed left-0 right-0 z-10"
         style={{
@@ -767,6 +1114,7 @@ export default function UploadPage() {
           </p>
         )}
       </div>
+      )}  {/* end previews.length > 0 */}
 
       {/* ── Bottom nav ── */}
       <BottomNav active="home" />
