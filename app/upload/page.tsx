@@ -179,13 +179,13 @@ export default function UploadPage() {
           <>
 
             {/* ── Hero Section ── */}
-            <section style={{ paddingTop: 'max(env(safe-area-inset-top), 48px)', marginBottom: 0 }}>
+            <section style={{ padding: 'max(env(safe-area-inset-top), 48px) 20px 0' }}>
               <div
                 style={{
                   position: 'relative',
                   width: '100%',
                   aspectRatio: '4/5',
-                  borderRadius: '0 0 2.5rem 2.5rem',
+                  borderRadius: '2rem',
                   overflow: 'hidden',
                   boxShadow: '0 16px 48px rgba(25,28,27,0.14)',
                 }}
