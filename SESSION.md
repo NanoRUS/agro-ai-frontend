@@ -162,6 +162,18 @@
 
 ---
 
+## Landing page polish — "wow" (апр 2026)
+
+- Изменён: `app/upload/page.tsx` — точечный polish без изменения flow
+- **Удалено**: TopAppBar (X, "Диагностика", три точки), `MoreVertical` из импортов; `paddingTop: 64 → 0`
+- **Hero**: full-bleed без горизонтальных отступов, `borderRadius: '0 0 2.5rem 2.5rem'`; gradient усилен: `rgba(1,45,29,0.90) 0% → rgba(0,0,0,0.15) 70% → transparent 100%`
+- **Scanner card**: стал интерактивным `<button>` с `active:scale-[0.98]`, border `1.5px rgba(44,105,78,0.22)`, shadow; добавлена micro-hint "Камера откроется сразу" (Camera icon + текст)
+- **Primary CTA**: shadow `0 16px 48px rgba(27,67,50,0.55), 0 4px 16px rgba(27,67,50,0.25)`, добавлены `hover:scale-[1.01] hover:brightness-110`
+- **Benefits icons**: убран `marginTop: 4` — все иконки теперь строго по верхней линии
+- **Demo labels**: добавлен `minHeight: 32` — все карточки одинаковой высоты
+
+---
+
 ## Следующий шаг (Vercel)
 
 Установить env vars в Vercel и сделать redeploy:
