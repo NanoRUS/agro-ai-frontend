@@ -179,7 +179,7 @@ export default function UploadPage() {
           <>
 
             {/* ── Hero Section ── */}
-            <section style={{ padding: 0, marginBottom: 0 }}>
+            <section style={{ paddingTop: 'max(env(safe-area-inset-top), 48px)', marginBottom: 0 }}>
               <div
                 style={{
                   position: 'relative',
