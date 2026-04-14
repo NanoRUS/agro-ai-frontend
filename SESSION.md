@@ -174,6 +174,13 @@
 
 ---
 
+## Bugfix: hero padding + history route (апр 2026)
+
+- Hero section: `paddingTop: 'max(env(safe-area-inset-top), 48px)'` — на notch-устройствах использует safe-area, иначе 48px
+- История: `app/history/page.tsx` существует, `/history` в билде ✓ — 404 был из-за старого Vercel preview URL
+
+---
+
 ## Следующий шаг (Vercel)
 
 Установить env vars в Vercel и сделать redeploy:
