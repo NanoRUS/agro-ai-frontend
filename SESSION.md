@@ -78,6 +78,29 @@
 
 ---
 
+## Профиль + навигация (апр 2026)
+
+- **BottomNav.tsx** переписан: убран Сканер + `onScan` prop, добавлен Профиль → /profile; `active` теперь `'home' | 'history' | 'profile'`
+- **app/profile/page.tsx** создан — полноценный экран:
+  - Карточка пользователя: userType + emoji + farmerCrops/farmerField для фермеров
+  - История диагностик: последние 3 записи из `getHistory()` с thumbnail, кнопка → /history
+  - Блок монетизации: bg #1b4332, bullet-list адаптирован под сегмент (farm/other), CTA → PaywallModal
+  - Действия: сменить тип → /onboarding, очистить данные (удаляет agro_history + userType + sessionStorage)
+- **app/upload/page.tsx**: убран prop `onScan` из `<BottomNav>`
+- **app/results/page.tsx**: обновлены все 3 inline bottom nav (farm, home, default) — Сканер → Профиль → /profile
+- Данные: `userType` из localStorage, `agro_farmer_crops/field` из sessionStorage, история из `lib/history.ts`
+
+---
+
+## Upload UX — gallery input fix (апр 2026)
+
+- Добавлен `galleryRef` — отдельный `<input>` без `multiple`, используется только для "Выбрать из галереи"
+- `inputRef` (с `multiple`) сохранён для кнопки "Добавить" в photo grid
+- Android: "Выбрать из галереи" открывает галерею напрямую
+- iOS: action sheet сокращён с 3 до 2 пунктов (нет "Выбрать файлы"); прямой переход в галерею на iOS через HTML невозможен (ограничение Safari)
+
+---
+
 ## Upload screen переработан (апр 2026)
 
 - Изменён: `app/upload/page.tsx` — полная перестройка визуального слоя по Stitch

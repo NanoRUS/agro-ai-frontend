@@ -808,19 +808,19 @@ function ResultsContent() {
                 </svg>
                 <span style={{ fontSize: 9.5 }} className="font-medium">Главная</span>
               </button>
-              <button onClick={() => router.push('/upload')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: '#9ca3af' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
-                  <circle cx="12" cy="13" r="4" />
-                </svg>
-                <span style={{ fontSize: 9.5 }} className="font-medium">Сканер</span>
-              </button>
               <button onClick={() => router.push('/history')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: '#9ca3af' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="9" />
                   <polyline points="12 7 12 12 15 15" />
                 </svg>
                 <span style={{ fontSize: 9.5 }} className="font-medium">История</span>
+              </button>
+              <button onClick={() => router.push('/profile')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: '#9ca3af' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                </svg>
+                <span style={{ fontSize: 9.5 }} className="font-medium">Профиль</span>
               </button>
             </div>
           </div>
@@ -1263,13 +1263,6 @@ function ResultsContent() {
                 </svg>
                 <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Обзор</span>
               </button>
-              <button onClick={() => router.push('/upload')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: 'rgba(27,67,50,0.40)' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
-                  <circle cx="12" cy="13" r="4" />
-                </svg>
-                <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Сканер</span>
-              </button>
               <div
                 className="flex flex-col items-center gap-[5px] p-3 rounded-full"
                 style={{ background: '#1b4332', color: '#f8faf8', boxShadow: '0 2px 8px rgba(0,0,0,0.20)' }}
@@ -1280,11 +1273,10 @@ function ResultsContent() {
                 </svg>
                 <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>История</span>
               </div>
-              <button onClick={() => router.push('/upload')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: 'rgba(27,67,50,0.40)' }}>
+              <button onClick={() => router.push('/profile')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: 'rgba(27,67,50,0.40)' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="4" />
-                  <path d="M16 8v-2a4 4 0 00-8 0v2" />
-                  <path d="M3 20c0-4 4-7 9-7s9 3 9 7" />
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
                 </svg>
                 <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Профиль</span>
               </button>
@@ -1987,21 +1979,6 @@ function ResultsContent() {
             <span style={{ fontSize: 9.5 }} className="font-medium">Главная</span>
           </button>
 
-          {/* Scan — flat */}
-          <button
-            onClick={() => router.push('/upload')}
-            className="flex flex-col items-center gap-[5px] px-4
-                       transition-all duration-150 active:scale-[0.93]"
-            style={{ color: '#9ca3af' }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7"
-                 stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
-              <circle cx="12" cy="13" r="4" />
-            </svg>
-            <span style={{ fontSize: 9.5 }} className="font-medium">Сканер</span>
-          </button>
-
           {/* История */}
           <button
             onClick={() => router.push('/history')}
@@ -2014,6 +1991,20 @@ function ResultsContent() {
               <polyline points="12 7 12 12 15 15" />
             </svg>
             <span style={{ fontSize: 9.5 }} className="font-medium">История</span>
+          </button>
+
+          {/* Профиль */}
+          <button
+            onClick={() => router.push('/profile')}
+            className="flex flex-col items-center gap-[5px] px-4"
+            style={{ color: '#9ca3af' }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7"
+                 stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+            </svg>
+            <span style={{ fontSize: 9.5 }} className="font-medium">Профиль</span>
           </button>
 
         </div>

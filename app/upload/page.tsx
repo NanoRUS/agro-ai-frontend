@@ -57,8 +57,9 @@ function stripEmoji(label: string) {
 
 export default function UploadPage() {
   const router    = useRouter()
-  const inputRef  = useRef<HTMLInputElement>(null)
-  const cameraRef = useRef<HTMLInputElement>(null)
+  const inputRef   = useRef<HTMLInputElement>(null)   // multi-select gallery (photo grid add button)
+  const galleryRef = useRef<HTMLInputElement>(null)   // single gallery tap (no multiple → no "Choose Files" on iOS)
+  const cameraRef  = useRef<HTMLInputElement>(null)
 
   const [images,      setImages]      = useState<File[]>([])
   const [previews,    setPreviews]    = useState<string[]>([])
@@ -324,7 +325,7 @@ export default function UploadPage() {
                 JPG, PNG до 10 МБ
               </p>
               <button
-                onClick={(e) => { e.stopPropagation(); inputRef.current?.click() }}
+                onClick={(e) => { e.stopPropagation(); galleryRef.current?.click() }}
                 className="flex items-center gap-1.5 transition-opacity hover:opacity-70 active:opacity-50"
                 style={{
                   marginTop: 16,
@@ -444,8 +445,9 @@ export default function UploadPage() {
         )}
 
         {/* Hidden inputs */}
-        <input ref={inputRef}  type="file" accept="image/*" multiple className="hidden" onChange={onFileChange} />
-        <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onFileChange} />
+        <input ref={inputRef}   type="file" accept="image/*" multiple            className="hidden" onChange={onFileChange} />
+        <input ref={galleryRef} type="file" accept="image/*"                      className="hidden" onChange={onFileChange} />
+        <input ref={cameraRef}  type="file" accept="image/*" capture="environment" className="hidden" onChange={onFileChange} />
 
         {/* ── Two info cards ── */}
         <div className="grid grid-cols-1" style={{ gap: 16, marginTop: 24 }}>
@@ -767,7 +769,7 @@ export default function UploadPage() {
       </div>
 
       {/* ── Bottom nav ── */}
-      <BottomNav active="home" onScan={() => cameraRef.current?.click()} />
+      <BottomNav active="home" />
 
       {/* ── Navigating overlay ── */}
       {navigating && (
