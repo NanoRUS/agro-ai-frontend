@@ -1,10 +1,16 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Manrope } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
   variable: '--font-inter',
+  display: 'swap',
+})
+
+const manrope = Manrope({
+  subsets: ['latin', 'cyrillic'],
+  variable: '--font-manrope',
   display: 'swap',
 })
 
@@ -24,11 +30,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={inter.variable}>
+    <html lang="ru" className={`${inter.variable} ${manrope.variable}`}>
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body className={inter.className}>
+      <body className={inter.className} style={{ background: '#f8faf8' }}>
         <div className="min-h-screen max-w-md mx-auto">
           {children}
         </div>

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { X, MoreVertical, ArrowRight } from 'lucide-react'
 
 const USER_TYPES = [
   {
@@ -13,7 +14,7 @@ const USER_TYPES = [
     value: 'dacha',
     emoji: '🌱',
     label: 'Дачник',
-    description: 'Огород и растения для себя',
+    description: 'Огород и выращивание для себя',
   },
   {
     value: 'garden',
@@ -40,149 +41,197 @@ export default function OnboardingPage() {
   }
 
   return (
-    /* Full viewport background */
-    <div className="min-h-screen w-full" style={{ background: '#f0f2f5', fontFamily: 'Inter, sans-serif' }}>
-      <div className="max-w-[430px] mx-auto min-h-screen flex flex-col">
+    <div style={{ background: '#f8faf8', color: '#191c1b', minHeight: 'max(884px, 100dvh)' }}>
 
-        {/* Scrollable content */}
-        <div className="flex-1 px-4 pt-12 pb-44">
+      {/* TopAppBar — fixed, from code.html header */}
+      <header
+        className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6"
+        style={{ height: 64, background: '#f8faf8', maxWidth: 448, margin: '0 auto' }}
+      >
+        <button
+          onClick={() => router.back()}
+          className="p-2 rounded-full transition-colors active:scale-95"
+          style={{ color: '#012d1d' }}
+        >
+          <X size={24} strokeWidth={2} />
+        </button>
+        <h1
+          style={{
+            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+            fontWeight: 700,
+            fontSize: 18,
+            color: '#012d1d',
+            letterSpacing: '-0.01em',
+          }}
+        >
+          Диагностика
+        </h1>
+        <button className="p-2 rounded-full" style={{ color: '#012d1d' }}>
+          <MoreVertical size={24} strokeWidth={2} />
+        </button>
+      </header>
 
-          {/* Header */}
-          <div className="mb-8 px-1">
-            <h1
-              className="font-black text-gray-900 mb-3"
-              style={{ fontSize: 34, letterSpacing: '-0.04em', lineHeight: 1.05 }}
-            >
-              Кто вы?
-            </h1>
-            <p style={{ fontSize: 16, color: '#6b7280', lineHeight: 1.5 }}>
-              Это поможет дать более точные рекомендации
-            </p>
-          </div>
+      {/* Main — pt-24 pb-32 px-6 max-w-2xl mx-auto from code.html */}
+      <main className="px-6" style={{ paddingTop: 96, paddingBottom: 128 }}>
 
-          {/* Vertical list */}
-          <div className="flex flex-col gap-3">
-            {USER_TYPES.map((type) => {
-              const active = selected === type.value
-              return (
-                <button
-                  key={type.value}
-                  onClick={() => setSelected(type.value)}
-                  className="relative w-full flex flex-row items-center gap-4 text-left transition-all duration-150 active:scale-[0.985]"
-                  style={{
-                    minHeight: 100,
-                    padding: '20px 20px',
-                    borderRadius: 20,
-                    background: active ? '#f0fdf4' : '#ffffff',
-                    border: `2px solid ${active ? '#16a34a' : 'rgba(0,0,0,0.08)'}`,
-                    boxShadow: active
-                      ? '0 8px 28px rgba(22,163,74,0.18), 0 2px 8px rgba(0,0,0,0.06)'
-                      : '0 2px 16px rgba(0,0,0,0.09), 0 1px 4px rgba(0,0,0,0.05)',
-                  }}
-                >
-                  {/* Icon square */}
+        {/* Header section — mb-12 from code.html */}
+        <section style={{ marginBottom: 48 }}>
+          <h2
+            style={{
+              fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+              fontWeight: 800,
+              fontSize: 36,
+              letterSpacing: '-0.04em',
+              lineHeight: 1.1,
+              color: '#012d1d',
+              marginBottom: 12,
+            }}
+          >
+            Кто вы?
+          </h2>
+          <p style={{ fontSize: 18, color: 'rgba(65,72,68,0.80)', lineHeight: 1.5 }}>
+            Это поможет дать более точные рекомендации
+          </p>
+        </section>
+
+        {/* Cards — grid-cols-1 gap-6 from code.html (md:grid-cols-2 omitted — layout is max-w-md) */}
+        <div className="grid grid-cols-1" style={{ gap: 24 }}>
+          {USER_TYPES.map((type) => {
+            const active = selected === type.value
+            return (
+              <div
+                key={type.value}
+                onClick={() => setSelected(type.value)}
+                className="group relative cursor-pointer transition-all duration-200"
+                style={{
+                  background: '#ffffff',
+                  padding: 32,
+                  borderRadius: '3rem',
+                  border: active ? '2px solid #2c694e' : '1px solid rgba(193,200,194,0.10)',
+                  boxShadow: active
+                    ? '0 0 0 2px #2c694e, 0 16px 48px rgba(25,28,27,0.08)'
+                    : '0px 4px 12px rgba(25,28,27,0.04)',
+                }}
+              >
+                {/* Check badge — absolute top-4 right-4 from code.html */}
+                {active && (
                   <div
-                    className="flex-shrink-0 flex items-center justify-center"
+                    className="absolute flex items-center justify-center"
+                    style={{
+                      top: 16, right: 16,
+                      width: 32, height: 32,
+                      borderRadius: '50%',
+                      background: '#2c694e',
+                      color: '#ffffff',
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M3 8.5l3.5 3.5 6.5-7" stroke="currentColor" strokeWidth="2.2"
+                            strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                )}
+
+                {/* flex flex-col gap-6 from code.html */}
+                <div className="flex flex-col" style={{ gap: 24 }}>
+                  {/* Icon — w-14 h-14 rounded-full from code.html */}
+                  <div
+                    className="flex items-center justify-center"
                     style={{
                       width: 56,
                       height: 56,
-                      borderRadius: 16,
-                      background: active ? 'rgba(22,163,74,0.12)' : '#f3f4f6',
+                      borderRadius: '50%',
+                      background: active ? '#aeeecb' : '#f2f4f2',
                       fontSize: 28,
+                      flexShrink: 0,
                     }}
                   >
                     {type.emoji}
                   </div>
 
-                  {/* Text */}
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className="font-bold"
+                  {/* Text block */}
+                  <div>
+                    <h3
                       style={{
-                        fontSize: 17,
-                        color: active ? '#16a34a' : '#111827',
+                        fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                        fontWeight: 700,
+                        fontSize: 20,
+                        color: '#012d1d',
+                        marginBottom: 4,
                         letterSpacing: '-0.02em',
-                        lineHeight: 1.3,
+                        lineHeight: 1.2,
                       }}
                     >
                       {type.label}
-                    </p>
-                    <p
-                      className="mt-1"
-                      style={{
-                        fontSize: 13.5,
-                        color: active ? '#16a34aaa' : '#9ca3af',
-                        lineHeight: 1.4,
-                      }}
-                    >
+                    </h3>
+                    <p style={{ fontSize: 14, color: '#414844', lineHeight: 1.5 }}>
                       {type.description}
                     </p>
                   </div>
-
-                  {/* Check */}
-                  {active && (
-                    <div
-                      className="flex-shrink-0 flex items-center justify-center"
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: '50%',
-                        background: '#16a34a',
-                      }}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                        <path d="M2.5 6.5l3 3 5-5" stroke="#fff" strokeWidth="2.2"
-                              strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-              )
-            })}
-          </div>
+                </div>
+              </div>
+            )
+          })}
         </div>
 
-        {/* Sticky CTA */}
+        {/* Decorative image — mt-12 rounded-xl h-48 from code.html */}
         <div
-          className="fixed bottom-0 left-1/2 w-full max-w-[430px] px-4 pt-4 pb-8"
           style={{
-            transform: 'translateX(-50%)',
-            background: 'rgba(255,255,255,0.97)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            borderTop: '1px solid rgba(0,0,0,0.07)',
-            boxShadow: '0 -4px 28px rgba(0,0,0,0.07)',
+            marginTop: 48,
+            borderRadius: '1rem',
+            overflow: 'hidden',
+            height: 192,
+            position: 'relative',
           }}
         >
-          <button
-            onClick={handleContinue}
-            disabled={!selected}
-            className="w-full font-black transition-all duration-150 active:scale-[0.98] active:brightness-95"
+          <img
+            src="/categories/fungal.jpg"
+            alt="Органическая текстура листьев растения"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+          <div
             style={{
-              height: 56,
-              borderRadius: 16,
-              fontSize: 16,
-              letterSpacing: '0.01em',
-              fontFamily: 'Inter, sans-serif',
-              border: 'none',
-              background: selected
-                ? 'linear-gradient(145deg, #3ddb6d 0%, #15a248 100%)'
-                : '#e5e7eb',
-              color: selected ? '#022c17' : '#9ca3af',
-              boxShadow: selected
-                ? '0 8px 28px rgba(34,197,94,0.45), 0 2px 6px rgba(0,0,0,0.12)'
-                : 'none',
-              cursor: selected ? 'pointer' : 'default',
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(to top, rgba(1,45,29,0.40), transparent)',
             }}
-          >
-            Продолжить →
-          </button>
-          <p className="text-center mt-2.5" style={{ fontSize: 12, color: '#b0b7c3' }}>
-            Вы сможете изменить выбор позже
-          </p>
+          />
         </div>
+      </main>
 
-      </div>
+      {/* Sticky footer CTA — fixed bottom-0 from code.html */}
+      <footer
+        className="fixed bottom-0 left-0 right-0 z-50"
+        style={{
+          padding: 24,
+          background: 'rgba(248,250,248,0.80)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          maxWidth: 448,
+          margin: '0 auto',
+        }}
+      >
+        <button
+          onClick={handleContinue}
+          disabled={!selected}
+          className="w-full flex items-center justify-center gap-3 transition-all active:scale-95 duration-200"
+          style={{
+            height: 64,
+            borderRadius: '1rem',
+            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+            fontWeight: 700,
+            fontSize: 18,
+            border: 'none',
+            background: selected ? '#1b4332' : '#e1e3e1',
+            color: selected ? '#b1f0ce' : '#717973',
+            boxShadow: selected ? '0 8px 24px rgba(0,0,0,0.28)' : 'none',
+            cursor: selected ? 'pointer' : 'default',
+          }}
+        >
+          Продолжить
+          <ArrowRight size={22} strokeWidth={2} />
+        </button>
+      </footer>
     </div>
   )
 }
