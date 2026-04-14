@@ -174,6 +174,17 @@
 
 ---
 
+## Farmer profile rebuild (апр 2026)
+
+- **Farmer layout** — early return для `userType === 'farm'`, полностью отдельный экран
+- **Hero card**: dark gradient `#1b4332→#012d1d` + radial glow, identity + crops (с Leaf icon) + field + stats bento (N диагностик / N культур)
+- **История**: кликабельные карточки `bg #f8faf8` с thumbnail 52px + urgency badge (color-coded) + ChevronRight — структура из LEFT-референса (results v1)
+- **Premium**: headline "Снизьте риск потерь урожая", 3 numbered plan items (полупрозрачные карточки + #aeeecb нумер) — структура из RIGHT-референса (results v2)
+- **Non-farmer**: layout без изменений по смыслу, убран MoreVertical
+- **Цвета urgency**: critical=#dc2626, high=#ea580c, medium=#d97706, low=#16a34a
+
+---
+
 ## Physical UI depth — главная (апр 2026)
 
 - **Hero shadow**: `0 24px 64px rgba(1,45,29,0.22), 0 8px 24px rgba(0,0,0,0.12)` — глубокое отделение от фона
