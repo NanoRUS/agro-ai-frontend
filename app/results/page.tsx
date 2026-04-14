@@ -1097,50 +1097,40 @@ function ResultsContent() {
 
             {/* ── Советы эксперта ── */}
             {expertTips.length > 0 && (
-              <section style={{ padding: '48px 24px' }}>
-                <h3
-                  style={{
-                    fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                    fontWeight: 800, fontSize: 22, color: '#012d1d',
-                    marginBottom: 32, paddingLeft: 8,
-                  }}
-                >
-                  Советы эксперта
-                </h3>
-                {/* Horizontal scroll */}
-                <div
-                  className="flex overflow-x-auto no-scrollbar pb-4"
-                  style={{ gap: 16, marginLeft: -24, marginRight: -24, paddingLeft: 24, paddingRight: 24 }}
-                >
+              <section style={{ padding: '48px 20px 0' }}>
+                <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, letterSpacing: '0.10em',
+                    textTransform: 'uppercase', color: '#6e7971', whiteSpace: 'nowrap',
+                  }}>
+                    Советы эксперта
+                  </span>
+                  <div style={{ flex: 1, height: 1, background: 'rgba(108,123,115,0.22)' }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {expertTips.map((tip, i) => {
                     const TipIcon = tipIcons[i % tipIcons.length]
                     return (
                       <div
                         key={i}
-                        className="flex-shrink-0 flex flex-col gap-4"
+                        className="flex items-center"
                         style={{
-                          width: 192, padding: 24,
-                          borderRadius: '1rem',
-                          background: '#e6e9e7',
+                          gap: 20, padding: 20, borderRadius: 12,
+                          background: 'rgba(255,255,255,0.70)',
+                          backdropFilter: 'blur(24px)',
+                          WebkitBackdropFilter: 'blur(24px)',
+                          border: '1px solid rgba(108,123,115,0.10)',
+                          boxShadow: '0px 4px 12px rgba(25,28,27,0.04), 0px 16px 48px rgba(25,28,27,0.08)',
                         }}
                       >
                         <div
-                          className="flex items-center justify-center"
-                          style={{
-                            width: 40, height: 40, borderRadius: '50%',
-                            background: '#ffffff',
-                            boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
-                          }}
+                          className="flex items-center justify-center flex-shrink-0"
+                          style={{ width: 44, height: 44, borderRadius: '50%', background: '#f2f4f2' }}
                         >
                           <TipIcon size={18} strokeWidth={1.75} style={{ color: '#2c694e' }} />
                         </div>
-                        <p
-                          style={{
-                            fontSize: 12, fontWeight: 700,
-                            color: '#012d1d', lineHeight: 1.4,
-                          }}
-                        >
-                          {tip.length > 60 ? tip.slice(0, 57) + '...' : tip}
+                        <p style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#191c1b', lineHeight: 1.5, margin: 0 }}>
+                          {tip}
                         </p>
                       </div>
                     )
