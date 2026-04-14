@@ -174,6 +174,13 @@
 
 ---
 
+## Bugfix: hero radius + history 404 (апр 2026)
+
+- **Hero**: `borderRadius: '2rem'` (все углы одинаковые), убран `'0 0 2.5rem 2.5rem'` — крышка исчезла; секция добавила `padding: '... 20px'` — hero как карточка
+- **История 404**: `app/history/page.tsx` существовал ЛОКАЛЬНО но никогда не был в git — Vercel его не видел. Исправлено: файл добавлен в коммит `50840b2`; старый inline nav (Главная/Сканер/История) заменён на `<BottomNav active="history" />`
+
+---
+
 ## Bugfix: hero padding + history route (апр 2026)
 
 - Hero section: `paddingTop: 'max(env(safe-area-inset-top), 48px)'` — на notch-устройствах использует safe-area, иначе 48px
