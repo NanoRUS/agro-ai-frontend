@@ -525,7 +525,7 @@ function ResultsContent() {
                         <p style={{
                           flex: 1, margin: 0,
                           fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                          fontWeight: 600, fontSize: 14, color: '#012d1d', lineHeight: 1.45,
+                          fontWeight: 700, fontSize: 15, color: '#012d1d', lineHeight: 1.45,
                         }}>
                           {action}
                         </p>
@@ -1055,7 +1055,7 @@ function ResultsContent() {
                         <p style={{
                           flex: 1, margin: 0,
                           fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                          fontWeight: 600, fontSize: 14, color: '#012d1d', lineHeight: 1.45,
+                          fontWeight: 700, fontSize: 15, color: '#012d1d', lineHeight: 1.45,
                         }}>
                           {action}
                         </p>
