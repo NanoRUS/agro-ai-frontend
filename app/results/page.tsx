@@ -13,6 +13,7 @@ import type { AnalyzeResponse, IssueResult, VideoTone } from '@/lib/api'
 import { generateVideo, API_URL } from '@/lib/api'
 import { buildHistoryEntry, upsertHistoryEntry, setPremiumOrder, getPremiumStatusForAnalysis, type PremiumOrderStatus } from '@/lib/history'
 import PaywallModal from '@/components/paywall/PaywallModal'
+import BottomNav from '@/components/BottomNav'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -797,41 +798,7 @@ function ResultsContent() {
             </button>
           </div>
 
-          {/* ── Bottom nav ── */}
-          <div
-            className="fixed bottom-0 left-0 right-0 z-20 max-w-md mx-auto"
-            style={{
-              background: 'rgba(255,255,255,0.97)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              borderTop: '1px solid rgba(0,0,0,0.05)',
-              boxShadow: '0 -1px 0 rgba(0,0,0,0.04), 0 -8px 24px rgba(0,0,0,0.04)',
-            }}
-          >
-            <div className="flex items-center justify-around px-6 pt-2 pb-4">
-              <button onClick={() => router.push('/upload')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: '#9ca3af' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
-                  <path d="M9 21V12h6v9" />
-                </svg>
-                <span style={{ fontSize: 9.5 }} className="font-medium">Главная</span>
-              </button>
-              <button onClick={() => router.push('/history')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: '#9ca3af' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="9" />
-                  <polyline points="12 7 12 12 15 15" />
-                </svg>
-                <span style={{ fontSize: 9.5 }} className="font-medium">История</span>
-              </button>
-              <button onClick={() => router.push('/profile')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: '#9ca3af' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-                </svg>
-                <span style={{ fontSize: 9.5 }} className="font-medium">Профиль</span>
-              </button>
-            </div>
-          </div>
+          <BottomNav />
 
         </div>
 
@@ -1247,44 +1214,7 @@ function ResultsContent() {
             </button>
           </div>
 
-          {/* ── Bottom nav ── */}
-          <div
-            className="fixed bottom-0 left-0 right-0 z-20 max-w-md mx-auto"
-            style={{
-              background: 'rgba(248,250,248,0.80)',
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
-              borderTop: '1px solid rgba(193,200,194,0.10)',
-              boxShadow: '0 -4px 12px rgba(25,28,27,0.04)',
-            }}
-          >
-            <div className="flex items-center justify-around px-6 pt-2 pb-4">
-              <button onClick={() => router.push('/upload')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: 'rgba(27,67,50,0.40)' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
-                  <path d="M9 21V12h6v9" />
-                </svg>
-                <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Обзор</span>
-              </button>
-              <div
-                className="flex flex-col items-center gap-[5px] p-3 rounded-full"
-                style={{ background: '#1b4332', color: '#f8faf8', boxShadow: '0 2px 8px rgba(0,0,0,0.20)' }}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="9" />
-                  <polyline points="12 7 12 12 15 15" />
-                </svg>
-                <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>История</span>
-              </div>
-              <button onClick={() => router.push('/profile')} className="flex flex-col items-center gap-[5px] px-4" style={{ color: 'rgba(27,67,50,0.40)' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-                </svg>
-                <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Профиль</span>
-              </button>
-            </div>
-          </div>
+          <BottomNav />
 
         </div>
 
@@ -1970,65 +1900,7 @@ function ResultsContent() {
         )}
       </div>
 
-      {/* ─────────────────────────────────────────────────────────────── */}
-      {/* BOTTOM NAV                                                       */}
-      {/* ─────────────────────────────────────────────────────────────── */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-20 max-w-md mx-auto"
-        style={{
-          background: 'rgba(255,255,255,0.97)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(0,0,0,0.05)',
-          boxShadow: '0 -1px 0 rgba(0,0,0,0.04), 0 -8px 24px rgba(0,0,0,0.04)',
-        }}
-      >
-        <div className="flex items-center justify-around px-6 pt-2 pb-4">
-
-          {/* Home */}
-          <button
-            onClick={() => router.push('/upload')}
-            className="flex flex-col items-center gap-[5px] px-4"
-            style={{ color: '#9ca3af' }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7"
-                 stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
-              <path d="M9 21V12h6v9" />
-            </svg>
-            <span style={{ fontSize: 9.5 }} className="font-medium">Главная</span>
-          </button>
-
-          {/* История */}
-          <button
-            onClick={() => router.push('/history')}
-            className="flex flex-col items-center gap-[5px] px-4"
-            style={{ color: '#9ca3af' }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7"
-                 stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="9" />
-              <polyline points="12 7 12 12 15 15" />
-            </svg>
-            <span style={{ fontSize: 9.5 }} className="font-medium">История</span>
-          </button>
-
-          {/* Профиль */}
-          <button
-            onClick={() => router.push('/profile')}
-            className="flex flex-col items-center gap-[5px] px-4"
-            style={{ color: '#9ca3af' }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.7"
-                 stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="8" r="4" />
-              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-            </svg>
-            <span style={{ fontSize: 9.5 }} className="font-medium">Профиль</span>
-          </button>
-
-        </div>
-      </div>
+      <BottomNav />
 
       {/* PAYWALL MODAL */}
       {paywallOpen && (
