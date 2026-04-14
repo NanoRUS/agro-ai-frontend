@@ -78,6 +78,50 @@
 
 ---
 
+## Upload screen переработан (апр 2026)
+
+- Изменён: `app/upload/page.tsx` — полная перестройка визуального слоя по Stitch
+- Удалён Hero card с градиентом и бейджами
+- Добавлены: TopAppBar + контекст-чип (из sessionStorage фермера) + центрированный H2
+- Upload zone: dashed border, min-h-340px, иконка w-20 h-20, hover scale
+- После загрузки: photo grid в Stitch карточке (rounded-[3rem])
+- Карточки советов: "Образец фото" + "Рекомендации" (bg #f2f4f2, rounded-[2rem])
+- Crop chips: pill с круглым фото, selected = bg #1b4332
+- CTA: h-16 rounded-full, bg #1b4332 / text #86af99, выше BottomNav (bottom: 60)
+
+---
+
+## Farmer result screen (апр 2026)
+
+- Изменён: `app/results/page.tsx` — добавлен отдельный layout для `seg === 'farm'` (early return)
+- Структура: TopAppBar + Hero (aspect-[4/3], title+badge внутри) + Bento metrics + План действий + Видео блок + Sticky CTA + Bottom nav
+- **Hero**: `aspect-[4/3]`, gradient overlay, urgency badge + % уверенности + название болезни внутри
+- **Bento metrics**: Срочность (full-width, цвет urgencyColor), Масштаб (crop + поле), Риск потерь (bg #1b4332, белый текст)
+- **Риск**: derived из urgency: critical→"до 60%", high→"до 40%", medium→"до 20%", low→"до 5%"
+- **Масштаб**: `result.crop.selected` + `farmerField.area` га из sessionStorage
+- **План действий**: `today_actions.slice(0,3)` разбит по ". " → title + desc, номер в `bg #aeeecb`
+- **Видео upsell**: тёмная карточка `bg #012d1d`, aspect-video preview с play, 3 bullet с иконками
+- **Sticky CTA**: "Получить разбор от агронома" — fixed bottom 60px, `bg #1b4332`, открывает PaywallModal
+- Нетронуты: home/dacha/null layout, PaywallModal, вся бизнес-логика, in-progress/ready states
+- `farmerField` читается из `sessionStorage("agro_farmer_field")`
+
+---
+
+## Home result screen (апр 2026)
+
+- Изменён: `app/results/page.tsx` — добавлен отдельный layout для `seg === 'home' && topIssue` (early return)
+- Активируется только когда есть диагноз болезни; здоровые растения → default layout
+- **Hero**: `aspect-[4/5]` (портретное), `opacity-90`, glass panel overlay (rgba(255,255,255,0.70) + backdrop-blur-24) с: "Анализ завершен" label + название + 2 badge (совпадение + угроза)
+- **Что с растением**: карточка белая `bg #fff` shadow, Leaf icon, `result.urgency.reason` как текст
+- **Почему произошло**: карточка светло-серая `bg #f2f4f2`, Thermometer icon, `topIssue.why` bullet list с cycling icons (Droplet/Wind/Leaf/Thermometer)
+- **План восстановления**: section `bg rgba(242,244,242,0.50)`, numbered cards с colored circles: #1b4332 / #aeeecb / #cba72f, разбивает action по ". "
+- **Советы эксперта**: горизонтальный scroll, карточки `bg #e6e9e7 w-192px`, icon `bg-white rounded-full`, данные из `today_actions.slice(3)` или `topIssue.why`
+- **CTA**: `fixed bottom: 76`, `bg #1b4332 text #86af99`, `rounded-[1rem]`, "Получить советы эксперта" + MessageCircle icon → PaywallModal
+- **Bottom nav**: 4 таба (Обзор/Сканер/История/Профиль) в Stitch стиле с `bg #f8faf8/80 backdrop-blur`
+- Нетронуты: farm layout, dacha/null layout, вся бизнес-логика
+
+---
+
 ## Следующий шаг (Vercel)
 
 Установить env vars в Vercel и сделать redeploy:

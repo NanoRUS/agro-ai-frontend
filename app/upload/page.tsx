@@ -67,16 +67,21 @@ export default function UploadPage() {
   const [demoLoading, setDemoLoading] = useState<string | null>(null)
   const [navigating,  setNavigating]  = useState(false)
   const [farmerCtx,   setFarmerCtx]   = useState<{ crop: string; field: string } | null>(null)
+  const [userType,    setUserType]    = useState<string | null>(null)
 
   useEffect(() => {
-    if (!localStorage.getItem('userType')) {
+    const ut = localStorage.getItem('userType')
+    if (!ut) {
       router.replace('/onboarding')
+      return
     }
+    setUserType(ut)
     try {
       const crops = JSON.parse(sessionStorage.getItem('agro_farmer_crops') || '[]') as string[]
       const field = JSON.parse(sessionStorage.getItem('agro_farmer_field') || '{}') as { name?: string }
       if (crops.length > 0) {
         setFarmerCtx({ crop: crops[0], field: field.name || '' })
+        setCrop(crops[0])
       }
     } catch {}
   }, [])
@@ -237,7 +242,7 @@ export default function UploadPage() {
               marginBottom: 16,
             }}
           >
-            Загрузите фото растения
+            {userType === 'farm' ? 'Сфотографируйте поражённый участок' : 'Загрузите фото растения'}
           </h2>
           <p
             style={{
@@ -248,7 +253,9 @@ export default function UploadPage() {
               margin: '0 auto',
             }}
           >
-            Используйте четкий снимок пораженного участка для точного анализа ИИ.
+            {userType === 'farm'
+              ? 'Лучше всего: лист, стебель, початок или колос'
+              : 'Используйте четкий снимок пораженного участка для точного анализа ИИ.'}
           </p>
         </div>
 
@@ -256,7 +263,7 @@ export default function UploadPage() {
         {previews.length === 0 ? (
           <div
             className="relative group cursor-pointer"
-            onClick={() => inputRef.current?.click()}
+            onClick={() => cameraRef.current?.click()}
           >
             {/* Glow wrapper */}
             <div
@@ -316,6 +323,23 @@ export default function UploadPage() {
               >
                 JPG, PNG до 10 МБ
               </p>
+              <button
+                onClick={(e) => { e.stopPropagation(); inputRef.current?.click() }}
+                className="flex items-center gap-1.5 transition-opacity hover:opacity-70 active:opacity-50"
+                style={{
+                  marginTop: 16,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: C.outline,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+              >
+                <ImagePlus size={14} strokeWidth={1.75} />
+                Выбрать из галереи
+              </button>
             </div>
           </div>
         ) : (
@@ -542,57 +566,59 @@ export default function UploadPage() {
           </div>
         </div>
 
-        {/* ── Crop selection ── */}
-        <section style={{ marginTop: 40 }}>
-          <p
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: '0.16em',
-              textTransform: 'uppercase',
-              color: C.onSurfaceVariant,
-              marginBottom: 16,
-            }}
-          >
-            Тип растения
-          </p>
-          <div className="flex flex-wrap" style={{ gap: 10 }}>
-            {CROPS.map((c) => {
-              const sel = crop === c.id
-              return (
-                <button
-                  key={c.id}
-                  onClick={() => { setCrop(c.id); setError('') }}
-                  className="flex items-center gap-2 transition-all active:scale-95"
-                  style={{
-                    padding: '10px 20px',
-                    borderRadius: 9999,
-                    background: sel ? C.primaryContainer : C.surfaceContainerLowest,
-                    color: sel ? C.onPrimaryContainer : C.primary,
-                    border: sel ? 'none' : `1px solid ${C.outlineVariant}`,
-                    fontWeight: sel ? 700 : 500,
-                    fontSize: 14,
-                    boxShadow: sel ? '0 1px 4px rgba(0,0,0,0.18)' : undefined,
-                  }}
-                >
-                  <div
-                    className="overflow-hidden flex-shrink-0"
-                    style={{ width: 24, height: 24, borderRadius: '50%' }}
+        {/* ── Crop selection — hidden for farmers (crop auto-set from farmer-setup) ── */}
+        {!(userType === 'farm' && farmerCtx) && (
+          <section style={{ marginTop: 40 }}>
+            <p
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: C.onSurfaceVariant,
+                marginBottom: 16,
+              }}
+            >
+              Тип растения
+            </p>
+            <div className="flex flex-wrap" style={{ gap: 10 }}>
+              {CROPS.map((c) => {
+                const sel = crop === c.id
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => { setCrop(c.id); setError('') }}
+                    className="flex items-center gap-2 transition-all active:scale-95"
+                    style={{
+                      padding: '10px 20px',
+                      borderRadius: 9999,
+                      background: sel ? C.primaryContainer : C.surfaceContainerLowest,
+                      color: sel ? C.onPrimaryContainer : C.primary,
+                      border: sel ? 'none' : `1px solid ${C.outlineVariant}`,
+                      fontWeight: sel ? 700 : 500,
+                      fontSize: 14,
+                      boxShadow: sel ? '0 1px 4px rgba(0,0,0,0.18)' : undefined,
+                    }}
                   >
-                    <img src={c.img} alt={c.label} className="w-full h-full object-cover" />
-                  </div>
-                  {c.label}
-                  {sel && (
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                      <path fillRule="evenodd" clipRule="evenodd"
-                        d="M8 0a8 8 0 100 16A8 8 0 008 0zm3.47 5.47a.75.75 0 011.06 1.06l-5 5a.75.75 0 01-1.06 0l-2-2a.75.75 0 011.06-1.06L7 9.94l4.47-4.47z" />
-                    </svg>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        </section>
+                    <div
+                      className="overflow-hidden flex-shrink-0"
+                      style={{ width: 24, height: 24, borderRadius: '50%' }}
+                    >
+                      <img src={c.img} alt={c.label} className="w-full h-full object-cover" />
+                    </div>
+                    {c.label}
+                    {sel && (
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                        <path fillRule="evenodd" clipRule="evenodd"
+                          d="M8 0a8 8 0 100 16A8 8 0 008 0zm3.47 5.47a.75.75 0 011.06 1.06l-5 5a.75.75 0 01-1.06 0l-2-2a.75.75 0 011.06-1.06L7 9.94l4.47-4.47z" />
+                      </svg>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+        )}
 
         {/* ── Demo section ── */}
         <section style={{ marginTop: 40 }}>
