@@ -218,6 +218,23 @@ VFACTORY_CALLBACK_URL   = http://192.168.10.70:7900/video-callback
 VFACTORY_CALLBACK_TOKEN = vf-callback-secret-2026
 ```
 
+## Recommendations block — финальный стандарт (апр 2026)
+
+Проанализирован и унифицирован блок рекомендаций на result screen.
+
+**Зафиксированные решения:**
+- `action` cards: без ChevronRight, без onClick — не кликабельны
+- `link` cards (re-scan): ChevronRight сохранён, реальный `router.push`
+- farm: title `"План действий"` + helper `"Приоритетные шаги для защиты урожая"`
+- home / dacha / default: title `"Что делать сейчас"` + helper `"Следуйте этим шагам, чтобы помочь растению восстановиться"`
+- Urgency-subtitle (агрессивный тон) — убран
+- fontWeight 700 / fontSize 15 — единый для всех сегментов
+- Визуал: glass-panel, `#1b4332` иконка-круг, без chevron — единый для всех
+
+**Что не менялось:** layout экрана, data model, маршруты, PaywallModal, sticky CTA
+
+---
+
 ## Важно не забыть
 
 - `results/page.tsx` — визуальный эталон, любые новые экраны должны соответствовать его стилю
