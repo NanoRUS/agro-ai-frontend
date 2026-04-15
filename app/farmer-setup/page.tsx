@@ -29,11 +29,39 @@ export default function FarmerSetupPage() {
   const [selectedCrops, setSelectedCrops] = useState<string[]>([])
   const [fieldName, setFieldName]         = useState('')
   const [fieldArea, setFieldArea]         = useState('')
+  const [customCrops, setCustomCrops]     = useState<string[]>([])
+  const [showAddInput, setShowAddInput]   = useState(false)
+  const [inputVal, setInputVal]           = useState('')
 
   function toggleCrop(crop: string) {
     setSelectedCrops((prev) =>
       prev.includes(crop) ? prev.filter((c) => c !== crop) : [...prev, crop]
     )
+  }
+
+  function confirmAddCrop() {
+    const val = inputVal.trim()
+    if (!val) return
+    // Capitalize first letter, rest as-is
+    const normalized = val.charAt(0).toUpperCase() + val.slice(1)
+    const allCrops = [...CROPS, ...customCrops]
+    const duplicate = allCrops.find((c) => c.toLowerCase() === normalized.toLowerCase())
+    if (duplicate) {
+      // Select existing instead of duplicating
+      if (!selectedCrops.includes(duplicate)) {
+        setSelectedCrops((prev) => [...prev, duplicate])
+      }
+    } else {
+      setCustomCrops((prev) => [...prev, normalized])
+      setSelectedCrops((prev) => [...prev, normalized])
+    }
+    setInputVal('')
+    setShowAddInput(false)
+  }
+
+  function removeCustomCrop(crop: string) {
+    setCustomCrops((prev) => prev.filter((c) => c !== crop))
+    setSelectedCrops((prev) => prev.filter((c) => c !== crop))
   }
 
   function handleNext() {
@@ -113,45 +141,35 @@ export default function FarmerSetupPage() {
           {/* flex flex-wrap gap-3 from code.html */}
           <div className="flex flex-wrap" style={{ gap: 12 }}>
 
-            {/* Crop chips */}
+            {/* Standard crop chips */}
             {CROPS.map((crop) => {
               const sel = selectedCrops.includes(crop)
               return sel ? (
-                /* selected: bg-primary-container text-on-primary-container rounded-full shadow-sm */
                 <button
                   key={crop}
                   onClick={() => toggleCrop(crop)}
                   className="flex items-center gap-2 font-bold transition-all active:scale-95"
                   style={{
-                    padding: '12px 24px',
-                    borderRadius: 9999,
-                    background: C.primaryContainer,
-                    color: C.onPrimaryContainer,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
-                    border: 'none',
-                    fontSize: 15,
+                    padding: '12px 24px', borderRadius: 9999,
+                    background: C.primaryContainer, color: C.onPrimaryContainer,
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.18)', border: 'none', fontSize: 15,
                   }}
                 >
                   {crop}
-                  {/* check_circle FILL=1 substitute */}
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                     <path fillRule="evenodd" clipRule="evenodd"
                       d="M8 0a8 8 0 100 16A8 8 0 008 0zm3.47 5.47a.75.75 0 011.06 1.06l-5 5a.75.75 0 01-1.06 0l-2-2a.75.75 0 011.06-1.06L7 9.94l4.47-4.47z" />
                   </svg>
                 </button>
               ) : (
-                /* unselected: border border-outline-variant bg-surface-container-lowest */
                 <button
                   key={crop}
                   onClick={() => toggleCrop(crop)}
                   className="font-medium transition-all active:scale-95"
                   style={{
-                    padding: '12px 24px',
-                    borderRadius: 9999,
-                    background: C.surfaceContainerLowest,
-                    color: C.primary,
-                    border: `1px solid ${C.outlineVariant}`,
-                    fontSize: 15,
+                    padding: '12px 24px', borderRadius: 9999,
+                    background: C.surfaceContainerLowest, color: C.primary,
+                    border: `1px solid ${C.outlineVariant}`, fontSize: 15,
                   }}
                 >
                   {crop}
@@ -159,36 +177,117 @@ export default function FarmerSetupPage() {
               )
             })}
 
-            {/* "Добавить культуру" — dashed border from code.html */}
-            <button
-              className="flex items-center gap-2 font-medium transition-colors active:scale-95"
-              style={{
-                padding: '12px 24px',
-                borderRadius: 9999,
-                background: 'transparent',
-                color: C.secondary,
-                border: `1px dashed ${C.outline}`,
-                fontSize: 15,
-              }}
-            >
-              <Plus size={18} strokeWidth={2} />
-              Добавить культуру
-            </button>
+            {/* Custom crop chips */}
+            {customCrops.map((crop) => {
+              const sel = selectedCrops.includes(crop)
+              return (
+                <button
+                  key={crop}
+                  onClick={() => toggleCrop(crop)}
+                  className="flex items-center gap-2 font-bold transition-all active:scale-95"
+                  style={{
+                    padding: '12px 20px', borderRadius: 9999,
+                    background: sel ? C.primaryContainer : C.surfaceContainerLowest,
+                    color: sel ? C.onPrimaryContainer : C.primary,
+                    boxShadow: sel ? '0 1px 4px rgba(0,0,0,0.18)' : 'none',
+                    border: sel ? 'none' : `1px solid ${C.outlineVariant}`,
+                    fontSize: 15,
+                  }}
+                >
+                  {crop}
+                  {/* Remove custom crop */}
+                  <span
+                    role="button"
+                    aria-label={`Удалить ${crop}`}
+                    onClick={(e) => { e.stopPropagation(); removeCustomCrop(crop) }}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: 18, height: 18, borderRadius: '50%',
+                      background: sel ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.10)',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <X size={11} strokeWidth={2.5} />
+                  </span>
+                </button>
+              )
+            })}
 
-            {/* "Другая культура" — ghost, no border */}
-            <button
-              className="font-medium transition-colors active:scale-95"
-              style={{
-                padding: '12px 24px',
-                borderRadius: 9999,
-                background: 'transparent',
-                color: C.onSurfaceVariant,
-                border: 'none',
-                fontSize: 15,
-              }}
-            >
-              Другая культура
-            </button>
+            {/* "Добавить культуру" — dashed chip, opens inline input */}
+            {!showAddInput && (
+              <button
+                onClick={() => setShowAddInput(true)}
+                className="flex items-center gap-2 font-medium transition-colors active:scale-95"
+                style={{
+                  padding: '12px 24px', borderRadius: 9999,
+                  background: 'transparent', color: C.secondary,
+                  border: `1px dashed ${C.outline}`, fontSize: 15,
+                }}
+              >
+                <Plus size={18} strokeWidth={2} />
+                Добавить культуру
+              </button>
+            )}
+
+            {/* "Другая культура" — ghost, same action */}
+            {!showAddInput && (
+              <button
+                onClick={() => setShowAddInput(true)}
+                className="font-medium transition-colors active:scale-95"
+                style={{
+                  padding: '12px 24px', borderRadius: 9999,
+                  background: 'transparent', color: C.onSurfaceVariant,
+                  border: 'none', fontSize: 15,
+                }}
+              >
+                Другая культура
+              </button>
+            )}
+
+            {/* Inline add-crop input */}
+            {showAddInput && (
+              <div className="w-full flex items-center gap-2 mt-1"
+                style={{
+                  padding: '12px 16px', borderRadius: 16,
+                  background: C.surfaceContainerLowest,
+                  border: `1.5px solid ${C.secondary}`,
+                  boxShadow: `0 0 0 3px rgba(44,105,78,0.10)`,
+                }}
+              >
+                <input
+                  autoFocus
+                  type="text"
+                  value={inputVal}
+                  onChange={(e) => setInputVal(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') confirmAddCrop() }}
+                  placeholder="Например: орех, манго, виноград"
+                  className="flex-1 outline-none bg-transparent"
+                  style={{ fontSize: 15, color: C.onSurface, fontWeight: 500 }}
+                />
+                <button
+                  onClick={confirmAddCrop}
+                  disabled={!inputVal.trim()}
+                  className="flex-shrink-0 font-bold transition-all active:scale-95 disabled:opacity-40"
+                  style={{
+                    padding: '6px 16px', borderRadius: 9999,
+                    background: C.primaryContainer, color: C.onPrimaryContainer,
+                    border: 'none', fontSize: 13.5,
+                  }}
+                >
+                  Добавить
+                </button>
+                <button
+                  onClick={() => { setShowAddInput(false); setInputVal('') }}
+                  className="flex-shrink-0 flex items-center justify-center transition-opacity active:opacity-60"
+                  style={{
+                    width: 32, height: 32, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.06)', border: 'none', color: C.outline,
+                  }}
+                >
+                  <X size={14} strokeWidth={2.5} />
+                </button>
+              </div>
+            )}
           </div>
         </section>
 
