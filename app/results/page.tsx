@@ -647,8 +647,9 @@ function ResultsContent() {
                 ) : (
                   /* Upsell — Stitch dark card */
                   <div
-                    className="overflow-hidden"
-                    style={{ borderRadius: '1.5rem', background: '#012d1d' }}
+                    className="overflow-hidden hover:opacity-95 active:opacity-90 transition-opacity"
+                    style={{ borderRadius: '1.5rem', background: '#012d1d', cursor: 'pointer' }}
+                    onClick={() => setPaywallOpen(true)}
                   >
                     {/* Video preview */}
                     <div className="relative" style={{ aspectRatio: '16/9' }}>
@@ -678,15 +679,18 @@ function ResultsContent() {
                     </div>
                     {/* Content */}
                     <div style={{ padding: 32 }}>
-                      <h3
-                        style={{
-                          fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                          fontWeight: 700, fontSize: 22, color: '#ffffff',
-                          marginBottom: 24, letterSpacing: '-0.02em',
-                        }}
-                      >
-                        Персональный видео-разбор
-                      </h3>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                        <h3
+                          style={{
+                            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                            fontWeight: 700, fontSize: 22, color: '#ffffff',
+                            letterSpacing: '-0.02em',
+                          }}
+                        >
+                          Персональный видео-разбор
+                        </h3>
+                        <ChevronRight size={18} strokeWidth={2} style={{ color: 'rgba(255,255,255,0.65)', flexShrink: 0 }} />
+                      </div>
                       <ul style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                         {[
                           { Icon: LayoutList,    label: 'Анализ ситуации' },
@@ -1712,13 +1716,15 @@ function ResultsContent() {
             ) : (
               /* ── Upsell card — only shown when no order exists ── */
               <div
-                className="rounded-[24px] overflow-hidden"
+                className="rounded-[24px] overflow-hidden hover:opacity-95 active:opacity-90 transition-opacity"
                 style={{
                   background: 'linear-gradient(158deg, #173326 0%, #0b1e12 55%, #071410 100%)',
                   boxShadow:
                     '0 12px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(74,222,128,0.08), 0 0 32px rgba(74,222,128,0.08)',
                   border: '1px solid rgba(74,222,128,0.10)',
+                  cursor: 'pointer',
                 }}
+                onClick={() => setPaywallOpen(true)}
               >
                 {/* Top section */}
                 <div className="px-5 pt-6 pb-5 flex items-start justify-between">
@@ -1735,10 +1741,13 @@ function ResultsContent() {
                         Проверено экспертом
                       </span>
                     </div>
-                    <h3 className="text-white font-black leading-[1.15]" style={{ fontSize: 20, letterSpacing: '-0.02em' }}>
-                      {seg === 'home' ? 'Совет специалиста\nпо вашему растению'
-                        : 'Получить разбор\nот агронома'}
-                    </h3>
+                    <div className="flex items-start gap-2">
+                      <h3 className="flex-1 text-white font-black leading-[1.15]" style={{ fontSize: 20, letterSpacing: '-0.02em' }}>
+                        {seg === 'home' ? 'Совет специалиста\nпо вашему растению'
+                          : 'Получить разбор\nот агронома'}
+                      </h3>
+                      <ChevronRight size={18} strokeWidth={2} style={{ color: 'rgba(255,255,255,0.65)', flexShrink: 0, marginTop: 3 }} />
+                    </div>
                     <p className="mt-2 leading-snug" style={{ fontSize: 12.5, color: 'rgba(167,243,208,0.55)' }}>
                       {seg === 'home' ? '30–60 сек · понятный разбор для вашего растения'
                         : seg === 'dacha' ? 'Что серьёзно, что подождёт — и что делать в первую очередь'
