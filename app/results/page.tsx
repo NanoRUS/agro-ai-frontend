@@ -235,7 +235,9 @@ function ResultsContent() {
     // Ensure history entry exists before marking premium status.
     // The useEffect saves it asynchronously — if user submits quickly the entry
     // may not exist yet, causing setPremiumOrder's .map() to silently skip it.
-    await buildHistoryEntry(result, heroImage ?? null).then(upsertHistoryEntry).catch(() => {})
+    await buildHistoryEntry(result, heroImage ?? null).then(upsertHistoryEntry).catch((e) => {
+      console.error('[handleOrderSubmit] upsertHistoryEntry failed:', e)
+    })
     setPremiumOrder(result.analysis_id, 'video_review_in_progress', contact)
     setPremiumStatus('video_review_in_progress')
 
