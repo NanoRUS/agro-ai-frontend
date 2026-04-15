@@ -417,9 +417,9 @@ function ContactContent({ contact, setContact }: {
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 100) }, [])
 
   return (
-    <div className="py-2">
+    <div className="py-1">
       {/* Forward-motion status line */}
-      <div className="flex items-center gap-2 mb-5 px-3.5 py-2.5 rounded-[12px]"
+      <div className="flex items-center gap-2 mb-3 px-3.5 py-2 rounded-[12px]"
         style={{ background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.18)' }}>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" strokeWidth="2.5"
              stroke="#16a34a" strokeLinecap="round" strokeLinejoin="round">
@@ -434,12 +434,12 @@ function ContactContent({ contact, setContact }: {
                    letterSpacing: '-0.03em', lineHeight: 1.15, paddingRight: 32 }}>
         Куда отправить видеоразбор?
       </h2>
-      <p style={{ fontSize: 13.5, color: '#6b7280', marginTop: 6, lineHeight: 1.55 }}>
+      <p style={{ fontSize: 13.5, color: '#6b7280', marginTop: 4, lineHeight: 1.55 }}>
         Укажем сюда готовый видеоразбор и план действий
       </p>
 
       {/* Telegram icon hint */}
-      <div className="mt-6 flex items-center gap-2.5 mb-3">
+      <div className="mt-4 flex items-center gap-2.5 mb-2.5">
         <div className="w-8 h-8 rounded-full flex items-center justify-center"
           style={{ background: 'rgba(37,102,174,0.12)' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="#2566ae">
@@ -468,13 +468,7 @@ function ContactContent({ contact, setContact }: {
           }}
         />
       </div>
-      <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 6, marginLeft: 4 }}>
-        Отправим видеоразбор сюда
-      </p>
-
-      {/* Reassurance */}
-      <p className="mt-4" style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.55,
-                                    paddingLeft: 4 }}>
+      <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 5, marginLeft: 4 }}>
         Никаких лишних сообщений — только ваш разбор
       </p>
     </div>
@@ -585,11 +579,22 @@ export default function PaywallModal({
   const [step, setStep]                     = useState<VideoStep>('paywall')
   const [contact, setContact]               = useState('')
   const [submitting, setSubmitting]         = useState(false)
+  const [kbOffset, setKbOffset]             = useState(0)
 
   // Lock body scroll
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
+  }, [])
+
+  // Keyboard-aware: lift sheet above iOS software keyboard
+  useEffect(() => {
+    const vp = window.visualViewport
+    if (!vp) return
+    const onResize = () =>
+      setKbOffset(Math.max(0, window.innerHeight - vp.height - vp.offsetTop))
+    vp.addEventListener('resize', onResize)
+    return () => vp.removeEventListener('resize', onResize)
   }, [])
 
   function handleContactConfirm() {
@@ -616,7 +621,7 @@ export default function PaywallModal({
 
       {/* Sheet — flex column with sticky footer */}
       <div className="relative flex flex-col rounded-t-3xl max-h-[92dvh] shadow-2xl animate-slide-up"
-        style={{ background: '#f7f8fa' }}>
+        style={{ background: '#f7f8fa', transform: `translateY(-${kbOffset}px)`, transition: 'transform 0.2s ease-out' }}>
 
         {/* ── Fixed header ── */}
         <div className="flex-shrink-0 px-5 pt-5 pb-0">
