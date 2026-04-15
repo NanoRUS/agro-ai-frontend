@@ -232,7 +232,10 @@ function ResultsContent() {
   async function handleOrderSubmit(contact: string) {
     if (!result) return
     const topIssue = result.top_issues[0] ?? null
-    // Mark order as in-progress in local history + local state immediately
+    // Ensure history entry exists before marking premium status.
+    // The useEffect saves it asynchronously — if user submits quickly the entry
+    // may not exist yet, causing setPremiumOrder's .map() to silently skip it.
+    await buildHistoryEntry(result, heroImage ?? null).then(upsertHistoryEntry).catch(() => {})
     setPremiumOrder(result.analysis_id, 'video_review_in_progress', contact)
     setPremiumStatus('video_review_in_progress')
 
