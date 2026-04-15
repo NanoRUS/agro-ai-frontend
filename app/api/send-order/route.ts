@@ -235,7 +235,7 @@ export async function POST(req: Request) {
       crop:          cropLabel,
       confidence:    pct ?? 70,
       contact,
-      duration:      45,
+      duration:      90,
       callbackUrl:   CALLBACK_URL   ?? '',
       callbackToken: CALLBACK_TOKEN ?? '',
     })
