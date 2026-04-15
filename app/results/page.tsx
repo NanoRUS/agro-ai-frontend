@@ -561,11 +561,15 @@ function ResultsContent() {
                     className="rounded-[24px] overflow-hidden"
                     style={{
                       background: 'linear-gradient(158deg, #0c1628 0%, #0a1220 55%, #070e1a 100%)',
+                      boxShadow: '0 12px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(96,165,250,0.10), 0 0 32px rgba(96,165,250,0.06)',
                       border: '1px solid rgba(96,165,250,0.14)',
                     }}
                   >
-                    <div className="px-5 pt-5 pb-4 flex items-start justify-between">
+                    <div className="px-5 pt-6 pb-5 flex items-start justify-between">
                       <div className="flex-1 min-w-0 pr-4">
+                        <p className="mb-2" style={{ fontSize: 11, color: 'rgba(147,197,253,0.45)', letterSpacing: '0.01em' }}>
+                          Заявка зарегистрирована
+                        </p>
                         <div
                           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3"
                           style={{ background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.25)' }}
@@ -575,29 +579,95 @@ function ResultsContent() {
                             Видеоразбор в работе
                           </span>
                         </div>
-                        <h3 className="text-white font-black" style={{ fontSize: 20, letterSpacing: '-0.02em' }}>
-                          Видеоразбор в работе
+                        <h3 className="text-white font-black leading-[1.15]" style={{ fontSize: 20, letterSpacing: '-0.02em' }}>
+                          Видеоразбор{'\n'}в работе
                         </h3>
-                        <p className="mt-1" style={{ fontSize: 12.5, color: 'rgba(147,197,253,0.55)' }}>
-                          Агроном уже получил ваш случай
+                        <p className="mt-2 leading-snug" style={{ fontSize: 12.5, color: 'rgba(147,197,253,0.55)' }}>
+                          Агроном уже получил данные по вашему полю
                         </p>
                       </div>
-                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <div className="flex-shrink-0" style={{ position: 'relative' }}>
                         <div
-                          className="flex items-center justify-center"
+                          className="w-[60px] h-[60px] rounded-full flex items-center justify-center"
                           style={{
-                            width: 60, height: 60, borderRadius: '50%',
                             background: 'linear-gradient(145deg, #1e3a5f, #0d2040)',
                             border: '2.5px solid rgba(96,165,250,0.40)',
+                            boxShadow: '0 0 0 4px rgba(96,165,250,0.08)',
                           }}
                         >
                           <UserCheck size={26} strokeWidth={1.5} color="#93c5fd" />
                         </div>
                         <div
                           className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full animate-pulse"
-                          style={{ background: '#60a5fa', border: '2px solid #0a1220' }}
+                          style={{ background: '#60a5fa', border: '2px solid #0a1220', boxShadow: '0 0 6px rgba(96,165,250,0.7)' }}
                         />
                       </div>
+                    </div>
+
+                    <div style={{ height: 1, background: 'rgba(255,255,255,0.055)', margin: '0 20px' }} />
+
+                    <div className="px-5 pt-4 pb-5 space-y-4">
+                      {[
+                        { Icon: Microscope,   color: '#93c5fd', bg: 'rgba(147,197,253,0.12)', label: 'Проверяет диагноз и сравнивает с вашими фото' },
+                        { Icon: FlaskConical, color: '#c4b5fd', bg: 'rgba(196,181,253,0.12)', label: 'Подбирает препараты и схему обработки' },
+                        { Icon: LayoutList,   color: '#6ee7b7', bg: 'rgba(110,231,183,0.12)', label: 'Составляет план действий по полю' },
+                      ].map(({ Icon, color, bg, label }, i) => (
+                        <div key={i} className="flex items-center gap-3.5">
+                          <div
+                            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                            style={{ background: bg, border: `1px solid ${color}25` }}
+                          >
+                            <Icon size={17} strokeWidth={1.75} color={color} />
+                          </div>
+                          <p className="leading-snug flex-1" style={{ fontSize: 13.5, color: 'rgba(209,230,255,0.70)' }}>
+                            {label}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ height: 1, background: 'rgba(255,255,255,0.055)', margin: '0 20px' }} />
+
+                    <div className="px-5 pt-4 pb-5">
+                      <div className="flex items-center">
+                        {[
+                          { label: 'Заявка принята', done: true  },
+                          { label: 'У агронома',      done: true  },
+                          { label: 'Готово',          done: false },
+                        ].map((step, i) => (
+                          <div key={i} className="flex items-center" style={{ flex: i < 2 ? '1' : 'none' }}>
+                            <div className="flex flex-col items-center gap-1.5">
+                              <div
+                                className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                                style={{
+                                  background: step.done ? 'rgba(74,222,128,0.20)' : 'rgba(255,255,255,0.06)',
+                                  border: `2px solid ${step.done ? 'rgba(74,222,128,0.50)' : 'rgba(255,255,255,0.12)'}`,
+                                }}
+                              >
+                                {step.done
+                                  ? <CheckCircle2 size={12} strokeWidth={2.5} className="text-emerald-400" />
+                                  : <span className="w-2 h-2 rounded-full bg-white/15" />
+                                }
+                              </div>
+                              <span style={{
+                                fontSize: 10, whiteSpace: 'nowrap',
+                                color:      step.done ? '#86efac' : 'rgba(255,255,255,0.22)',
+                                fontWeight: step.done ? 600 : 400,
+                              }}>
+                                {step.label}
+                              </span>
+                            </div>
+                            {i < 2 && (
+                              <div className="flex-1 mb-5 mx-2"
+                                style={{ height: 1.5, borderRadius: 2,
+                                         background: step.done ? 'rgba(74,222,128,0.35)' : 'rgba(255,255,255,0.08)' }} />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="mt-4 text-center" style={{ fontSize: 11.5, color: 'rgba(147,197,253,0.45)', letterSpacing: '0.01em' }}>
+                        Обычно готово за 6–12 часов
+                      </p>
                     </div>
                   </div>
 
