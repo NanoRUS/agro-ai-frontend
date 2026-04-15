@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ArrowLeft, Sprout, Droplets, Search, CloudRain,
@@ -10,7 +10,7 @@ import { analyzeImages } from '@/lib/api'
 // ── Types & labels (unchanged) ────────────────────────────────────────────────
 
 type Stage    = 'seedling' | 'growing' | 'flowering' | 'fruiting'
-type Env      = 'greenhouse' | 'open_field'
+type Env      = 'indoor' | 'greenhouse' | 'open_field'
 type Moisture = 'very_wet' | 'wet' | 'normal' | 'dry' | 'very_dry'
 type Watering = 'daily' | 'every_2_days' | 'every_3_days' | 'weekly' | 'rarely'
 
@@ -39,7 +39,7 @@ interface FormState {
 }
 
 const DEFAULTS: FormState = {
-  plant_stage: 'growing', growing_environment: 'open_field',
+  plant_stage: 'growing', growing_environment: 'indoor',
   days_since_problem_started: 3, watering_frequency: 'every_2_days', soil_moisture: 'normal',
   has_spots: false, has_dark_spots: false, has_white_powder: false,
   has_holes_in_leaves: false, has_webbing: false, insects_visible: false,
@@ -189,12 +189,31 @@ function DayStepper({ value, onChange }: { value: number; onChange: (v: number) 
   )
 }
 
-function LoadingOverlay() {
+function LoadingOverlay({ onCancel }: { onCancel: () => void }) {
+  const [elapsed, setElapsed] = useState(0)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => setElapsed((s) => s + 1), 1000)
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+  }, [])
+
+  const message =
+    elapsed < 10  ? 'AI анализирует фото...' :
+    elapsed < 20  ? 'Почти готово...' :
+    elapsed < 30  ? 'Ещё немного...' :
+                    'Сервер отвечает медленно'
+
+  const hint =
+    elapsed < 10  ? 'Обычно занимает 10–30 секунд' :
+    elapsed < 30  ? `Прошло ${elapsed} секунд` :
+                    'Проверьте подключение или попробуйте позже'
+
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-5"
       style={{
-        background: 'rgba(240,242,245,0.93)',
+        background: 'rgba(240,242,245,0.96)',
         backdropFilter: 'blur(18px)',
         WebkitBackdropFilter: 'blur(18px)',
       }}
@@ -208,15 +227,30 @@ function LoadingOverlay() {
       >
         <Loader2 size={34} strokeWidth={2} className="text-white animate-spin" />
       </div>
-      <div className="text-center">
+
+      <div className="text-center px-8">
         <p style={{ fontSize: 18, fontWeight: 800, color: '#1f2937',
                     letterSpacing: '-0.03em', lineHeight: 1.2 }}>
-          AI анализирует фото...
+          {message}
         </p>
-        <p style={{ fontSize: 13, color: '#9ca3af', marginTop: 6 }}>
-          Обычно занимает 10–30 секунд
+        <p style={{ fontSize: 13, color: elapsed >= 30 ? '#dc2626' : '#9ca3af', marginTop: 6 }}>
+          {hint}
         </p>
       </div>
+
+      {elapsed >= 15 && (
+        <button
+          onClick={onCancel}
+          className="mt-2 px-5 py-2.5 rounded-[12px] transition-all active:scale-[0.96]"
+          style={{
+            background: 'rgba(0,0,0,0.06)',
+            border: '1px solid rgba(0,0,0,0.10)',
+            fontSize: 13.5, fontWeight: 600, color: '#6b7280',
+          }}
+        >
+          Отменить
+        </button>
+      )}
     </div>
   )
 }
@@ -225,9 +259,14 @@ function LoadingOverlay() {
 
 export default function QuestionnairePage() {
   const router = useRouter()
-  const [form, setForm] = useState<FormState>(DEFAULTS)
+  const [form,    setForm]    = useState<FormState>(DEFAULTS)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error,   setError]   = useState('')
+
+  function cancelLoading() {
+    setLoading(false)
+    setError('Анализ отменён. Проверьте подключение к интернету.')
+  }
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -311,7 +350,7 @@ export default function QuestionnairePage() {
           <Field label="Где растёт">
             <SelectPills
               value={form.growing_environment}
-              options={{ greenhouse: 'В теплице', open_field: 'Открытый грунт' } as Record<Env, string>}
+              options={{ indoor: 'В помещении', greenhouse: 'В теплице', open_field: 'В открытом грунте' } as Record<Env, string>}
               onChange={(v) => set('growing_environment', v as Env)}
             />
           </Field>
@@ -379,20 +418,11 @@ export default function QuestionnairePage() {
           </div>
         </SectionCard>
 
-        {/* ── ERROR ── */}
-        {error && (
-          <div
-            className="flex items-center gap-2 px-4 py-3 rounded-2xl"
-            style={{ background: '#fef2f2', border: '1px solid rgba(239,68,68,0.20)' }}
-          >
-            <span style={{ fontSize: 13, color: '#dc2626', fontWeight: 500 }}>{error}</span>
-          </div>
-        )}
       </div>
 
       {/* ══ FIXED CTA ════════════════════════════════════════════════════ */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-10 max-w-md mx-auto px-4 py-4"
+        className="fixed bottom-0 left-0 right-0 z-10 max-w-md mx-auto px-4 pt-3 pb-4"
         style={{
           background: 'rgba(240,242,245,0.96)',
           backdropFilter: 'blur(20px)',
@@ -401,6 +431,24 @@ export default function QuestionnairePage() {
           boxShadow: '0 -4px 24px rgba(0,0,0,0.06)',
         }}
       >
+        {/* Error shown here so it's always visible */}
+        {error && (
+          <div
+            className="flex items-start gap-2.5 mb-3 px-3.5 py-2.5 rounded-[12px]"
+            style={{ background: '#fef2f2', border: '1px solid rgba(239,68,68,0.20)' }}
+          >
+            <span style={{ fontSize: 12.5, color: '#dc2626', fontWeight: 500, lineHeight: 1.4 }}>
+              {error}
+            </span>
+            <button
+              onClick={() => setError('')}
+              style={{ fontSize: 16, color: '#dc2626', lineHeight: 1, marginLeft: 'auto', flexShrink: 0 }}
+            >
+              ×
+            </button>
+          </div>
+        )}
+
         <button
           onClick={handleSubmit}
           disabled={loading}
@@ -422,7 +470,7 @@ export default function QuestionnairePage() {
       </div>
 
       {/* ══ LOADING OVERLAY ══════════════════════════════════════════════ */}
-      {loading && <LoadingOverlay />}
+      {loading && <LoadingOverlay onCancel={cancelLoading} />}
     </div>
   )
 }
