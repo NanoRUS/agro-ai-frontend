@@ -818,10 +818,11 @@ function ResultsContent() {
           </main>
 
           {/* ── Sticky CTA — above bottom nav ── */}
+          {premiumStatus !== 'video_review_in_progress' && premiumStatus !== 'video_review_ready' && (
           <div
             className="fixed left-0 right-0 z-10"
             style={{
-              bottom: 60,
+              bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
               maxWidth: 448,
               margin: '0 auto',
               padding: '16px 24px',
@@ -850,6 +851,7 @@ function ResultsContent() {
               Получить разбор от агронома
             </button>
           </div>
+          )}
 
           <BottomNav />
 
@@ -1216,10 +1218,11 @@ function ResultsContent() {
           </main>
 
           {/* ── Sticky CTA — above bottom nav ── */}
+          {premiumStatus !== 'video_review_in_progress' && premiumStatus !== 'video_review_ready' && (
           <div
             className="fixed left-0 right-0 z-10"
             style={{
-              bottom: 76,
+              bottom: 'calc(76px + env(safe-area-inset-bottom, 0px))',
               maxWidth: 448,
               margin: '0 auto',
               padding: '0 24px',
@@ -1244,6 +1247,7 @@ function ResultsContent() {
               Получить советы эксперта
             </button>
           </div>
+          )}
 
           <BottomNav />
 
