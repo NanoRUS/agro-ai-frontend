@@ -185,6 +185,7 @@ function ResultsContent() {
   const isDemo = result?.analysis_id?.startsWith('demo_') ?? false
   const [userType, setUserType] = useState('')
   const [farmerField, setFarmerField] = useState<{ name?: string; area?: string } | null>(null)
+  const [growingEnv, setGrowingEnv] = useState('')
 
   useEffect(() => {
     try { setUserType(localStorage.getItem('userType') ?? '') } catch {}
@@ -192,6 +193,7 @@ function ResultsContent() {
       const field = JSON.parse(sessionStorage.getItem('agro_farmer_field') || '{}') as { name?: string; area?: string }
       if (field.name || field.area) setFarmerField(field)
     } catch {}
+    try { setGrowingEnv(sessionStorage.getItem('agro_env') ?? '') } catch {}
   }, [])
 
   useEffect(() => {
@@ -298,6 +300,7 @@ function ResultsContent() {
     : userType === 'home'                             ? 'home'
     : (userType === 'dacha' || userType === 'garden') ? 'dacha'
     : null
+  const isIndoor = growingEnv === 'indoor'
 
   // ══ FARM LAYOUT — Stitch design ═══════════════════════════════════════════
   if (seg === 'farm') {
@@ -1104,7 +1107,9 @@ function ResultsContent() {
                   <div style={{ flex: 1, height: 1, background: 'rgba(108,123,115,0.22)' }} />
                 </div>
                 <p style={{ fontSize: 13, color: '#5c6560', marginBottom: 16 }}>
-                  Следуйте этим шагам, чтобы помочь растению восстановиться
+                  {isIndoor
+                    ? 'Следуйте этим шагам, чтобы помочь растению восстановиться в помещении'
+                    : 'Следуйте этим шагам, чтобы помочь растению восстановиться'}
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {planActions.map((action, i) => {
@@ -1431,7 +1436,9 @@ function ResultsContent() {
               <div style={{ flex: 1, height: 1, background: 'rgba(108,123,115,0.22)' }} />
             </div>
             <p style={{ fontSize: 13, color: '#5c6560', marginBottom: 16 }}>
-              Следуйте этим шагам, чтобы помочь растению восстановиться
+              {isIndoor
+                ? 'Следуйте этим шагам, чтобы помочь растению восстановиться в помещении'
+                : 'Следуйте этим шагам, чтобы помочь растению восстановиться'}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {result.today_actions.slice(0, 6).map((action, i) => {
@@ -1915,6 +1922,7 @@ function ResultsContent() {
               <p className="text-[13.5px] font-bold text-gray-800">Повторная диагностика через 2–3 дня</p>
               <p className="text-[11.5px] text-gray-400 mt-0.5">
                 {seg === 'home' ? 'Посмотрите, помогли ли ваши действия'
+                  : isIndoor ? 'Следите за состоянием растения дома'
                   : 'Отслеживайте динамику и корректируйте лечение'}
               </p>
             </div>

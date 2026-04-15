@@ -289,6 +289,7 @@ export default function QuestionnairePage() {
     try {
       const result = await analyzeImages(files, { ...form, crop_type: crop })
       sessionStorage.setItem('agro_result', JSON.stringify(result))
+      sessionStorage.setItem('agro_env', form.growing_environment)
       router.push('/results')
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Ошибка соединения с сервером')
