@@ -1,10 +1,10 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080').trim()
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface QuestionnaireAnswers {
   crop_type: 'tomato' | 'cucumber' | 'potato' | 'pepper' | 'strawberry'
-  growing_environment: 'greenhouse' | 'open_field'
+  growing_environment: 'indoor' | 'greenhouse' | 'open_field'
   plant_stage: 'seedling' | 'growing' | 'flowering' | 'fruiting'
   days_since_problem_started: number
   watering_frequency: 'daily' | 'every_2_days' | 'every_3_days' | 'weekly' | 'rarely'
