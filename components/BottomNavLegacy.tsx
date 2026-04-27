@@ -5,7 +5,7 @@ interface BottomNavProps {
   active?: 'home' | 'history' | 'profile'
 }
 
-export default function BottomNav({ active }: BottomNavProps) {
+export default function BottomNavLegacy({ active }: BottomNavProps) {
   const router = useRouter()
 
   const tabs = [
@@ -51,17 +51,14 @@ export default function BottomNav({ active }: BottomNavProps) {
     <div
       className="fixed bottom-0 left-0 right-0 z-20 max-w-md mx-auto"
       style={{
-        background: 'rgba(248,250,248,0.24)',
-        backdropFilter: 'blur(28px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(28px) saturate(180%)',
-        borderTop: '1px solid rgba(255,255,255,0.35)',
-        boxShadow: '0 -1px 0 rgba(255,255,255,0.30), 0 -8px 32px rgba(0,0,0,0.10)',
+        background: 'rgba(248,250,248,0.88)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        borderTop: '1px solid rgba(193,200,194,0.10)',
+        boxShadow: '0 -4px 12px rgba(25,28,27,0.04)',
       }}
     >
-      <div
-        className="flex items-center justify-around px-6 pt-2"
-        style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))' }}
-      >
+      <div className="flex items-center justify-around px-6 pt-2 pb-4">
         {tabs.map(({ key, label, path, icon }) => {
           const isActive = active === key
           return (
@@ -69,7 +66,7 @@ export default function BottomNav({ active }: BottomNavProps) {
               key={key}
               onClick={() => router.push(path)}
               className="flex flex-col items-center gap-[5px]"
-              style={{ color: isActive ? '#f8faf8' : 'rgba(27,67,50,0.55)' }}
+              style={{ color: isActive ? '#f8faf8' : 'rgba(27,67,50,0.40)' }}
             >
               <div
                 className="flex flex-col items-center gap-[5px] px-3 py-2 rounded-full"
