@@ -1,13 +1,10 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 
 interface BottomNavProps {
   active?: 'home' | 'history' | 'profile'
 }
-
-interface Ripple { id: number; x: number; y: number }
-let _id = 0
 
 function LiquidTab({
   label, icon, isActive, onClick,
@@ -17,85 +14,63 @@ function LiquidTab({
   isActive: boolean
   onClick: () => void
 }) {
-  const [ripples, setRipples] = useState<Ripple[]>([])
-
-  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const id = ++_id
-    setRipples(p => [...p, { id, x: e.clientX - rect.left, y: e.clientY - rect.top }])
-    setTimeout(() => setRipples(p => p.filter(r => r.id !== id)), 460)
-  }, [])
+  const [pressed, setPressed] = useState(false)
 
   return (
     <button
-      onPointerDown={handlePointerDown}
       onClick={onClick}
-      className="flex flex-col items-center gap-[5px]"
+      onPointerDown={() => isActive && setPressed(true)}
+      onPointerUp={() => setPressed(false)}
+      onPointerLeave={() => setPressed(false)}
       style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+        background: 'none', border: 'none', cursor: 'pointer', padding: 0,
         color: isActive ? '#1b4332' : 'rgba(27,67,50,0.40)',
-        transform: 'scale(1)',
-        transition: 'transform 120ms cubic-bezier(0.2,0.8,0.2,1)',
+        userSelect: 'none',
+        transform: pressed ? 'scale(0.96, 0.92)' : 'scale(1)',
+        transition: pressed
+          ? 'transform 80ms ease-out'
+          : 'transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1)',
       }}
-      onPointerUp={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}
     >
       <div
-        className="flex flex-col items-center gap-[5px] px-3 py-2 rounded-full"
         style={{
           position: 'relative',
           overflow: 'hidden',
-          backdropFilter: isActive ? 'blur(14px) saturate(140%)' : 'blur(10px) saturate(130%)',
-          WebkitBackdropFilter: isActive ? 'blur(14px) saturate(140%)' : 'blur(10px) saturate(130%)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+          padding: '8px 12px',
+          borderRadius: 9999,
           ...(isActive ? {
             background: 'rgba(255,255,255,0.58)',
+            backdropFilter: 'blur(14px) saturate(140%)',
+            WebkitBackdropFilter: 'blur(14px) saturate(140%)',
             border: '1px solid rgba(27,67,50,0.26)',
-            boxShadow: [
-              'inset 0 1.5px 0 rgba(255,255,255,0.92)',
-              'inset 0 -1px 0 rgba(0,0,0,0.07)',
-              '0 0 12px rgba(27,67,50,0.16)',
-              '0 2px 8px rgba(0,0,0,0.07)',
-            ].join(', '),
+            boxShadow: pressed
+              ? 'inset 0 1.5px 0 rgba(255,255,255,0.92), inset 0 -1px 0 rgba(0,0,0,0.07), 0 0 4px rgba(27,67,50,0.08), 0 1px 2px rgba(0,0,0,0.04)'
+              : 'inset 0 1.5px 0 rgba(255,255,255,0.92), inset 0 -1px 0 rgba(0,0,0,0.07), 0 0 12px rgba(27,67,50,0.16), 0 2px 8px rgba(0,0,0,0.07)',
+            transition: 'box-shadow 120ms ease',
           } : {
-            background: 'rgba(255,255,255,0.26)',
-            border: '1px solid rgba(255,255,255,0.44)',
-            boxShadow: [
-              'inset 0 1px 0 rgba(255,255,255,0.72)',
-              'inset 0 -1px 0 rgba(0,0,0,0.03)',
-            ].join(', '),
+            background: 'none',
+            border: 'none',
+            boxShadow: 'none',
           }),
         }}
       >
-        {/* Specular arc */}
-        <div
-          aria-hidden
-          style={{
-            position: 'absolute', top: 0, left: 0, right: 0,
-            height: '52%',
-            background: isActive
-              ? 'linear-gradient(to bottom, rgba(255,255,255,0.44), rgba(255,255,255,0))'
-              : 'linear-gradient(to bottom, rgba(255,255,255,0.28), rgba(255,255,255,0))',
-            borderRadius: '9999px 9999px 50% 50%',
-            pointerEvents: 'none',
-          }}
-        />
-
-        {/* Ripples */}
-        {ripples.map(r => (
-          <span
-            key={r.id}
+        {isActive && (
+          <div
             aria-hidden
             style={{
               position: 'absolute',
-              left: r.x, top: r.y,
-              width: 10, height: 10,
-              marginLeft: -5, marginTop: -5,
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(255,255,255,0.60) 0%, rgba(255,255,255,0) 68%)',
-              animation: 'liquid-ripple 440ms cubic-bezier(0.2,0.8,0.2,1) forwards',
+              top: pressed ? 3 : 0,
+              left: 0, right: 0,
+              height: '52%',
+              background: 'linear-gradient(to bottom, rgba(255,255,255,0.44), rgba(255,255,255,0))',
+              borderRadius: '9999px 9999px 50% 50%',
               pointerEvents: 'none',
+              transition: pressed ? 'top 80ms ease-out' : 'top 300ms cubic-bezier(0.34, 1.56, 0.64, 1)',
             }}
           />
-        ))}
-
+        )}
         {icon}
         <span style={{
           fontSize: 9.5, fontWeight: 700,
@@ -152,38 +127,30 @@ export default function BottomNav({ active }: BottomNavProps) {
   ]
 
   return (
-    <>
-      <style>{`
-        @keyframes liquid-ripple {
-          from { transform: scale(0); opacity: 0.38; }
-          to   { transform: scale(2.4); opacity: 0; }
-        }
-      `}</style>
+    <div
+      className="fixed bottom-0 left-0 right-0 z-20 max-w-md mx-auto"
+      style={{
+        background: 'rgba(248,250,248,0.92)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderTop: '1px solid rgba(0,0,0,0.06)',
+        boxShadow: '0 -4px 12px rgba(25,28,27,0.04)',
+      }}
+    >
       <div
-        className="fixed bottom-0 left-0 right-0 z-20 max-w-md mx-auto"
-        style={{
-          background: 'rgba(248,250,248,0.92)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(0,0,0,0.06)',
-          boxShadow: '0 -4px 12px rgba(25,28,27,0.04)',
-        }}
+        className="flex items-center justify-around px-6 pt-2"
+        style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))' }}
       >
-        <div
-          className="flex items-center justify-around px-6 pt-2"
-          style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))' }}
-        >
-          {tabs.map(({ key, label, path, icon }) => (
-            <LiquidTab
-              key={key}
-              label={label}
-              icon={icon}
-              isActive={active === key}
-              onClick={() => router.push(path)}
-            />
-          ))}
-        </div>
+        {tabs.map(({ key, label, path, icon }) => (
+          <LiquidTab
+            key={key}
+            label={label}
+            icon={icon}
+            isActive={active === key}
+            onClick={() => router.push(path)}
+          />
+        ))}
       </div>
-    </>
+    </div>
   )
 }
