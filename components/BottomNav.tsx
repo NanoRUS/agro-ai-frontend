@@ -51,11 +51,11 @@ export default function BottomNav({ active }: BottomNavProps) {
     <div
       className="fixed bottom-0 left-0 right-0 z-20 max-w-md mx-auto"
       style={{
-        background: 'rgba(248,250,248,0.88)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
-        borderTop: '1px solid rgba(193,200,194,0.10)',
-        boxShadow: '0 -4px 12px rgba(25,28,27,0.04)',
+        background: 'rgba(255,255,255,0.82)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderTop: '1px solid rgba(0,0,0,0.06)',
+        boxShadow: '0 -1px 0 rgba(0,0,0,0.06), 0 -8px 24px rgba(0,0,0,0.05)',
       }}
     >
       <div
