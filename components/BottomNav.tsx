@@ -30,7 +30,7 @@ function LiquidTab({
         WebkitUserSelect: 'none',
         WebkitTouchCallout: 'none' as any,
         touchAction: 'manipulation',
-        transform: pressed ? 'scale(0.90)' : 'scale(1)',
+        transform: pressed ? 'scaleX(1.06) scaleY(0.84)' : 'scale(1)',
         transition: pressed
           ? 'transform 120ms ease-out'
           : 'transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1)',
