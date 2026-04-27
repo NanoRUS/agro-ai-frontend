@@ -18,11 +18,17 @@ import BottomNav from '@/components/BottomNav'
 // ── Plant category labels (home/dacha) ────────────────────────────────────────
 
 const PLANT_CATEGORY_LABELS: Record<string, string> = {
-  // home/dacha
+  // home
   houseplant: 'Комнатное растение',
   flowering:  'Цветущее растение',
   succulent:  'Суккулент / кактус',
   decorative: 'Декоративное растение',
+  // dacha/garden
+  vegetable:  'Овощная культура',
+  berry:      'Ягодная культура',
+  shrub:      'Кустарник',
+  tree:       'Дерево',
+  // shared
   unknown:    'Растение',
   // farm
   tomato:     'Томат',

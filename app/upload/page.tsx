@@ -45,6 +45,15 @@ const HOME_CROPS = [
   { id: 'unknown',     label: 'Не знаю',              img: '' },
 ]
 
+const DACHA_CROPS = [
+  { id: 'vegetable', label: 'Овощи',             img: '' },
+  { id: 'berry',     label: 'Ягоды',             img: '' },
+  { id: 'flowering', label: 'Цветы на участке',  img: '' },
+  { id: 'shrub',     label: 'Кустарники',        img: '' },
+  { id: 'tree',      label: 'Деревья',           img: '' },
+  { id: 'unknown',   label: 'Не знаю',           img: '' },
+]
+
 const PLANT_CATEGORY_LABELS: Record<string, string> = {
   houseplant: 'Комнатное растение',
   flowering:  'Цветущее растение',
@@ -86,8 +95,10 @@ export default function UploadPage() {
   const [farmerCtx,   setFarmerCtx]   = useState<{ crop: string; field: string } | null>(null)
   const [userType,    setUserType]    = useState<string | null>(null)
 
-  const isHomeDacha = userType === 'home' || userType === 'dacha' || userType === 'garden'
-  const activeCrops = isHomeDacha ? HOME_CROPS : CROPS
+  const isHome      = userType === 'home'
+  const isDachaGarden = userType === 'dacha' || userType === 'garden'
+  const isPlantCategory = isHome || isDachaGarden
+  const activeCrops = isHome ? HOME_CROPS : isDachaGarden ? DACHA_CROPS : CROPS
 
   useEffect(() => {
     const ut = localStorage.getItem('userType')
@@ -143,14 +154,14 @@ export default function UploadPage() {
   }
 
   async function handleNext() {
-    if (!crop)          return setError(isHomeDacha ? 'Выберите тип растения' : 'Выберите культуру')
+    if (!crop)          return setError(isPlantCategory ? 'Выберите тип растения' : 'Выберите культуру')
     if (!images.length) return setError('Загрузите хотя бы одно фото')
 
     setNavigating(true)
     setError('')
     try {
       const dataUrls = await Promise.all(images.map(compressImage))
-      if (isHomeDacha) {
+      if (isPlantCategory) {
         sessionStorage.setItem('agro_plant_category', crop)
         sessionStorage.removeItem('agro_crop')
       } else {
