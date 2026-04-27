@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  ArrowLeft, Sprout, Droplets, Search, CloudRain,
+  ArrowLeft, ArrowRight, Sprout, Droplets, Search, CloudRain,
   Check, Minus, Plus, Brain, Loader2,
 } from 'lucide-react'
 import { analyzeImages } from '@/lib/api'
@@ -428,13 +428,16 @@ export default function QuestionnairePage() {
 
       {/* ══ FIXED CTA ════════════════════════════════════════════════════ */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-10 max-w-md mx-auto px-4 pt-3 pb-4"
+        className="fixed left-0 right-0 z-10"
         style={{
-          background: 'rgba(240,242,245,0.96)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(0,0,0,0.06)',
-          boxShadow: '0 -4px 24px rgba(0,0,0,0.06)',
+          bottom: 'env(safe-area-inset-bottom, 0px)',
+          maxWidth: 448,
+          margin: '0 auto',
+          padding: '16px 24px',
+          background: 'rgba(248,250,248,0.80)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderTop: '1px solid rgba(193,200,194,0.10)',
         }}
       >
         {/* Error shown here so it's always visible */}
@@ -458,20 +461,22 @@ export default function QuestionnairePage() {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full rounded-[14px] font-black tracking-wide
-                     transition-all duration-150 active:scale-[0.97] active:brightness-95
-                     disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-3 transition-all active:scale-95 duration-200"
           style={{
-            padding: '16px 0',
-            fontSize: 15,
-            letterSpacing: '0.01em',
-            background: 'linear-gradient(145deg, #3ddb6d 0%, #15a248 100%)',
-            color: '#022c17',
-            boxShadow: '0 6px 28px rgba(34,197,94,0.35), 0 1px 4px rgba(0,0,0,0.10)',
-            opacity: loading ? 0.7 : 1,
+            height: 64,
+            borderRadius: 9999,
+            fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+            fontWeight: 700,
+            fontSize: 18,
+            border: 'none',
+            background: loading ? '#e1e3e1' : '#1b4332',
+            color: loading ? '#41484480' : '#86af99',
+            boxShadow: loading ? 'none' : '0 8px 24px rgba(0,0,0,0.28)',
+            cursor: loading ? 'not-allowed' : 'pointer',
           }}
         >
-          Поставить диагноз →
+          Продолжить
+          <ArrowRight size={22} strokeWidth={2} />
         </button>
       </div>
 
