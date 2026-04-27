@@ -46,12 +46,19 @@ const HOME_CROPS = [
 ]
 
 const DACHA_CROPS = [
-  { id: 'vegetable', label: 'Овощи',             img: '' },
-  { id: 'berry',     label: 'Ягоды',             img: '' },
-  { id: 'flowering', label: 'Цветы на участке',  img: '' },
-  { id: 'shrub',     label: 'Кустарники',        img: '' },
-  { id: 'tree',      label: 'Деревья',           img: '' },
-  { id: 'unknown',   label: 'Не знаю',           img: '' },
+  { id: 'vegetable', label: 'Овощи',      img: '' },
+  { id: 'berry',     label: 'Ягоды',      img: '' },
+  { id: 'shrub',     label: 'Кустарники', img: '' },
+  { id: 'tree',      label: 'Деревья',    img: '' },
+  { id: 'unknown',   label: 'Не знаю',   img: '' },
+]
+
+const GARDEN_CROPS = [
+  { id: 'flowering',  label: 'Цветы',                  img: '' },
+  { id: 'decorative', label: 'Декоративные растения',  img: '' },
+  { id: 'shrub',      label: 'Кустарники',             img: '' },
+  { id: 'tree',       label: 'Деревья',                img: '' },
+  { id: 'unknown',    label: 'Не знаю',               img: '' },
 ]
 
 const PLANT_CATEGORY_LABELS: Record<string, string> = {
@@ -96,9 +103,10 @@ export default function UploadPage() {
   const [userType,    setUserType]    = useState<string | null>(null)
 
   const isHome      = userType === 'home'
-  const isDachaGarden = userType === 'dacha' || userType === 'garden'
-  const isPlantCategory = isHome || isDachaGarden
-  const activeCrops = isHome ? HOME_CROPS : isDachaGarden ? DACHA_CROPS : CROPS
+  const isDacha = userType === 'dacha'
+  const isGarden = userType === 'garden'
+  const isPlantCategory = isHome || isDacha || isGarden
+  const activeCrops = isHome ? HOME_CROPS : isDacha ? DACHA_CROPS : isGarden ? GARDEN_CROPS : CROPS
 
   useEffect(() => {
     const ut = localStorage.getItem('userType')

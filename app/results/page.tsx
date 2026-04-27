@@ -322,10 +322,11 @@ function ResultsContent() {
   const catSt = categoryStyle(topIssue?.category ?? 'fungal')
   const pct = topIssue ? scoreToPercent(topIssue.score) : 0
 
-  const seg: 'farm' | 'home' | 'dacha' | null =
-    userType === 'farm'                               ? 'farm'
-    : userType === 'home'                             ? 'home'
-    : (userType === 'dacha' || userType === 'garden') ? 'dacha'
+  const seg: 'farm' | 'home' | 'dacha' | 'garden' | null =
+    userType === 'farm'   ? 'farm'
+    : userType === 'home' ? 'home'
+    : userType === 'dacha'   ? 'dacha'
+    : userType === 'garden'  ? 'garden'
     : null
   const isIndoor = growingEnv === 'indoor'
 
@@ -1864,6 +1865,7 @@ function ResultsContent() {
                     <p className="mt-2 leading-snug" style={{ fontSize: 12.5, color: 'rgba(167,243,208,0.55)' }}>
                       {seg === 'home' ? '30–60 сек · понятный разбор для вашего растения'
                         : seg === 'dacha' ? 'Что серьёзно, что подождёт — и что делать в первую очередь'
+                        : seg === 'garden' ? 'Как сохранить внешний вид и здоровье растения'
                         : '30–60 сек · персональный разбор вашего случая'}
                     </p>
                   </div>
@@ -1926,6 +1928,7 @@ function ResultsContent() {
                   <p className="text-center mt-2.5" style={{ fontSize: 11, color: 'rgba(167,243,208,0.40)', letterSpacing: '0.01em' }}>
                     {seg === 'home' ? 'Чем раньше начать — тем лучше результат'
                       : seg === 'dacha' ? 'Промедление даёт болезни время распространиться'
+                      : seg === 'garden' ? 'Чем раньше начать лечение — тем лучше восстановление'
                       : 'Раннее лечение даёт лучший результат'}
                   </p>
                 </div>
