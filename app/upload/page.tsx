@@ -214,6 +214,14 @@ export default function UploadPage() {
     ? (DEMO_IMAGES[activeDemo] ?? '/demos/tomato-blight.jpg')
     : previews[0] ?? '/demos/tomato-blight.jpg'
 
+  // Photo grid slots: first slot shows demo image when active, rest = user photos
+  const gridSlots: { src: string; isDemo: boolean; removeIdx: number }[] = activeDemo
+    ? [
+        { src: DEMO_IMAGES[activeDemo] ?? '/demos/tomato-blight.jpg', isDemo: true, removeIdx: -1 },
+        ...previews.slice(1).map((src, j) => ({ src, isDemo: false, removeIdx: j + 1 })),
+      ]
+    : previews.map((src, i) => ({ src, isDemo: false, removeIdx: i }))
+
   return (
     <div style={{ background: C.surface, color: C.onSurface, minHeight: 'max(884px, 100dvh)' }}>
 
@@ -879,16 +887,30 @@ export default function UploadPage() {
               {previews.length} {previews.length === 1 ? 'фото' : 'фото'} добавлено
             </p>
             <div className="grid grid-cols-3" style={{ gap: 10 }}>
-              {previews.map((src, i) => (
-                <div key={i} className="relative aspect-square">
+              {gridSlots.map(({ src, isDemo, removeIdx }, slotIdx) => (
+                <div key={slotIdx} className="relative aspect-square">
                   <img
                     src={src}
                     alt=""
                     className="w-full h-full object-cover"
                     style={{ borderRadius: '1.5rem' }}
                   />
+                  {isDemo && (
+                    <div
+                      className="absolute bottom-2 left-2 flex items-center gap-1"
+                      style={{
+                        background: 'rgba(27,67,50,0.75)',
+                        backdropFilter: 'blur(6px)',
+                        WebkitBackdropFilter: 'blur(6px)',
+                        borderRadius: 9999,
+                        padding: '2px 8px',
+                      }}
+                    >
+                      <span style={{ fontSize: 9, fontWeight: 700, color: '#86af99', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Демо</span>
+                    </div>
+                  )}
                   <button
-                    onClick={() => removeImage(i)}
+                    onClick={() => isDemo ? setActiveDemo(null) : removeImage(removeIdx)}
                     className="absolute top-2 right-2 flex items-center justify-center transition-transform active:scale-90"
                     style={{
                       width: 28,
@@ -1133,6 +1155,66 @@ export default function UploadPage() {
             </div>
           </section>
         )}
+
+        {/* ── Demo section (post-upload) ── */}
+        <section style={{ marginTop: 40 }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
+            <div className="flex items-center gap-2">
+              <div
+                className="flex items-center justify-center"
+                style={{ width: 24, height: 24, borderRadius: 8, background: 'rgba(245,158,11,0.12)' }}
+              >
+                <Zap size={12} strokeWidth={2} style={{ color: '#f59e0b' }} />
+              </div>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.onSurfaceVariant }}>
+                Примеры диагностики
+              </p>
+            </div>
+            <p style={{ fontSize: 11, color: '#9ca3af' }}>Нажмите для демо</p>
+          </div>
+          <div className="grid grid-cols-3" style={{ gap: 10, alignItems: 'start' }}>
+            {DEMO_CASES.filter((c) => !DEMO_EXCLUDED.has(c.id)).map((c) => {
+              const imgSrc = DEMO_IMAGES[c.id] ?? `/crops/${c.crop}.jpg`
+              const label = stripEmoji(c.label)
+              const isLoading = demoLoading === c.id
+              const isActive = activeDemo === c.id
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => handleDemoCase(c.id)}
+                  disabled={demoLoading !== null}
+                  className="w-full text-left transition-all active:scale-[0.96] disabled:opacity-60"
+                  style={{ outline: 'none', display: 'flex', flexDirection: 'column' }}
+                >
+                  <div
+                    className="w-full aspect-square relative overflow-hidden"
+                    style={{
+                      borderRadius: '1rem',
+                      marginBottom: 6,
+                      boxShadow: isActive
+                        ? `0 0 0 2px ${C.secondary}, 0 2px 10px rgba(0,0,0,0.14)`
+                        : '0 2px 10px rgba(0,0,0,0.14)',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <img src={imgSrc} alt={label} className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.0) 45%, rgba(0,0,0,0.52) 100%)' }} />
+                    {isLoading ? (
+                      <div className="absolute bottom-2 right-2 w-5 h-5 rounded-full border-2 animate-spin" style={{ borderColor: '#34d399', borderTopColor: 'transparent' }} />
+                    ) : (
+                      <div className="absolute bottom-2 right-2 w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.30)' }}>
+                        <ArrowRight size={11} strokeWidth={2.5} className="text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <p className="line-clamp-2 leading-tight" style={{ fontSize: 11, fontWeight: 600, color: '#1f2937', letterSpacing: '-0.01em', minHeight: 32 }}>
+                    {label}
+                  </p>
+                </button>
+              )
+            })}
+          </div>
+        </section>
 
         {/* Error */}
         {error && (
