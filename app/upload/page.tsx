@@ -1101,18 +1101,36 @@ export default function UploadPage() {
         {/* ── Crop selection — hidden for farmers (crop auto-set from farmer-setup) ── */}
         {!(userType === 'farm' && farmerCtx) && (
           <section style={{ marginTop: 40 }}>
-            <p
-              style={{
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase',
-                color: C.onSurfaceVariant,
-                marginBottom: 16,
-              }}
-            >
-              Тип растения
-            </p>
+            <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
+              <p
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                  color: C.onSurfaceVariant,
+                  margin: 0,
+                }}
+              >
+                Тип растения
+              </p>
+              {hasPhotos && !hasCrop && (
+                <span
+                  style={error ? {
+                    fontSize: 12, fontWeight: 600,
+                    color: '#92400e',
+                    background: 'rgba(245,158,11,0.12)',
+                    padding: '3px 10px',
+                    borderRadius: 9999,
+                  } : {
+                    fontSize: 12, fontWeight: 500,
+                    color: C.onSurfaceVariant,
+                  }}
+                >
+                  {error || 'Выберите тип →'}
+                </span>
+              )}
+            </div>
             <div className="flex flex-wrap" style={{ gap: 10 }}>
               {activeCrops.map((c) => {
                 const sel = crop === c.id
@@ -1218,8 +1236,8 @@ export default function UploadPage() {
           </div>
         </section>
 
-        {/* Error */}
-        {error && (
+        {/* Error — crop errors are shown inline near chips header */}
+        {error && hasCrop && (
           <div
             className="flex items-center gap-2 px-4 py-3"
             style={{
@@ -1256,7 +1274,6 @@ export default function UploadPage() {
       >
         <button
           onClick={handleNext}
-          disabled={!canProceed}
           className="w-full flex items-center justify-center gap-3 transition-all active:scale-95 duration-200"
           style={{
             height: 64,
@@ -1274,21 +1291,6 @@ export default function UploadPage() {
           Продолжить
           <ArrowRight size={22} strokeWidth={2} />
         </button>
-        {!canProceed && (
-          <p
-            className="text-center"
-            style={{
-              marginTop: 12,
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: '0.10em',
-              textTransform: 'uppercase',
-              color: `${C.onSurfaceVariant}80`,
-            }}
-          >
-            {!hasPhotos ? 'Загрузите фото для активации' : 'Выберите тип растения'}
-          </p>
-        )}
       </div>
       )}  {/* end previews.length > 0 */}
 
