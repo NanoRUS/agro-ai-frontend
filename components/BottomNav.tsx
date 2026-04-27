@@ -38,13 +38,34 @@ function LiquidTab({
     >
       <div
         style={{
+          position: 'relative',
+          overflow: 'hidden',
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
           padding: '8px 12px',
           borderRadius: 9999,
-          background: isActive ? '#1b4332' : 'transparent',
-          boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.20)' : 'none',
+          ...(isActive ? {
+            background: 'linear-gradient(160deg, rgba(38,90,60,0.95) 0%, rgba(12,42,24,1) 100%)',
+            backdropFilter: 'blur(14px) saturate(140%)',
+            WebkitBackdropFilter: 'blur(14px) saturate(140%)',
+            boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.28), 0 4px 16px rgba(10,38,20,0.35)',
+          } : {
+            background: 'transparent',
+            boxShadow: 'none',
+          }),
         }}
       >
+        {isActive && (
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              height: '52%',
+              background: 'linear-gradient(to bottom, rgba(255,255,255,0.22), rgba(255,255,255,0))',
+              borderRadius: '9999px 9999px 50% 50%',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
         {icon}
         <span style={{
           fontSize: 9.5, fontWeight: 700,
