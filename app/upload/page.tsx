@@ -126,12 +126,10 @@ export default function UploadPage() {
     const incoming = Array.from(e.target.files || [])
     if (!incoming.length) return
     setActiveDemo(null)
-    setImages((prev) => {
-      const combined = [...prev, ...incoming].slice(0, 5)
-      const added = combined.slice(prev.length)
-      setPreviews((p) => [...p, ...added.map((f) => URL.createObjectURL(f))])
-      return combined
-    })
+    const nextImages = [...images, ...incoming].slice(0, 5)
+    const added = nextImages.slice(images.length)
+    setImages(nextImages)
+    setPreviews((p) => [...p, ...added.map((f) => URL.createObjectURL(f))])
     setError('')
     e.target.value = ''
   }
