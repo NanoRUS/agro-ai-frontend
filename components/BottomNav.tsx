@@ -51,11 +51,11 @@ export default function BottomNav({ active }: BottomNavProps) {
     <div
       className="fixed bottom-0 left-0 right-0 z-20 max-w-md mx-auto"
       style={{
-        background: 'rgba(255,255,255,0.64)',
-        backdropFilter: 'blur(32px) brightness(1.04)',
-        WebkitBackdropFilter: 'blur(32px) brightness(1.04)',
-        borderTop: '1px solid rgba(255,255,255,0.72)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.90), 0 -8px 32px rgba(0,0,0,0.10), 0 -1px 0 rgba(0,0,0,0.05)',
+        background: 'rgba(248,250,248,0.94)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderTop: '1px solid rgba(0,0,0,0.06)',
+        boxShadow: '0 -4px 12px rgba(25,28,27,0.04)',
       }}
     >
       <div
@@ -68,17 +68,39 @@ export default function BottomNav({ active }: BottomNavProps) {
             <button
               key={key}
               onClick={() => router.push(path)}
-              className="flex flex-col items-center gap-[5px]"
-              style={{ color: isActive ? '#f8faf8' : 'rgba(27,67,50,0.55)' }}
+              className="flex flex-col items-center gap-[5px] transition-transform duration-100 active:scale-[0.93]"
+              style={{ color: isActive ? '#f0f7f4' : 'rgba(27,67,50,0.48)' }}
             >
               <div
                 className="flex flex-col items-center gap-[5px] px-3 py-2 rounded-full"
                 style={isActive ? {
-                  background: '#1b4332',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.20)',
-                  color: '#f8faf8',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  background: 'linear-gradient(160deg, rgba(38,82,57,0.97) 0%, rgba(14,46,26,1) 100%)',
+                  boxShadow: [
+                    'inset 0 1px 0 rgba(255,255,255,0.18)',
+                    'inset 0 -1px 0 rgba(0,0,0,0.30)',
+                    '0 6px 20px rgba(10,38,20,0.42)',
+                    '0 1px 4px rgba(0,0,0,0.24)',
+                  ].join(', '),
+                  color: '#f0f7f4',
                 } : {}}
               >
+                {isActive && (
+                  <div
+                    aria-hidden
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '55%',
+                      background: 'linear-gradient(to bottom, rgba(255,255,255,0.15), rgba(255,255,255,0))',
+                      borderRadius: '9999px 9999px 60% 60% / 100% 100% 50% 50%',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                )}
                 {icon}
                 <span style={{
                   fontSize: 9.5, fontWeight: 700,
