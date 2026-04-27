@@ -12,8 +12,7 @@ function Tab({ label, icon, isActive, onClick }: {
   const [pressed, setPressed] = useState(false)
   return (
     <button
-      onClick={onClick}
-      onPointerDown={() => setPressed(true)}
+      onPointerDown={() => { setPressed(true); setTimeout(onClick, 110) }}
       onPointerUp={() => setPressed(false)}
       onPointerLeave={() => setPressed(false)}
       style={{
