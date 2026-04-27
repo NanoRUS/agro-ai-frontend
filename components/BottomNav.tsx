@@ -30,10 +30,10 @@ function LiquidTab({
         WebkitUserSelect: 'none',
         WebkitTouchCallout: 'none' as any,
         touchAction: 'manipulation',
-        transform: pressed ? 'scaleX(1.06) scaleY(0.84)' : 'scale(1)',
+        transform: pressed ? 'scaleX(1.16) scaleY(0.74)' : 'scale(1)',
         transition: pressed
-          ? 'transform 120ms ease-out'
-          : 'transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+          ? 'transform 55ms ease-out'
+          : 'transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1)',
       }}
     >
       <div
@@ -58,11 +58,16 @@ function LiquidTab({
           <div
             aria-hidden
             style={{
-              position: 'absolute', top: 0, left: 0, right: 0,
-              height: '52%',
-              background: 'linear-gradient(to bottom, rgba(255,255,255,0.22), rgba(255,255,255,0))',
+              position: 'absolute',
+              top: pressed ? 5 : 0,
+              left: 0, right: 0,
+              height: pressed ? '35%' : '52%',
+              background: pressed
+                ? 'linear-gradient(to bottom, rgba(255,255,255,0.32), rgba(255,255,255,0))'
+                : 'linear-gradient(to bottom, rgba(255,255,255,0.22), rgba(255,255,255,0))',
               borderRadius: '9999px 9999px 50% 50%',
               pointerEvents: 'none',
+              transition: pressed ? 'all 55ms ease-out' : 'all 320ms cubic-bezier(0.34, 1.56, 0.64, 1)',
             }}
           />
         )}
