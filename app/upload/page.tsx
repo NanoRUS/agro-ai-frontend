@@ -37,6 +37,22 @@ const CROPS = [
   { id: 'strawberry', label: 'Клубника',  img: '/crops/strawberry.jpg' },
 ]
 
+const HOME_CROPS = [
+  { id: 'houseplant',  label: 'Комнатное растение',   img: '' },
+  { id: 'flowering',   label: 'Цветущее растение',    img: '' },
+  { id: 'succulent',   label: 'Суккулент / кактус',   img: '' },
+  { id: 'decorative',  label: 'Декоративное растение', img: '' },
+  { id: 'unknown',     label: 'Не знаю',              img: '' },
+]
+
+const PLANT_CATEGORY_LABELS: Record<string, string> = {
+  houseplant: 'Комнатное растение',
+  flowering:  'Цветущее растение',
+  succulent:  'Суккулент / кактус',
+  decorative: 'Декоративное растение',
+  unknown:    'Не знаю',
+}
+
 const DEMO_IMAGES: Record<string, string> = {
   tomato_phytophthora_rain:        '/demos/tomato-blight.jpg',
   tomato_overwatering:             '/demos/tomato-overwatering.jpg',
@@ -69,6 +85,9 @@ export default function UploadPage() {
   const [navigating,  setNavigating]  = useState(false)
   const [farmerCtx,   setFarmerCtx]   = useState<{ crop: string; field: string } | null>(null)
   const [userType,    setUserType]    = useState<string | null>(null)
+
+  const isHomeDacha = userType === 'home' || userType === 'dacha' || userType === 'garden'
+  const activeCrops = isHomeDacha ? HOME_CROPS : CROPS
 
   useEffect(() => {
     const ut = localStorage.getItem('userType')
@@ -124,14 +143,20 @@ export default function UploadPage() {
   }
 
   async function handleNext() {
-    if (!crop)          return setError('Выберите культуру')
+    if (!crop)          return setError(isHomeDacha ? 'Выберите тип растения' : 'Выберите культуру')
     if (!images.length) return setError('Загрузите хотя бы одно фото')
 
     setNavigating(true)
     setError('')
     try {
       const dataUrls = await Promise.all(images.map(compressImage))
-      sessionStorage.setItem('agro_crop', crop)
+      if (isHomeDacha) {
+        sessionStorage.setItem('agro_plant_category', crop)
+        sessionStorage.removeItem('agro_crop')
+      } else {
+        sessionStorage.setItem('agro_crop', crop)
+        sessionStorage.removeItem('agro_plant_category')
+      }
       sessionStorage.setItem('agro_image_count', String(images.length))
       sessionStorage.setItem('agro_images_data', JSON.stringify(dataUrls))
       sessionStorage.setItem('agro_images_names', JSON.stringify(images.map((f) => f.name)))
@@ -1040,7 +1065,7 @@ export default function UploadPage() {
               Тип растения
             </p>
             <div className="flex flex-wrap" style={{ gap: 10 }}>
-              {CROPS.map((c) => {
+              {activeCrops.map((c) => {
                 const sel = crop === c.id
                 return (
                   <button
@@ -1058,12 +1083,14 @@ export default function UploadPage() {
                       boxShadow: sel ? '0 1px 4px rgba(0,0,0,0.18)' : undefined,
                     }}
                   >
-                    <div
-                      className="overflow-hidden flex-shrink-0"
-                      style={{ width: 24, height: 24, borderRadius: '50%' }}
-                    >
-                      <img src={c.img} alt={c.label} className="w-full h-full object-cover" />
-                    </div>
+                    {c.img && (
+                      <div
+                        className="overflow-hidden flex-shrink-0"
+                        style={{ width: 24, height: 24, borderRadius: '50%' }}
+                      >
+                        <img src={c.img} alt={c.label} className="w-full h-full object-cover" />
+                      </div>
+                    )}
                     {c.label}
                     {sel && (
                       <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">

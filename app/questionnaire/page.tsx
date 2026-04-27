@@ -273,8 +273,9 @@ export default function QuestionnairePage() {
   }
 
   async function handleSubmit() {
-    const crop = sessionStorage.getItem('agro_crop')
-    if (!crop) { router.push('/upload'); return }
+    const crop         = sessionStorage.getItem('agro_crop')
+    const plantCategory = sessionStorage.getItem('agro_plant_category')
+    if (!crop && !plantCategory) { router.push('/upload'); return }
     const imagesData: string[] = JSON.parse(sessionStorage.getItem('agro_images_data') || '[]')
     const imagesNames: string[] = JSON.parse(sessionStorage.getItem('agro_images_names') || '[]')
     const files = await Promise.all(
@@ -287,7 +288,11 @@ export default function QuestionnairePage() {
     setLoading(true)
     setError('')
     try {
-      const result = await analyzeImages(files, { ...form, crop_type: crop })
+      const result = await analyzeImages(files, {
+        ...form,
+        crop_type:      crop         || null,
+        plant_category: plantCategory || null,
+      })
       sessionStorage.setItem('agro_result', JSON.stringify(result))
       sessionStorage.setItem('agro_env', form.growing_environment)
       router.push('/results')

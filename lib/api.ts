@@ -85,12 +85,16 @@ async function apiFetch(url: string, init: RequestInit): Promise<Response> {
 
 export async function analyzeImages(
   images: File[],
-  questionnaire: Omit<QuestionnaireAnswers, 'crop_type'> & { crop_type: string },
+  questionnaire: Omit<QuestionnaireAnswers, 'crop_type'> & {
+    crop_type?: string | null
+    plant_category?: string | null
+  },
 ): Promise<AnalyzeResponse> {
   const form = new FormData()
 
-  const requestBody = {
-    crop_type: questionnaire.crop_type,
+  const requestBody: Record<string, unknown> = {
+    ...(questionnaire.crop_type     ? { crop_type:      questionnaire.crop_type }     : {}),
+    ...(questionnaire.plant_category ? { plant_category: questionnaire.plant_category } : {}),
     questionnaire: {
       growing_environment: questionnaire.growing_environment,
       plant_stage: questionnaire.plant_stage,

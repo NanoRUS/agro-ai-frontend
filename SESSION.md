@@ -14,6 +14,24 @@
 
 ## Последние изменения (апр 2026)
 
+### plant_category — вертикальный срез (апр 2026)
+
+**Frontend (agro-ai-frontend):**
+- `app/upload/page.tsx`: добавлен `HOME_CROPS` (5 элементов: houseplant/flowering/succulent/decorative/unknown), константа `PLANT_CATEGORY_LABELS`. `isHomeDacha` вычисляется из userType. `activeCrops` ветвится по userType. `handleNext` сохраняет в `agro_plant_category` (home/dacha) или `agro_crop` (farm) — взаимоисключающие ключи. Img-кружок рендерится только при `c.img`. Error message адаптирован под тип пользователя.
+- `lib/api.ts`: `analyzeImages()` принимает `crop_type?: string | null` и `plant_category?: string | null`. В requestBody условно включается только нужное поле.
+- `app/questionnaire/page.tsx`: читает `agro_crop` и `agro_plant_category` из sessionStorage. Редирект если оба пусты. Передаёт `crop_type` или `plant_category` в `analyzeImages`.
+- `app/results/page.tsx`: добавлен `PLANT_CATEGORY_LABELS` (покрывает оба домена — home/dacha + farm) и `cropDisplayLabel()`. `tomato→Томат`, `cucumber→Огурец`, `potato→Картофель`, `pepper→Перец`, `strawberry→Клубника`, `unknown→Растение`. Raw values больше не отображаются нигде.
+
+**Backend (agro-ai):**
+- `app/schemas/analyze.py`: добавлен `PlantCategory` Literal. `crop_type: Optional[CropType] = None`. `plant_category: Optional[PlantCategory] = None` в `AnalyzeRequest`. `CropResult.selected: str` (было `CropType`).
+- `app/rules/crops/generic.json`: новый файл — 6 универсальных issues (overwatering, underwatering, root_rot, aphids, spider_mites, general_stress).
+- `app/api/v1/analyze.py`: `effective_crop = crop_type or "generic"`, `display_selected = crop_type or plant_category or "unknown"`. CV hint = crop_type или plant_category. DB и response используют `display_selected`. `CROP_NAMES_RU` расширен home-категориями.
+
+**Контракт:**
+- farm: `crop_type=<value>`, `plant_category=None` → crop-specific scoring
+- home/dacha: `crop_type=None`, `plant_category=<value>` → generic scoring (6 issues)
+- Farmer flow не тронут
+
 - Добавлены `VFACTORY_CALLBACK_URL` и `VFACTORY_CALLBACK_TOKEN` в `send-order/route.ts`
 - `vfCreateJob()` теперь принимает и передаёт `callbackUrl` / `callbackToken`
 - E2E pipeline подтверждён: factory → callback → Telegram sendVideo OK
@@ -210,6 +228,25 @@
 
 ---
 
+## Video delivery pipeline — vf-poller (апр 2026)
+
+**Корневая причина:** Factory API (`/create_plant_analysis`) не поддерживает `callback_url` — поле игнорируется, callback никогда не вызывается.
+
+**Решение (Вариант A):** Polling-скрипт на 192.168.10.70.
+- Файл: `/home/cerberus/vf-poller.py`
+- Env: `~/webhook.env` (добавлен `VFACTORY_URL=http://109.195.103.40:7861`)
+- State: `~/.vf-poller-state.json` (хранит обработанные job_id)
+- Cron: `*/3 * * * *` — каждые 3 минуты
+- Лог: `/tmp/vf-poller.log`
+
+**Что делает:** `GET /my_jobs` → фильтрует completed + не в state → скачивает mp4 → `sendVideo` в Telegram оператору (caption: контакт пользователя)
+
+**Протестировано:** 11 накопленных видео успешно доставлено при первом запуске.
+
+**Webhook `video-webhook.py`:** по-прежнему запущен, но фактически не используется (factory не вызывает callback). Можно оставить или убрать.
+
+---
+
 ## Следующий шаг (Vercel)
 
 Установить env vars в Vercel и сделать redeploy:
@@ -225,6 +262,7 @@ VFACTORY_CALLBACK_TOKEN = vf-callback-secret-2026
 **Зафиксированные решения:**
 - `action` cards: без ChevronRight, без onClick — не кликабельны
 - `link` cards (re-scan): ChevronRight сохранён, реальный `router.push`
+- `paywall` cards (video upsell): ChevronRight + onClick → setPaywallOpen(true), outer div кликабелен
 - farm: title `"План действий"` + helper `"Приоритетные шаги для защиты урожая"`
 - home / dacha / default: title `"Что делать сейчас"` + helper `"Следуйте этим шагам, чтобы помочь растению восстановиться"`
 - Urgency-subtitle (агрессивный тон) — убран
@@ -235,8 +273,206 @@ VFACTORY_CALLBACK_TOKEN = vf-callback-secret-2026
 
 ---
 
+## Bugfix: видео-upsell карточка farm layout (апр 2026)
+
+**Причина бага:** карточка "Персональный видео-разбор" (farm layout, lines 647–707) имела только play-кнопку с onClick. Клик по заголовку/буллетам не давал реакции.
+
+**Решение (Вариант A):** outer `<div>` стал кликабельным:
+- `onClick={() => setPaywallOpen(true)}`
+- `cursor: 'pointer'`
+- `className: 'active:opacity-90 transition-opacity'` (мягкий feedback)
+- Добавлен `ChevronRight` справа от заголовка (`rgba(255,255,255,0.45)`)
+- Play-кнопка внутри оставлена с тем же handler (не вложенный button — outer `<div>`)
+
+**Изменён:** `app/results/page.tsx` — оба upsell-блока (farm + default/dacha)
+
+**Не менялось:** PaywallModal, sticky CTA, home/dacha/default plan actions, in-progress/ready состояния
+
+**Финальный паттерн для upsell-карточек:**
+- outer `<div>`: `onClick → setPaywallOpen`, `cursor: pointer`, `hover:opacity-95 active:opacity-90 transition-opacity`
+- ChevronRight рядом с заголовком, `rgba(255,255,255,0.65)`
+- Inner CTA-кнопка / play-кнопка — дублируют тот же handler (не вложенный button, т.к. outer — div)
+
+**Осталось нерешённым:** нет открытых вопросов.
+
+---
+
+## Sticky CTA bugfix (апр 2026)
+
+**Баг 1 — конфликт состояний:** sticky CTA "Получить разбор" показывался одновременно с карточкой "Видеоразбор в работе". Guard отсутствовал.
+**Фикс:** оба sticky CTA (farm line ~821, home line ~1219) обёрнуты условием `premiumStatus !== 'video_review_in_progress' && premiumStatus !== 'video_review_ready'`. Коммит `63d51b5`.
+
+**Баг 2 — прилипание к nav:** `bottom: 60/76` не учитывал iOS safe-area-inset-bottom.
+**Фикс:** `bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))'` (farm) и `calc(76px + ...)` (home).
+
+Файл: только `app/results/page.tsx`.
+
+---
+
+## Farm in_progress card — унификация (апр 2026)
+
+**Проблема:** farm `video_review_in_progress` карточка была упрощённой — только badge + заголовок + subtitle + avatar. Без шагов, stepper и ETA. Default/home карточка — полноценная.
+
+**Решение:** farm карточка заменена на полный шаблон (коммит `d65c968`). Изменён только `app/results/page.tsx`, один блок `premiumStatus === 'video_review_in_progress'` в farm layout.
+
+**Farmer-специфичные тексты:**
+- Label: `Заявка зарегистрирована`
+- Subtitle: `Агроном уже получил данные по вашему полю`
+- Шаг 2: `Подбирает препараты и схему обработки`
+- Шаг 3: `Составляет план действий по полю`
+
+**Не тронуто:** `video_review_ready`, остальной farm layout, логика статусов, backend.
+
+---
+
+## Bugfix: premiumStatus не восстанавливается из истории (апр 2026)
+
+**Симптом:** Пользователь открывает кейс с `video_review_in_progress` из Истории → попадает на result screen → вместо карточки "Видеоразбор в работе" видит upsell.
+
+**Корневая причина — race condition:**
+- `handleOrderSubmit` вызывает `setPremiumOrder(id, 'video_review_in_progress')` синхронно (до async canvas thumbnail)
+- `setPremiumOrder` делает `getHistory().map(...)` — обновляет только **существующие** записи, не создаёт новых
+- `buildHistoryEntry → upsertHistoryEntry` в `useEffect` — async, не дожидаемся
+- Если `upsertHistoryEntry` ещё не завершился → в localStorage нет записи → `setPremiumOrder.map()` итерирует пустой массив → статус потерян
+- `upsertHistoryEntry` создаёт запись позже — **без** `premiumOrderStatus`
+- При открытии из истории: `getPremiumStatusForAnalysis` → null → upsell показывается
+
+**Проверка: не перетирает ли повторный `upsertHistoryEntry`?**
+`mergeHistoryEntry` делает `{ ...incoming, ...preserved }` — `preserved` (включая `premiumOrderStatus`) спредится **последним** → всегда побеждает. Повторный `upsertHistoryEntry` из `useEffect` не затирает уже сохранённый статус. ✓
+
+**Фикс** (`handleOrderSubmit` в `app/results/page.tsx`):
+```js
+// Перед setPremiumOrder: гарантируем наличие записи в localStorage
+await buildHistoryEntry(result, heroImage ?? null).then(upsertHistoryEntry).catch((e) => {
+  console.error('[handleOrderSubmit] upsertHistoryEntry failed:', e)
+})
+setPremiumOrder(result.analysis_id, 'video_review_in_progress', contact)
+```
+
+**Race полностью устранён:** запись в localStorage создаётся до `setPremiumOrder`. Дублей нет — `upsertHistoryEntry` делает upsert по `id`, а `mergeHistoryEntry` сохраняет `premiumOrderStatus` из prev.
+
+Коммиты: `f7d6d02` (race fix) + `ae95f8d` (logging).
+
+---
+
+## Farmer setup — custom crop flow (апр 2026)
+
+**Коммит:** `e2b003c`. Изменён только `app/farmer-setup/page.tsx`.
+
+**Проблема:** "Добавить культуру" и "Другая культура" были dead buttons без onClick.
+
+**Что реализовано:**
+
+Новые state:
+- `customCrops: string[]` — добавленные пользователем культуры
+- `showAddInput: boolean` — показывает inline input
+- `inputVal: string` — текущее значение поля
+
+Новые handlers:
+- `confirmAddCrop()` — trim, capitalize first letter, dedupe (при дубликате выбирает существующий chip), добавляет в customCrops + сразу в selectedCrops, закрывает input
+- `removeCustomCrop(crop)` — убирает из customCrops и selectedCrops
+
+Поведение:
+- Обе кнопки открывают один inline input внутри flex-wrap chips
+- Input: autoFocus, Enter = confirm, placeholder "Например: орех, манго, виноград"
+- Custom chips: те же стили что у стандартных, с × для удаления
+- `handleNext()` не изменён — сохраняет весь `selectedCrops` включая custom
+
+---
+
+## PaywallModal — keyboard-aware contact step (апр 2026)
+
+**Коммит:** `c439ca4`. Изменён только `components/paywall/PaywallModal.tsx`.
+
+**Проблема:** iOS Safari при открытии клавиатуры перекрывал нижнюю часть bottom sheet. CTA ("Подтвердить и получить разбор") уходила под клавиатуру.
+
+**Фикс 1 — visualViewport listener:**
+- `kbOffset = Math.max(0, window.innerHeight - vp.height - vp.offsetTop)`
+- Sheet: `transform: translateY(-${kbOffset}px)` + `transition: 0.2s ease-out`
+- Работает для всех шагов модалки, безопасно для desktop (kbOffset = 0)
+
+**Фикс 2 — ContactContent вертикальный ритм (-28px):**
+- wrapper: `py-2` → `py-1`
+- banner: `mb-5 py-2.5` → `mb-3 py-2`
+- subtitle: `marginTop 6` → `4`
+- telegram hint: `mt-6 mb-3` → `mt-4 mb-2.5`
+- убран дублирующий параграф "Отправим видеоразбор сюда", оставлен только "Никаких лишних сообщений"
+
+**Не тронуто:** paywall step, success step, flow, тексты CTA, backend.
+
+---
+
+## Indoor copy adaptation — home/default result screen (апр 2026)
+
+**Коммит:** `5d04a35`. Изменены только `app/questionnaire/page.tsx` и `app/results/page.tsx`.
+
+**Суть:** `growing_environment` не возвращается в `AnalyzeResponse` — нужно было сохранить отдельно.
+
+**Что сделано:**
+- `questionnaire/page.tsx`: при успехе `sessionStorage.setItem('agro_env', form.growing_environment)`
+- `results/page.tsx`: `useState growingEnv`, читается из `agro_env`, вычисляется `isIndoor`
+
+**Адаптированные строки (только home/default layout):**
+1. home layout plan helper (line ~1110): `"...восстановиться"` → `"...восстановиться в помещении"` if indoor
+2. default layout plan helper (line ~1439): то же самое
+3. default re-scan subtitle (line ~1925): `"Отслеживайте динамику и корректируйте лечение"` → `"Следите за состоянием растения дома"` if indoor
+
+**Не тронуто:** farm layout, today_actions, backend, сегментация.
+
+---
+
+## Questionnaire — опция "В помещении" (апр 2026)
+
+**Изменён:** только `app/questionnaire/page.tsx`. Коммит `cb05393`.
+
+- `type Env`: добавлен `'indoor'` → `'indoor' | 'greenhouse' | 'open_field'`
+- Список опций обновлён: **В помещении** / В теплице / В открытом грунте (indoor первый)
+- Дефолт изменён: `open_field` → `indoor` (open_field давал неверные данные для рассады и домашних сценариев)
+- В том же коммите: ранее незакоммиченные UX-фиксы LoadingOverlay (таймер elapsed, кнопка Отменить после 15с, error блок перемещён в sticky CTA зону)
+
+---
+
 ## Важно не забыть
 
 - `results/page.tsx` — визуальный эталон, любые новые экраны должны соответствовать его стилю
-- `buildVideoScript()` в `send-order/route.ts` генерирует ~550-символьный скрипт (~35-40 сек TTS)
+- `buildVideoScript()` в `send-order/route.ts` генерирует ~600-символьный скрипт (~50-55 сек TTS)
 - Короткие тестовые скрипты (<130 символов) дают видео с тишиной после 10 сек — это не баг
+
+---
+
+## Статус доставки (апр 2026)
+
+**Доставка работает end-to-end:**
+- `app/api/send-order/route.ts` — был Untracked, никогда не деплоился. Исправлено: закоммичен `fbb7fb2`.
+- Telegram-уведомление приходит с фото ✓
+- Factory job создаётся ✓
+- Поллер (`vf-poller.py`) скачивает и доставляет видео в Telegram ✓
+
+**Новая проблема — truncation на ~45 сек:**
+
+**Локализация:** factory truncation. mp4 на диске = ровно 45.000000 сек, size 2.0 MB.
+Причина: `duration: 45` хардкодится в `vfCreateJob()` (`send-order/route.ts`).
+Фабрика режет видео по этому лимиту. TTS скрипта занимает ~50-55 сек → финал обрезается.
+Поллер и Telegram — чисты (передают файл 1:1).
+
+**Финальный fix (двухуровневый):**
+
+1. `send-order/route.ts`: `duration: 90` — API-уровень, fallback (задеплоен, коммит `79eece9`)
+2. `gen_plant_analysis_video.py` на factory-сервере — патч после TTS:
+   - измеряет реальную длину `voice.mp3` через ffprobe
+   - `computed_dur = ceil(audio_dur + 1.5)`
+   - передаёт computed_dur в `assemble()` вместо payload-значения
+   - бэкап: `gen_plant_analysis_video.py.bak`
+   - лог-строка: `⏱  audio=43.39s → duration=45s (was 90s)`
+
+**Патч 1 — динамический duration** (`gen_plant_analysis_video.py`):
+После TTS: `ffprobe voice.mp3` → `computed_dur = ceil(audio_dur + 1.5)` → передаётся в `assemble()`.
+Лог: `⏱  audio=57.89s → duration=60s (was 90s)`
+
+**Патч 2 — динамический fade-out** (`gen_plant_analysis_video.py`):
+`st=44.5` → `st={dur - 0.5}` — финальное затемнение теперь в конце видео, не на 44.5s.
+До патча: длинные ролики давали чёрный экран с 44.5s до конца.
+
+**Бэкап:** `gen_plant_analysis_video.py.bak` на factory-сервере.
+
+**Итог:** стандартный скрипт → TTS=43.39s → 45s. Длинный скрипт → TTS=57.89s → 60s. Payload `duration` из API игнорируется фабрикой — используется реальная длина аудио. E2E пайплайн полностью рабочий.

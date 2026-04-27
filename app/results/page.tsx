@@ -15,6 +15,27 @@ import { buildHistoryEntry, upsertHistoryEntry, setPremiumOrder, getPremiumStatu
 import PaywallModal from '@/components/paywall/PaywallModal'
 import BottomNav from '@/components/BottomNav'
 
+// ── Plant category labels (home/dacha) ────────────────────────────────────────
+
+const PLANT_CATEGORY_LABELS: Record<string, string> = {
+  // home/dacha
+  houseplant: 'Комнатное растение',
+  flowering:  'Цветущее растение',
+  succulent:  'Суккулент / кактус',
+  decorative: 'Декоративное растение',
+  unknown:    'Растение',
+  // farm
+  tomato:     'Томат',
+  cucumber:   'Огурец',
+  potato:     'Картофель',
+  pepper:     'Перец',
+  strawberry: 'Клубника',
+}
+
+function cropDisplayLabel(selected: string): string {
+  return PLANT_CATEGORY_LABELS[selected] ?? selected
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function scoreToPercent(score: number) {
@@ -448,7 +469,7 @@ function ResultsContent() {
                         fontWeight: 700, fontSize: 22, color: '#191c1b',
                       }}
                     >
-                      {result.crop.selected || 'Локально'}
+                      {cropDisplayLabel(result.crop.selected) || 'Локально'}
                     </p>
                     {farmerField?.area && (
                       <p style={{ fontSize: 13, color: '#414844', marginTop: 4 }}>
