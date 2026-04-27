@@ -27,6 +27,9 @@ function LiquidTab({
         background: 'none', border: 'none', cursor: 'pointer', padding: 0,
         color: isActive ? '#f8faf8' : 'rgba(27,67,50,0.55)',
         userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none' as any,
+        touchAction: 'manipulation',
         transform: pressed ? 'scale(0.90)' : 'scale(1)',
         transition: pressed
           ? 'transform 120ms ease-out'
