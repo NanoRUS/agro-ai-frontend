@@ -76,10 +76,10 @@ export default function BottomNav({ active }: BottomNavProps) {
                 style={isActive ? {
                   position: 'relative',
                   overflow: 'hidden',
-                  background: 'linear-gradient(160deg, rgba(38,82,57,0.97) 0%, rgba(14,46,26,1) 100%)',
+                  background: 'linear-gradient(160deg, rgba(58,118,78,0.88) 0%, rgba(10,40,22,1) 100%)',
                   boxShadow: [
-                    'inset 0 1px 0 rgba(255,255,255,0.18)',
-                    'inset 0 -1px 0 rgba(0,0,0,0.30)',
+                    'inset 0 1.5px 0 rgba(255,255,255,0.30)',
+                    'inset 0 -1px 0 rgba(0,0,0,0.35)',
                     '0 6px 20px rgba(10,38,20,0.42)',
                     '0 1px 4px rgba(0,0,0,0.24)',
                   ].join(', '),
@@ -95,7 +95,7 @@ export default function BottomNav({ active }: BottomNavProps) {
                       left: 0,
                       right: 0,
                       height: '55%',
-                      background: 'linear-gradient(to bottom, rgba(255,255,255,0.15), rgba(255,255,255,0))',
+                      background: 'linear-gradient(to bottom, rgba(255,255,255,0.28), rgba(255,255,255,0))',
                       borderRadius: '9999px 9999px 60% 60% / 100% 100% 50% 50%',
                       pointerEvents: 'none',
                     }}
