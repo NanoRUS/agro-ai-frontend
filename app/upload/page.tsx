@@ -98,6 +98,7 @@ export default function UploadPage() {
   const [crop,        setCrop]        = useState('')
   const [error,       setError]       = useState('')
   const [demoLoading, setDemoLoading] = useState<string | null>(null)
+  const [activeDemo,  setActiveDemo]  = useState<string | null>(null)
   const [navigating,  setNavigating]  = useState(false)
   const [farmerCtx,   setFarmerCtx]   = useState<{ crop: string; field: string } | null>(null)
   const [userType,    setUserType]    = useState<string | null>(null)
@@ -124,6 +125,7 @@ export default function UploadPage() {
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const incoming = Array.from(e.target.files || [])
     if (!incoming.length) return
+    setActiveDemo(null)
     setImages((prev) => {
       const combined = [...prev, ...incoming].slice(0, 5)
       const added = combined.slice(prev.length)
@@ -135,8 +137,11 @@ export default function UploadPage() {
   }
 
   function removeImage(idx: number) {
-    setImages(images.filter((_, i) => i !== idx))
-    setPreviews(previews.filter((_, i) => i !== idx))
+    const nextImages = images.filter((_, i) => i !== idx)
+    const nextPreviews = previews.filter((_, i) => i !== idx)
+    setImages(nextImages)
+    setPreviews(nextPreviews)
+    if (nextImages.length === 0) setActiveDemo(null)
   }
 
   function compressImage(file: File): Promise<string> {
@@ -187,6 +192,7 @@ export default function UploadPage() {
   }
 
   async function handleDemoCase(fixtureId: string) {
+    setActiveDemo(fixtureId)
     setDemoLoading(fixtureId)
     setError('')
     try {
@@ -203,6 +209,10 @@ export default function UploadPage() {
   const hasPhotos  = images.length > 0
   const hasCrop    = !!crop
   const canProceed = hasPhotos && hasCrop
+
+  const scannerSrc = activeDemo
+    ? (DEMO_IMAGES[activeDemo] ?? '/demos/tomato-blight.jpg')
+    : previews[0] ?? '/demos/tomato-blight.jpg'
 
   return (
     <div style={{ background: C.surface, color: C.onSurface, minHeight: 'max(884px, 100dvh)' }}>
@@ -354,7 +364,7 @@ export default function UploadPage() {
                     }}
                   >
                     <img
-                      src="/demos/tomato-blight.jpg"
+                      src={scannerSrc}
                       alt="Diagnostic preview"
                       style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'saturate(0.5)' }}
                     />
@@ -1150,7 +1160,7 @@ export default function UploadPage() {
       <div
         className="fixed left-0 right-0 z-10"
         style={{
-          bottom: 60,
+          bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))',
           maxWidth: 448,
           margin: '0 auto',
           padding: '16px 24px',
