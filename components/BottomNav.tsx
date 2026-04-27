@@ -74,17 +74,13 @@ export default function BottomNav({ active }: BottomNavProps) {
               <div
                 className="flex flex-col items-center gap-[5px] px-3 py-2 rounded-full"
                 style={isActive ? {
-                  background: 'rgba(27,67,50,0.11)',
-                  border: '1px solid rgba(27,67,50,0.20)',
-                  boxShadow: [
-                    '0 0 16px rgba(27,67,50,0.20)',
-                    '0 2px 8px rgba(27,67,50,0.12)',
-                    'inset 0 1px 0 rgba(255,255,255,0.75)',
-                  ].join(', '),
+                  background: 'rgba(255,255,255,0.70)',
+                  border: '1px solid rgba(27,67,50,0.28)',
+                  boxShadow: '0 0 11px rgba(27,67,50,0.18), 0 2px 6px rgba(27,67,50,0.10), inset 0 1px 0 rgba(255,255,255,0.80)',
                 } : {
-                  background: 'rgba(255,255,255,0.68)',
-                  border: '1px solid rgba(0,0,0,0.07)',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.90)',
+                  background: 'rgba(255,255,255,0.28)',
+                  border: '1px solid transparent',
+                  boxShadow: 'none',
                 }}
               >
                 {icon}
