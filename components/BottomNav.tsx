@@ -68,39 +68,25 @@ export default function BottomNav({ active }: BottomNavProps) {
             <button
               key={key}
               onClick={() => router.push(path)}
-              className="flex flex-col items-center gap-[5px] transition-transform duration-100 active:scale-[0.93]"
-              style={{ color: isActive ? '#f0f7f4' : 'rgba(27,67,50,0.48)' }}
+              className="flex flex-col items-center gap-[5px] transition-all duration-150 active:scale-[0.93]"
+              style={{ color: isActive ? '#1a4a30' : 'rgba(27,67,50,0.42)' }}
             >
               <div
                 className="flex flex-col items-center gap-[5px] px-3 py-2 rounded-full"
                 style={isActive ? {
-                  position: 'relative',
-                  overflow: 'hidden',
-                  background: 'linear-gradient(160deg, rgba(90,160,110,0.85) 0%, rgba(18,50,30,0.92) 100%)',
+                  background: 'rgba(27,67,50,0.11)',
+                  border: '1px solid rgba(27,67,50,0.20)',
                   boxShadow: [
-                    'inset 0 1.5px 0 rgba(255,255,255,0.30)',
-                    'inset 0 -1px 0 rgba(0,0,0,0.35)',
-                    '0 4px 12px rgba(10,38,20,0.25)',
-                    '0 1px 4px rgba(0,0,0,0.24)',
+                    '0 0 16px rgba(27,67,50,0.20)',
+                    '0 2px 8px rgba(27,67,50,0.12)',
+                    'inset 0 1px 0 rgba(255,255,255,0.75)',
                   ].join(', '),
-                  color: '#f0f7f4',
-                } : {}}
+                } : {
+                  background: 'rgba(255,255,255,0.68)',
+                  border: '1px solid rgba(0,0,0,0.07)',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.90)',
+                }}
               >
-                {isActive && (
-                  <div
-                    aria-hidden
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: '78%',
-                      background: 'linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 45%, rgba(255,255,255,0) 100%)',
-                      borderRadius: '9999px 9999px 60% 60% / 100% 100% 50% 50%',
-                      pointerEvents: 'none',
-                    }}
-                  />
-                )}
                 {icon}
                 <span style={{
                   fontSize: 9.5, fontWeight: 700,
