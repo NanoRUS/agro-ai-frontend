@@ -1120,16 +1120,19 @@ export default function UploadPage() {
                   <button
                     key={c.id}
                     onClick={() => { setCrop(c.id); setError('') }}
-                    className="flex items-center gap-2 transition-all active:scale-95"
+                    className="flex items-center gap-2 active:scale-[0.96]"
                     style={{
                       padding: '10px 20px',
                       borderRadius: 9999,
-                      background: sel ? C.primaryContainer : C.surfaceContainerLowest,
-                      color: sel ? C.onPrimaryContainer : C.primary,
-                      border: sel ? 'none' : `1px solid ${C.outlineVariant}`,
+                      background: sel ? '#1b4332' : '#ffffff',
+                      color: sel ? '#f8faf8' : C.primary,
+                      border: sel ? 'none' : '1px solid rgba(193,200,194,0.40)',
                       fontWeight: sel ? 700 : 500,
                       fontSize: 14,
-                      boxShadow: sel ? '0 1px 4px rgba(0,0,0,0.18)' : undefined,
+                      boxShadow: sel
+                        ? '0 4px 16px rgba(27,67,50,0.28), 0 1px 4px rgba(0,0,0,0.10)'
+                        : '0 1px 4px rgba(0,0,0,0.06)',
+                      transition: 'transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease, color 150ms ease',
                     }}
                   >
                     {c.img && (
@@ -1142,9 +1145,10 @@ export default function UploadPage() {
                     )}
                     {c.label}
                     {sel && (
-                      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                        <path fillRule="evenodd" clipRule="evenodd"
-                          d="M8 0a8 8 0 100 16A8 8 0 008 0zm3.47 5.47a.75.75 0 011.06 1.06l-5 5a.75.75 0 01-1.06 0l-2-2a.75.75 0 011.06-1.06L7 9.94l4.47-4.47z" />
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
+                           stroke="currentColor" strokeWidth="2.5"
+                           strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="2,7 6,11 12,3" />
                       </svg>
                     )}
                   </button>
