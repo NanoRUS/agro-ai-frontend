@@ -80,7 +80,7 @@ export default function BottomNav({ active }: BottomNavProps) {
                   boxShadow: [
                     'inset 0 1.5px 0 rgba(255,255,255,0.30)',
                     'inset 0 -1px 0 rgba(0,0,0,0.35)',
-                    '0 6px 20px rgba(10,38,20,0.42)',
+                    '0 4px 12px rgba(10,38,20,0.25)',
                     '0 1px 4px rgba(0,0,0,0.24)',
                   ].join(', '),
                   color: '#f0f7f4',
@@ -94,8 +94,8 @@ export default function BottomNav({ active }: BottomNavProps) {
                       top: 0,
                       left: 0,
                       right: 0,
-                      height: '55%',
-                      background: 'linear-gradient(to bottom, rgba(255,255,255,0.28), rgba(255,255,255,0))',
+                      height: '70%',
+                      background: 'linear-gradient(to bottom, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.06) 55%, rgba(255,255,255,0) 100%)',
                       borderRadius: '9999px 9999px 60% 60% / 100% 100% 50% 50%',
                       pointerEvents: 'none',
                     }}
