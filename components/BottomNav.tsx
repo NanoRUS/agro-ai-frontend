@@ -76,7 +76,7 @@ export default function BottomNav({ active }: BottomNavProps) {
                 style={isActive ? {
                   position: 'relative',
                   overflow: 'hidden',
-                  background: 'linear-gradient(160deg, rgba(58,118,78,0.88) 0%, rgba(10,40,22,1) 100%)',
+                  background: 'linear-gradient(160deg, rgba(90,160,110,0.85) 0%, rgba(18,50,30,0.92) 100%)',
                   boxShadow: [
                     'inset 0 1.5px 0 rgba(255,255,255,0.30)',
                     'inset 0 -1px 0 rgba(0,0,0,0.35)',
@@ -94,8 +94,8 @@ export default function BottomNav({ active }: BottomNavProps) {
                       top: 0,
                       left: 0,
                       right: 0,
-                      height: '70%',
-                      background: 'linear-gradient(to bottom, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.06) 55%, rgba(255,255,255,0) 100%)',
+                      height: '78%',
+                      background: 'linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 45%, rgba(255,255,255,0) 100%)',
                       borderRadius: '9999px 9999px 60% 60% / 100% 100% 50% 50%',
                       pointerEvents: 'none',
                     }}
