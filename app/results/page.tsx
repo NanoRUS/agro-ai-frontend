@@ -872,17 +872,19 @@ function ResultsContent() {
               onClick={() => setPaywallOpen(true)}
               className="w-full flex items-center justify-center gap-3 transition-all active:scale-95 duration-200"
               style={{
+                position: 'relative', overflow: 'hidden',
                 padding: '20px 32px',
                 borderRadius: '1rem',
                 fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
                 fontWeight: 700, fontSize: 18,
                 border: 'none',
-                background: '#1b4332',
-                color: '#ffffff',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.28)',
+                background: 'linear-gradient(160deg, rgba(38,90,60,0.97) 0%, rgba(12,42,24,1) 100%)',
+                color: '#f0f7f4',
+                boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.28), 0 8px 28px rgba(27,67,50,0.40)',
                 cursor: 'pointer',
               }}
             >
+              <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0))', borderRadius: '1rem 1rem 60% 60% / 1rem 1rem 50% 50%', pointerEvents: 'none' }} />
               <UserCheck size={20} strokeWidth={1.75} />
               Получить разбор от агронома
             </button>
@@ -1270,17 +1272,19 @@ function ResultsContent() {
               onClick={() => setPaywallOpen(true)}
               className="w-full flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-95 duration-200"
               style={{
+                position: 'relative', overflow: 'hidden',
                 height: 64,
                 borderRadius: '1rem',
                 fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
                 fontWeight: 700, fontSize: 18,
                 border: 'none',
-                background: '#1b4332',
-                color: '#86af99',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.28)',
+                background: 'linear-gradient(160deg, rgba(38,90,60,0.97) 0%, rgba(12,42,24,1) 100%)',
+                color: '#f0f7f4',
+                boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.28), 0 8px 28px rgba(27,67,50,0.40)',
                 cursor: 'pointer',
               }}
             >
+              <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0))', borderRadius: '1rem 1rem 60% 60% / 1rem 1rem 50% 50%', pointerEvents: 'none' }} />
               <MessageCircle size={20} strokeWidth={1.75} />
               Получить советы эксперта
             </button>
@@ -1913,15 +1917,18 @@ function ResultsContent() {
                   <button
                     onClick={() => setPaywallOpen(true)}
                     className="w-full rounded-[14px] font-black tracking-wide
-                               active:scale-[0.97] active:brightness-95 transition-all duration-150"
+                               active:scale-[0.97] transition-all duration-150"
                     style={{
+                      position: 'relative', overflow: 'hidden',
                       padding: '16px 0', fontSize: 15,
-                      background: 'linear-gradient(145deg, #3ddb6d 0%, #15a248 100%)',
-                      color: '#022c17',
-                      boxShadow: '0 6px 28px rgba(34,197,94,0.45), 0 1px 4px rgba(0,0,0,0.2)',
+                      background: 'linear-gradient(160deg, rgba(38,90,60,0.97) 0%, rgba(12,42,24,1) 100%)',
+                      color: '#f0f7f4',
+                      boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.28), 0 8px 28px rgba(27,67,50,0.40)',
                       letterSpacing: '0.02em',
+                      border: 'none',
                     }}
                   >
+                    <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0))', borderRadius: '14px 14px 60% 60% / 14px 14px 50% 50%', pointerEvents: 'none' }} />
                     {seg === 'home' ? 'Получить совет →'
                       : 'Получить разбор →'}
                   </button>

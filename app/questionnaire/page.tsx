@@ -469,12 +469,18 @@ export default function QuestionnairePage() {
             fontWeight: 700,
             fontSize: 18,
             border: 'none',
-            background: loading ? '#e1e3e1' : '#1b4332',
-            color: loading ? '#41484480' : '#86af99',
-            boxShadow: loading ? 'none' : '0 8px 24px rgba(0,0,0,0.28)',
+            position: 'relative', overflow: 'hidden',
+            background: loading
+              ? '#e1e3e1'
+              : 'linear-gradient(160deg, rgba(38,90,60,0.97) 0%, rgba(12,42,24,1) 100%)',
+            color: loading ? '#41484480' : '#f0f7f4',
+            boxShadow: loading
+              ? 'none'
+              : 'inset 0 1.5px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.28), 0 8px 28px rgba(27,67,50,0.40)',
             cursor: loading ? 'not-allowed' : 'pointer',
           }}
         >
+          {!loading && <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0))', borderRadius: '9999px 9999px 60% 60% / 9999px 9999px 50% 50%', pointerEvents: 'none' }} />}
           Продолжить
           <ArrowRight size={22} strokeWidth={2} />
         </button>

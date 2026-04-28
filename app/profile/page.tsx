@@ -367,14 +367,17 @@ export default function ProfilePage() {
                   onClick={() => setPaywallOpen(true)}
                   className="w-full flex items-center justify-center gap-2 transition-all active:scale-[0.97]"
                   style={{
+                    position: 'relative', overflow: 'hidden',
                     height: 56, borderRadius: '0.875rem',
-                    background: '#aeeecb', border: 'none',
+                    background: 'linear-gradient(160deg, rgba(38,90,60,0.97) 0%, rgba(12,42,24,1) 100%)',
+                    border: 'none',
                     cursor: 'pointer',
                     fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
-                    fontWeight: 700, fontSize: 16, color: '#012d1d',
-                    boxShadow: '0 4px 20px rgba(174,238,203,0.25)',
+                    fontWeight: 700, fontSize: 16, color: '#f0f7f4',
+                    boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.28), 0 8px 28px rgba(27,67,50,0.40)',
                   }}
                 >
+                  <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0))', borderRadius: '0.875rem 0.875rem 60% 60% / 0.875rem 0.875rem 50% 50%', pointerEvents: 'none' }} />
                   Получить разбор от агронома
                   <ArrowRight size={18} strokeWidth={2.2} />
                 </button>
@@ -554,7 +557,8 @@ export default function ProfilePage() {
             <button
               onClick={() => setPaywallOpen(true)}
               className="w-full flex items-center justify-center gap-2 transition-all active:scale-[0.97]"
-              style={{ height: 56, borderRadius: '0.875rem', background: '#aeeecb', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif', fontWeight: 700, fontSize: 16, color: '#012d1d', boxShadow: '0 4px 16px rgba(0,0,0,0.22)' }}>
+              style={{ position: 'relative', overflow: 'hidden', height: 56, borderRadius: '0.875rem', background: 'linear-gradient(160deg, rgba(38,90,60,0.97) 0%, rgba(12,42,24,1) 100%)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif', fontWeight: 700, fontSize: 16, color: '#f0f7f4', boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.28), 0 8px 28px rgba(27,67,50,0.40)' }}>
+              <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0))', borderRadius: '0.875rem 0.875rem 60% 60% / 0.875rem 0.875rem 50% 50%', pointerEvents: 'none' }} />
               Получить разбор
               <ArrowRight size={18} strokeWidth={2.2} />
             </button>

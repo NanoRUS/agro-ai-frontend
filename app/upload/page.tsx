@@ -1291,12 +1291,18 @@ export default function UploadPage() {
             fontWeight: 700,
             fontSize: 18,
             border: 'none',
-            background: canProceed ? C.primaryContainer : C.surfaceContainerHighest,
-            color: canProceed ? C.onPrimaryContainer : `${C.onSurfaceVariant}66`,
-            boxShadow: canProceed ? '0 8px 24px rgba(0,0,0,0.28)' : 'none',
+            position: 'relative', overflow: 'hidden',
+            background: canProceed
+              ? 'linear-gradient(160deg, rgba(38,90,60,0.97) 0%, rgba(12,42,24,1) 100%)'
+              : C.surfaceContainerHighest,
+            color: canProceed ? '#f0f7f4' : `${C.onSurfaceVariant}66`,
+            boxShadow: canProceed
+              ? 'inset 0 1.5px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.28), 0 8px 28px rgba(27,67,50,0.40)'
+              : 'none',
             cursor: canProceed ? 'pointer' : 'not-allowed',
           }}
         >
+          {canProceed && <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0))', borderRadius: '9999px 9999px 60% 60% / 9999px 9999px 50% 50%', pointerEvents: 'none' }} />}
           Продолжить
           <ArrowRight size={22} strokeWidth={2} />
         </button>
