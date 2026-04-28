@@ -216,18 +216,25 @@ export default function OnboardingPage() {
           disabled={!selected}
           className="w-full flex items-center justify-center gap-3 transition-all active:scale-95 duration-200"
           style={{
+            position: 'relative',
+            overflow: 'hidden',
             height: 64,
             borderRadius: '1rem',
             fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
             fontWeight: 700,
             fontSize: 18,
             border: 'none',
-            background: selected ? '#1b4332' : '#e1e3e1',
-            color: selected ? '#b1f0ce' : '#717973',
-            boxShadow: selected ? '0 8px 24px rgba(0,0,0,0.28)' : 'none',
+            background: selected
+              ? 'linear-gradient(160deg, rgba(38,90,60,0.97) 0%, rgba(12,42,24,1) 100%)'
+              : '#e1e3e1',
+            color: selected ? '#f0f7f4' : '#717973',
+            boxShadow: selected
+              ? 'inset 0 1.5px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.28), 0 8px 28px rgba(27,67,50,0.40)'
+              : 'none',
             cursor: selected ? 'pointer' : 'default',
           }}
         >
+          {selected && <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0))', borderRadius: '1rem 1rem 60% 60% / 1rem 1rem 50% 50%', pointerEvents: 'none' }} />}
           Продолжить
           <ArrowRight size={22} strokeWidth={2} />
         </button>
