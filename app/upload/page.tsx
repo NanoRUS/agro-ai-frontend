@@ -553,10 +553,12 @@ export default function UploadPage() {
                     if (!localStorage.getItem('userType')) { router.push('/onboarding'); return }
                     cameraRef.current?.click()
                   }}
-                  className="group w-full flex items-center justify-center gap-3 transition-all active:scale-[0.97] hover:scale-[1.01] hover:brightness-110 duration-200"
+                  className="group w-full flex items-center justify-center gap-3 transition-all active:scale-[0.96] duration-150"
                   style={{
+                    position: 'relative',
+                    overflow: 'hidden',
                     padding: '24px 32px',
-                    background: C.primaryContainer,
+                    background: 'linear-gradient(160deg, rgba(38,90,60,0.97) 0%, rgba(12,42,24,1) 100%)',
                     color: 'white',
                     borderRadius: '2rem',
                     border: 'none',
@@ -564,9 +566,16 @@ export default function UploadPage() {
                     fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
                     fontWeight: 700,
                     fontSize: 20,
-                    boxShadow: '0 16px 48px rgba(27,67,50,0.55), 0 4px 16px rgba(27,67,50,0.25)',
+                    boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.28), 0 16px 48px rgba(27,67,50,0.50), 0 4px 16px rgba(27,67,50,0.22)',
                   }}
                 >
+                  <div aria-hidden style={{
+                    position: 'absolute', top: 0, left: 0, right: 0,
+                    height: '50%',
+                    background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0))',
+                    borderRadius: '2rem 2rem 60% 60% / 2rem 2rem 50% 50%',
+                    pointerEvents: 'none',
+                  }} />
                   <Camera size={24} strokeWidth={1.75} />
                   Сделать фото
                 </button>
