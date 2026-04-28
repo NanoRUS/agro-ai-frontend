@@ -307,16 +307,27 @@ function EmptyState({ onStart }: { onStart: () => void }) {
 
       <button
         onClick={onStart}
-        className="mt-8 px-7 py-3.5 rounded-[14px] font-black
-                   transition-all duration-150 active:scale-[0.97] active:brightness-95"
+        className="mt-8 px-7 py-3.5 font-black transition-all duration-150 active:scale-[0.96]"
         style={{
-          background: 'linear-gradient(145deg, #3ddb6d 0%, #15a248 100%)',
-          color: '#022c17',
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: '14px',
+          background: 'linear-gradient(160deg, rgba(38,90,60,0.97) 0%, rgba(12,42,24,1) 100%)',
+          color: 'white',
           fontSize: 14.5,
           letterSpacing: '0.01em',
-          boxShadow: '0 6px 24px rgba(34,197,94,0.35)',
+          border: 'none',
+          cursor: 'pointer',
+          boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.28), 0 8px 28px rgba(27,67,50,0.45), 0 3px 10px rgba(27,67,50,0.22)',
         }}
       >
+        <div aria-hidden style={{
+          position: 'absolute', top: 0, left: 0, right: 0,
+          height: '50%',
+          background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0))',
+          borderRadius: '14px 14px 60% 60% / 14px 14px 50% 50%',
+          pointerEvents: 'none',
+        }} />
         Начать диагностику
       </button>
     </div>
