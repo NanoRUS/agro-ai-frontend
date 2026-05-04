@@ -122,6 +122,137 @@ const ACTION_ICON_DEFS: ActionIconDef[] = [
   { Icon: ShieldCheck,   color: '#6366f1' },
 ]
 
+// ── Action Plan Block ────────────────────────────────────────────────────────
+
+const SHOW_ACTION_PLAN = true
+
+function ActionPlanBlock({
+  actions,
+  hero,
+  title = 'Сначала сделайте это',
+  ctaLabel = 'Начать лечение',
+  subtitle = 'План займёт 3 шага · повтор через 7 дней',
+  maxSteps = 3,
+}: {
+  actions: string[]
+  hero?: boolean
+  title?: string
+  ctaLabel?: string
+  subtitle?: string
+  maxSteps?: number
+}) {
+  const [expanded, setExpanded] = useState(false)
+  if (!actions[0]) return null
+  const steps = hero ? actions.slice(1, maxSteps + 1) : actions.slice(0, maxSteps)
+  return (
+    <>
+      <div className="flex items-center gap-3" style={{ marginBottom: 8 }}>
+        <span style={{
+          fontSize: 11, fontWeight: 700, letterSpacing: '0.10em',
+          textTransform: 'uppercase',
+          color: hero ? '#2c694e' : '#6e7971',
+          whiteSpace: 'nowrap',
+        }}>
+          {title}
+        </span>
+        <div style={{ flex: 1, height: 1, background: 'rgba(108,123,115,0.22)' }} />
+      </div>
+      <div
+        style={{
+          padding: hero ? 28 : 20,
+          borderRadius: hero ? 16 : 12,
+          background: 'rgba(255,255,255,0.70)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: hero ? '1px solid rgba(43,105,78,0.20)' : '1px solid rgba(108,123,115,0.10)',
+          boxShadow: hero
+            ? '0px 4px 16px rgba(25,28,27,0.08), 0px 24px 56px rgba(25,28,27,0.12)'
+            : '0px 4px 12px rgba(25,28,27,0.04), 0px 16px 48px rgba(25,28,27,0.08)',
+        }}
+      >
+        <p style={{
+          fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+          fontWeight: 700, fontSize: hero ? 17 : 15, color: '#012d1d', lineHeight: 1.45,
+          marginBottom: 14,
+        }}>
+          {actions[0]}
+        </p>
+        {hero ? (
+          <>
+            <p style={{ fontSize: 13, color: '#6e7971', lineHeight: 1.4, marginBottom: 14 }}>
+              {subtitle}
+            </p>
+            <button
+              onClick={() => setExpanded(v => !v)}
+              className="flex items-center justify-center gap-2 w-full"
+              style={{
+                background: '#1b4332', color: '#fff', border: 'none',
+                borderRadius: 10, padding: '13px 20px',
+                fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                fontWeight: 700, fontSize: 14, cursor: 'pointer',
+              }}
+            >
+              {ctaLabel}
+              <ChevronRight
+                size={16} strokeWidth={2}
+                style={{ transition: 'transform 0.2s', transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
+              />
+            </button>
+          </>
+        ) : (
+          <div className="flex items-center justify-between">
+            <span style={{ fontSize: 12, color: '#6e7971', lineHeight: 1.4 }}>
+              {subtitle}
+            </span>
+            <button
+              onClick={() => setExpanded(v => !v)}
+              className="flex items-center gap-1 flex-shrink-0"
+              style={{
+                marginLeft: 12,
+                background: '#1b4332', color: '#fff', border: 'none',
+                borderRadius: 8, padding: '8px 14px',
+                fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+            >
+              {ctaLabel}
+              <ChevronRight
+                size={14} strokeWidth={2}
+                style={{ transition: 'transform 0.2s', transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
+              />
+            </button>
+          </div>
+        )}
+        {expanded && (
+          <div style={{
+            marginTop: 16, paddingTop: 16,
+            borderTop: '1px solid rgba(108,123,115,0.12)',
+            display: 'flex', flexDirection: 'column', gap: 10,
+          }}>
+            {steps.map((step, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{
+                    width: 24, height: 24, borderRadius: '50%',
+                    background: '#1b4332', color: '#fff',
+                    fontSize: 12, fontWeight: 700, lineHeight: 1,
+                  }}
+                >
+                  {i + 1}
+                </div>
+                <p style={{ margin: 0, fontSize: 13, color: '#414844', lineHeight: 1.55, fontWeight: 500, paddingTop: 2 }}>
+                  {step}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
 // ── Debug Panel ───────────────────────────────────────────────────────────────
 
 function DebugPanel({ analysisId }: { analysisId: string }) {
@@ -1123,6 +1254,24 @@ function ResultsContent() {
               </div>
             </section>
 
+            {/* ── Action Plan ── */}
+            {SHOW_ACTION_PLAN && planActions.length > 0 && (
+              <section style={{ padding: '48px 20px 0' }}>
+                {result.analysis_id === 'demo_slugs' && topIssue ? (
+                  <ActionPlanBlock
+                    actions={topIssue.today_actions}
+                    hero
+                    title="Сделайте это сегодня вечером"
+                    ctaLabel="Открыть план защиты"
+                    subtitle="Лучшее время — вечер или после дождя"
+                    maxSteps={4}
+                  />
+                ) : (
+                  <ActionPlanBlock actions={planActions} />
+                )}
+              </section>
+            )}
+
             {/* ── Немедленный протокол ── */}
             {planActions.length > 0 && (
               <section style={{ padding: '48px 20px 0' }}>
@@ -1452,6 +1601,24 @@ function ResultsContent() {
               )}
             </div>
           </div>
+        )}
+
+        {/* ── Action Plan ── */}
+        {SHOW_ACTION_PLAN && result.today_actions.length > 0 && (
+          <section style={{ padding: '0 20px', marginTop: 36 }}>
+            {result.analysis_id === 'demo_slugs' && topIssue ? (
+              <ActionPlanBlock
+                actions={topIssue.today_actions}
+                hero
+                title="Сделайте это сегодня вечером"
+                ctaLabel="Открыть план защиты"
+                subtitle="Лучшее время — вечер или после дождя"
+                maxSteps={4}
+              />
+            ) : (
+              <ActionPlanBlock actions={result.today_actions.slice(0, 3)} />
+            )}
+          </section>
         )}
 
         {/* ══ 4. IMMEDIATE PROTOCOL ════════════════════════════════════ */}

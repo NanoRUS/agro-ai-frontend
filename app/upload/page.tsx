@@ -77,6 +77,7 @@ const DEMO_IMAGES: Record<string, string> = {
   potato_phytophthora_critical:    '/demos/potato-blight.jpg',
   pepper_blossom_end_rot_fruiting: '/demos/pepper-rot.jpg',
   strawberry_root_rot:             '/demos/strawberry-root.jpg',
+  dacha_slugs:                     '/demos/cucumber-mildew.jpg',
 }
 
 const DEMO_EXCLUDED = new Set(['tomato_aphids', 'cucumber_spider_mites_heat'])
@@ -196,6 +197,8 @@ export default function UploadPage() {
     try {
       const result = await loadDemoResult(fixtureId, API_URL)
       sessionStorage.setItem('agro_result', JSON.stringify(result))
+      const fixture = DEMO_CASES.find(c => c.id === fixtureId)
+      if (fixture?.userType) localStorage.setItem('userType', fixture.userType)
       router.push('/results')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Не удалось загрузить демо.')

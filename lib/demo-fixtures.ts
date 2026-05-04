@@ -12,6 +12,43 @@ export interface DemoCase {
   crop: string
   plant_stage: string
   questionnaire: Record<string, unknown>
+  staticResult?: AnalyzeResponse
+  userType?: string
+}
+
+const SLUG_DEMO_RESULT: AnalyzeResponse = {
+  analysis_id: 'demo_slugs',
+  crop: { selected: 'vegetable' },
+  growth_stage: 'growing',
+  top_issues: [{
+    id: 'slugs',
+    title: 'Слизни',
+    category: 'pest',
+    score: 0.82,
+    confidence_label: 'high',
+    why: [
+      'Объедают листья и молодые побеги, оставляя характерные слизистые следы',
+      'Активны ночью и в сырую погоду — после дождя активность резко возрастает',
+      'Прячутся под листьями и комьями почвы у основания растения днём',
+    ],
+    today_actions: [
+      'Соберите слизней вручную и поставьте простые ловушки',
+      'Осмотрите нижнюю сторону листьев и землю вокруг растения',
+      'Соберите слизней вручную',
+      'Поставьте ловушки или барьеры',
+      'Повторите проверку завтра вечером',
+    ],
+    what_to_check_next: [],
+  }],
+  urgency: { level: 'high', reason: 'Повреждают листья и молодые побеги, часто оставляют слизистые следы.' },
+  today_actions: [
+    'Убрать укрытия и влажные растительные остатки рядом с грядкой',
+    'Поливать утром, а не вечером — меньше влаги ночью',
+    'Использовать барьеры (зола, яичная скорлупа) вокруг грядки',
+    'При сильном заражении использовать разрешённые средства от слизней',
+  ],
+  what_to_check_next: [],
+  upsell: { video_available: true, video_type: 'echomimic' },
 }
 
 export const DEMO_CASES: DemoCase[] = [
@@ -172,6 +209,25 @@ export const DEMO_CASES: DemoCase[] = [
       recently_transplanted: false, recently_fertilized: false,
     },
   },
+  {
+    id: 'dacha_slugs',
+    label: '🥬 Слизни на грядке',
+    description: 'Объедены листья, слизистые следы — слизни активны ночью',
+    crop: 'vegetable',
+    plant_stage: 'growing',
+    userType: 'dacha',
+    staticResult: SLUG_DEMO_RESULT,
+    questionnaire: {
+      growing_environment: 'open_field', plant_stage: 'growing',
+      days_since_problem_started: 2, watering_frequency: 'every_2_days', soil_moisture: 'wet',
+      has_holes_in_leaves: true, insects_visible: false, had_recent_rain: true,
+      has_spots: false, has_dark_spots: false, has_white_powder: false, has_webbing: false,
+      has_yellowing_lower_leaves: false, has_uniform_yellowing: false, has_leaf_edge_burn: false,
+      has_curled_leaves: false, has_wilting: false, has_stem_darkening: false,
+      has_fruit_rot: false, has_blossom_end_rot: false, has_slow_growth: false,
+      had_cold_nights: false, had_heat_stress: false, recently_transplanted: false, recently_fertilized: false,
+    },
+  },
 ]
 
 /** Загрузить демо-результат с backend. Возвращает данные или выбрасывает Error с описанием причины. */
@@ -179,6 +235,9 @@ export async function loadDemoResult(
   fixtureId: string,
   apiUrl: string,
 ): Promise<AnalyzeResponse> {
+  const fixture = DEMO_CASES.find(c => c.id === fixtureId)
+  if (fixture?.staticResult) return fixture.staticResult
+
   const url = `${apiUrl}/api/v1/demo/cases/${fixtureId}`
   let res: Response
   try {
