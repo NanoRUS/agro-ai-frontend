@@ -5,7 +5,7 @@ import {
   X, Camera, ImagePlus, ArrowRight, Sun, Scan, Leaf, Clock, Brain, ShieldCheck, Zap,
 } from 'lucide-react'
 import { DEMO_CASES, loadDemoResult } from '@/lib/demo-fixtures'
-import { API_URL } from '@/lib/api'
+import { API_URL, validatePlantPhoto, PhotoValidationResult } from '@/lib/api'
 import BottomNav from '@/components/BottomNav'
 
 // ── Stitch tokens ──────────────────────────────────────────────────────────────
@@ -97,10 +97,12 @@ export default function UploadPage() {
   const [images,      setImages]      = useState<File[]>([])
   const [previews,    setPreviews]    = useState<string[]>([])
   const [crop,        setCrop]        = useState('')
-  const [error,       setError]       = useState('')
-  const [demoLoading, setDemoLoading] = useState<string | null>(null)
-  const [activeDemo,  setActiveDemo]  = useState<string | null>(null)
-  const [navigating,  setNavigating]  = useState(false)
+  const [error,            setError]            = useState('')
+  const [demoLoading,      setDemoLoading]      = useState<string | null>(null)
+  const [activeDemo,       setActiveDemo]       = useState<string | null>(null)
+  const [validating,       setValidating]       = useState(false)
+  const [validationResult, setValidationResult] = useState<PhotoValidationResult | null>(null)
+  const [navigating,       setNavigating]       = useState(false)
   const [farmerCtx,   setFarmerCtx]   = useState<{ crop: string; field: string } | null>(null)
   const [userType,    setUserType]    = useState<string | null>(null)
 
@@ -133,6 +135,7 @@ export default function UploadPage() {
     setPreviews((p) => [...p, ...added.map((f) => URL.createObjectURL(f))])
     setError('')
     e.target.value = ''
+    triggerValidation(nextImages[0])
   }
 
   function removeImage(idx: number) {
@@ -140,7 +143,13 @@ export default function UploadPage() {
     const nextPreviews = previews.filter((_, i) => i !== idx)
     setImages(nextImages)
     setPreviews(nextPreviews)
-    if (nextImages.length === 0) setActiveDemo(null)
+    if (nextImages.length === 0) {
+      setActiveDemo(null)
+      setValidationResult(null)
+      setValidating(false)
+    } else if (idx === 0) {
+      triggerValidation(nextImages[0])
+    }
   }
 
   function compressImage(file: File): Promise<string> {
@@ -165,12 +174,30 @@ export default function UploadPage() {
     })
   }
 
+  async function triggerValidation(file: File) {
+    setValidating(true)
+    setValidationResult(null)
+    try {
+      const vr = await validatePlantPhoto(file)
+      setValidationResult(vr)
+    } finally {
+      setValidating(false)
+    }
+  }
+
+  function handleRetryPhoto() {
+    setImages([])
+    setPreviews([])
+    setValidationResult(null)
+    setValidating(false)
+    setActiveDemo(null)
+    setError('')
+  }
+
   async function handleNext() {
-    if (!crop)          return setError(isPlantCategory ? 'Выберите тип растения' : 'Выберите культуру')
-    if (!images.length) return setError('Загрузите хотя бы одно фото')
+    if (!canContinue) return
 
     setNavigating(true)
-    setError('')
     try {
       const dataUrls = await Promise.all(images.map(compressImage))
       if (isPlantCategory) {
@@ -207,9 +234,9 @@ export default function UploadPage() {
     }
   }
 
-  const hasPhotos  = images.length > 0
-  const hasCrop    = !!crop
-  const canProceed = hasPhotos && hasCrop
+  const hasPhotos   = images.length > 0
+  const hasCrop     = !!crop
+  const canContinue = hasPhotos && hasCrop && validationResult?.status === 'valid' && !validating
 
   const scannerSrc = activeDemo
     ? (DEMO_IMAGES[activeDemo] ?? '/demos/tomato-blight.jpg')
@@ -1149,6 +1176,7 @@ export default function UploadPage() {
                 return (
                   <button
                     key={c.id}
+                    type="button"
                     onClick={() => { setCrop(c.id); setError('') }}
                     className="flex items-center gap-2 active:scale-[0.96]"
                     style={{
@@ -1282,10 +1310,13 @@ export default function UploadPage() {
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
           borderTop: `1px solid rgba(193,200,194,0.10)`,
+          pointerEvents: canContinue ? 'auto' : 'none',
         }}
       >
         <button
+          type="button"
           onClick={handleNext}
+          disabled={!canContinue}
           className="w-full flex items-center justify-center gap-3 transition-all active:scale-95 duration-200"
           style={{
             height: 64,
@@ -1295,17 +1326,17 @@ export default function UploadPage() {
             fontSize: 18,
             border: 'none',
             position: 'relative', overflow: 'hidden',
-            background: canProceed
+            background: canContinue
               ? 'linear-gradient(160deg, rgba(38,90,60,0.97) 0%, rgba(12,42,24,1) 100%)'
               : C.surfaceContainerHighest,
-            color: canProceed ? '#f0f7f4' : `${C.onSurfaceVariant}66`,
-            boxShadow: canProceed
+            color: canContinue ? '#f0f7f4' : `${C.onSurfaceVariant}66`,
+            boxShadow: canContinue
               ? 'inset 0 1.5px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.28), 0 8px 28px rgba(27,67,50,0.40)'
               : 'none',
-            cursor: canProceed ? 'pointer' : 'not-allowed',
+            cursor: canContinue ? 'pointer' : 'not-allowed',
           }}
         >
-          {canProceed && <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0))', borderRadius: '9999px 9999px 60% 60% / 9999px 9999px 50% 50%', pointerEvents: 'none' }} />}
+          {canContinue && <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0))', borderRadius: '9999px 9999px 60% 60% / 9999px 9999px 50% 50%', pointerEvents: 'none' }} />}
           Продолжить
           <ArrowRight size={22} strokeWidth={2} />
         </button>
@@ -1315,8 +1346,8 @@ export default function UploadPage() {
       {/* ── Bottom nav ── */}
       <BottomNav active="home" />
 
-      {/* ── Navigating overlay ── */}
-      {navigating && (
+      {/* ── Validating / Navigating overlay ── */}
+      {(validating || navigating) && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
           style={{
@@ -1347,8 +1378,107 @@ export default function UploadPage() {
                 letterSpacing: '-0.02em',
               }}
             >
-              Подготовка фото...
+              {validating ? 'Проверяем фото...' : 'Подготовка фото...'}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Validation error bottom sheet ── */}
+      {validationResult && validationResult.status !== 'valid' && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col justify-end"
+          style={{ maxWidth: 448, left: '50%', transform: 'translateX(-50%)' }}
+        >
+          <div
+            onClick={handleRetryPhoto}
+            className="flex-1"
+            style={{ background: 'rgba(0,0,0,0.40)' }}
+          />
+          <div
+            style={{
+              background: C.surfaceContainerLowest,
+              borderRadius: '2rem 2rem 0 0',
+              padding: '8px 24px calc(env(safe-area-inset-bottom, 0px) + 32px)',
+              boxShadow: '0 -8px 40px rgba(0,0,0,0.18)',
+            }}
+          >
+            {/* Handle bar */}
+            <div
+              style={{
+                width: 36,
+                height: 4,
+                borderRadius: 9999,
+                background: C.outlineVariant,
+                margin: '12px auto 28px',
+              }}
+            />
+            {/* Icon */}
+            <div
+              className="flex items-center justify-center"
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: '50%',
+                background: validationResult.status === 'not_plant'
+                  ? C.surfaceContainerHigh
+                  : 'rgba(245,158,11,0.10)',
+                margin: '0 auto 20px',
+              }}
+            >
+              {validationResult.status === 'not_plant'
+                ? <Leaf size={28} strokeWidth={1.75} style={{ color: C.secondary }} />
+                : <Camera size={28} strokeWidth={1.75} style={{ color: '#92400e' }} />
+              }
+            </div>
+            {/* Text */}
+            <p
+              style={{
+                fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                fontWeight: 800,
+                fontSize: 22,
+                color: C.primary,
+                letterSpacing: '-0.03em',
+                textAlign: 'center',
+                marginBottom: 10,
+              }}
+            >
+              {validationResult.userMessage.title}
+            </p>
+            <p
+              style={{
+                fontSize: 15,
+                color: C.onSurfaceVariant,
+                textAlign: 'center',
+                lineHeight: 1.55,
+                marginBottom: 28,
+              }}
+            >
+              {validationResult.userMessage.description}
+            </p>
+            {/* CTA */}
+            <button
+              onClick={handleRetryPhoto}
+              className="w-full flex items-center justify-center gap-3 transition-all active:scale-[0.97]"
+              style={{
+                height: 60,
+                borderRadius: 9999,
+                background: 'linear-gradient(160deg, rgba(38,90,60,0.97) 0%, rgba(12,42,24,1) 100%)',
+                color: 'white',
+                fontFamily: 'var(--font-manrope), Manrope, Inter, sans-serif',
+                fontWeight: 700,
+                fontSize: 17,
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.18), 0 8px 24px rgba(27,67,50,0.35)',
+              }}
+            >
+              {validationResult.status === 'not_plant'
+                ? <Leaf size={20} strokeWidth={1.75} />
+                : <Camera size={20} strokeWidth={1.75} />
+              }
+              {validationResult.userMessage.cta}
+            </button>
           </div>
         </div>
       )}

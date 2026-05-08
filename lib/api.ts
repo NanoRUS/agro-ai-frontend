@@ -132,6 +132,56 @@ export async function analyzeImages(
   return res.json()
 }
 
+// ─── Photo validation ─────────────────────────────────────────────────────────
+
+export type PhotoValidationStatus = 'valid' | 'retake' | 'not_plant'
+
+export interface PhotoValidationUserMessage {
+  title: string
+  description: string
+  cta: string
+}
+
+export interface PhotoValidationResult {
+  status: PhotoValidationStatus
+  confidence: number | null
+  reason: string
+  userMessage: PhotoValidationUserMessage
+  debug?: Record<string, unknown>
+}
+
+const _VALIDATION_UNAVAILABLE: PhotoValidationResult = {
+  status: 'retake',
+  confidence: 0,
+  reason: 'photo_validation_unavailable',
+  userMessage: {
+    title: 'Не удалось проверить фото',
+    description: 'Попробуйте загрузить фото растения крупным планом при хорошем освещении.',
+    cta: 'Загрузить другое фото',
+  },
+  debug: { qualityIssues: ['validation_unavailable'] },
+}
+
+export async function validatePlantPhoto(image: File): Promise<PhotoValidationResult> {
+  const form = new FormData()
+  form.append('image', image)
+  try {
+    const res = await fetch(`${API_URL}/api/v1/validate-photo`, {
+      method: 'POST',
+      body: form,
+      signal: AbortSignal.timeout(65_000),
+    })
+    if (!res.ok) return _VALIDATION_UNAVAILABLE
+    try {
+      return await res.json()
+    } catch {
+      return _VALIDATION_UNAVAILABLE
+    }
+  } catch {
+    return _VALIDATION_UNAVAILABLE
+  }
+}
+
 export async function generateVideo(
   analysis_id: string,
   selected_issue_id: string,
