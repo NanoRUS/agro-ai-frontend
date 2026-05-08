@@ -173,19 +173,22 @@ export async function validatePlantPhoto(image: File): Promise<PhotoValidationRe
       body: form,
       signal: AbortSignal.timeout(65_000),
     })
-    console.log('[PHOTO_VALIDATION] ← HTTP', res.status, res.url)
+    console.log('[PHOTO_VALIDATION_RESPONSE_STATUS]', res.status)
     if (!res.ok) {
       console.warn('[PHOTO_VALIDATION] non-OK response → UNAVAILABLE fallback')
       return _VALIDATION_UNAVAILABLE
     }
+    const text = await res.text()
+    console.log('[PHOTO_VALIDATION_RAW_TEXT]', text)
+    let data: PhotoValidationResult
     try {
-      const result = await res.json()
-      console.log('[PHOTO_VALIDATION_RESULT]', result)
-      return result
+      data = JSON.parse(text)
     } catch (e) {
-      console.error('[PHOTO_VALIDATION] JSON parse error:', e)
+      console.error('[PHOTO_VALIDATION_JSON_PARSE_ERROR]', e)
       return _VALIDATION_UNAVAILABLE
     }
+    console.log('[PHOTO_VALIDATION_PARSED]', data)
+    return data
   } catch (e) {
     console.error('[PHOTO_VALIDATION] fetch error:', e)
     return _VALIDATION_UNAVAILABLE

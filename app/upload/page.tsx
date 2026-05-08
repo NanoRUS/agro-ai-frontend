@@ -179,9 +179,12 @@ export default function UploadPage() {
     setValidationResult(null)
     try {
       const vr = await validatePlantPhoto(file)
+      console.log('[TRIGGER_VALIDATION_RESULT]', vr)
       setValidationResult(vr)
+      console.log('[TRIGGER_VALIDATION_STATE_SET]', vr.status)
     } finally {
       setValidating(false)
+      console.log('[TRIGGER_VALIDATION_DONE] validating → false')
     }
   }
 
