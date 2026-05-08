@@ -1384,51 +1384,40 @@ export default function UploadPage() {
         </div>
       )}
 
-      {/* ── Validation error bottom sheet ── */}
+      {/* ── Validation error modal ── */}
       {validationResult && validationResult.status !== 'valid' && (
         <div
-          className="fixed inset-0 z-50 flex flex-col justify-end"
-          style={{ maxWidth: 448, left: '50%', transform: 'translateX(-50%)' }}
+          className="fixed inset-0 flex items-center justify-center px-4"
+          style={{ zIndex: 9999, background: 'rgba(0,0,0,0.30)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
+          onClick={handleRetryPhoto}
         >
           <div
-            onClick={handleRetryPhoto}
-            className="flex-1"
-            style={{ background: 'rgba(0,0,0,0.40)' }}
-          />
-          <div
+            onClick={(e) => e.stopPropagation()}
             style={{
-              background: C.surfaceContainerLowest,
-              borderRadius: '2rem 2rem 0 0',
-              padding: '8px 24px calc(env(safe-area-inset-bottom, 0px) + 32px)',
-              boxShadow: '0 -8px 40px rgba(0,0,0,0.18)',
+              width: '100%',
+              maxWidth: 360,
+              background: '#ffffff',
+              borderRadius: 32,
+              padding: '36px 28px 28px',
+              boxShadow: '0 24px 80px rgba(0,0,0,0.22), 0 8px 24px rgba(0,0,0,0.10)',
             }}
           >
-            {/* Handle bar */}
-            <div
-              style={{
-                width: 36,
-                height: 4,
-                borderRadius: 9999,
-                background: C.outlineVariant,
-                margin: '12px auto 28px',
-              }}
-            />
             {/* Icon */}
             <div
               className="flex items-center justify-center"
               style={{
-                width: 64,
-                height: 64,
+                width: 72,
+                height: 72,
                 borderRadius: '50%',
                 background: validationResult.status === 'not_plant'
                   ? C.surfaceContainerHigh
                   : 'rgba(245,158,11,0.10)',
-                margin: '0 auto 20px',
+                margin: '0 auto 24px',
               }}
             >
               {validationResult.status === 'not_plant'
-                ? <Leaf size={28} strokeWidth={1.75} style={{ color: C.secondary }} />
-                : <Camera size={28} strokeWidth={1.75} style={{ color: '#92400e' }} />
+                ? <Leaf size={32} strokeWidth={1.75} style={{ color: C.secondary }} />
+                : <Camera size={32} strokeWidth={1.75} style={{ color: '#92400e' }} />
               }
             </div>
             {/* Text */}
@@ -1458,6 +1447,7 @@ export default function UploadPage() {
             </p>
             {/* CTA */}
             <button
+              type="button"
               onClick={handleRetryPhoto}
               className="w-full flex items-center justify-center gap-3 transition-all active:scale-[0.97]"
               style={{
