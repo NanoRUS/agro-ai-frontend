@@ -171,7 +171,7 @@ export async function validatePlantPhoto(image: File): Promise<PhotoValidationRe
     const res = await fetch(url, {
       method: 'POST',
       body: form,
-      signal: AbortSignal.timeout(65_000),
+      signal: AbortSignal.timeout(135_000),
     })
     console.log('[PHOTO_VALIDATION_RESPONSE_STATUS]', res.status)
     if (!res.ok) {
