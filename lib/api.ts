@@ -163,21 +163,31 @@ const _VALIDATION_UNAVAILABLE: PhotoValidationResult = {
 }
 
 export async function validatePlantPhoto(image: File): Promise<PhotoValidationResult> {
+  const url = `${API_URL}/api/v1/validate-photo`
+  console.log('[PHOTO_VALIDATION] → POST', url, 'file:', image.name, image.type, image.size, 'bytes')
   const form = new FormData()
   form.append('image', image)
   try {
-    const res = await fetch(`${API_URL}/api/v1/validate-photo`, {
+    const res = await fetch(url, {
       method: 'POST',
       body: form,
       signal: AbortSignal.timeout(65_000),
     })
-    if (!res.ok) return _VALIDATION_UNAVAILABLE
-    try {
-      return await res.json()
-    } catch {
+    console.log('[PHOTO_VALIDATION] ← HTTP', res.status, res.url)
+    if (!res.ok) {
+      console.warn('[PHOTO_VALIDATION] non-OK response → UNAVAILABLE fallback')
       return _VALIDATION_UNAVAILABLE
     }
-  } catch {
+    try {
+      const result = await res.json()
+      console.log('[PHOTO_VALIDATION_RESULT]', result)
+      return result
+    } catch (e) {
+      console.error('[PHOTO_VALIDATION] JSON parse error:', e)
+      return _VALIDATION_UNAVAILABLE
+    }
+  } catch (e) {
+    console.error('[PHOTO_VALIDATION] fetch error:', e)
     return _VALIDATION_UNAVAILABLE
   }
 }
